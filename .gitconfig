@@ -1,0 +1,19 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+#   name = stkhr
+#   email = stkhr@stkhr.local
+
+[alias]
+st = status
+stt = status -uno
+
+ad = add
+cm = commit
+
+graph = log --graph --date=short --decorate=short --pretty=format:'%Cgreen%h %Creset%cd %Cblue%cn %Cred%d %Creset%s'
+gr    = log --graph --date=short --decorate=short --pretty=format:'%Cgreen%h %Creset%cd %Cblue%cn %Cred%d %Creset%s'
+
+difff = diff --word-diff
+[user]
+	email = tshinichi0813@gmail.com
