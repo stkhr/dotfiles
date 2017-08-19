@@ -16,4 +16,4 @@ gr    = log --graph --date=short --decorate=short --pretty=format:'%Cgreen%h %Cr
 
 difff = diff --word-diff
 [user]
-	name = stkhr
+        name = stkhr
