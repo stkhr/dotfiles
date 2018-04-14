@@ -1,5 +1,10 @@
+"エンコーディング
+set encoding=utf-8
+scriptencoding utf-8
+
 "構文の強調表現
-syntax on 
+syntax enable
+syntax on
 
 "カッコ閉じた際に閉じたカッコに移動
 set nostartofline
@@ -26,3 +31,25 @@ set shiftwidth=4
 "インクリメントサーチ
 set incsearch
 
+"カーソル位置表示
+set ruler
+
+"行番号表示
+set number
+
+"オートインデント
+set autoindent
+
+"ペースト時に自動インデントで崩れるのを防ぐ
+if &term =~ "xterm"
+    let &t_SI .= "\e[?2004h"
+    let &t_EI .= "\e[?2004l"
+    let &pastetoggle = "\e[201~"
+
+    function XTermPasteBegin(ret)
+        set paste
+        return a:ret
+    endfunction
+
+    inoremap <special> <expr> <Esc>[200~ XTermPasteBegin("")
+endif
