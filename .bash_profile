@@ -1,14 +1,4 @@
 # terminalのプロンプト
-#PS1='\h:\W \u\$ ' ## デフォルト
-## terminalにブランチを出す
-#git_branch() {
-#    echo $(git branch 2>/dev/null | sed -rn "s/^\* (.*)$/\1/p")
-#}
-#if [ "$color_prompt" = yes ]; then
-#    PS1='\[\033[32m\]\h\[\033[00m\]:\[\033[01;34m\]$(git_branch)\[\033[00m\]:\w\$ '
-#else
-#    PS1='\h:$(git_branch):\w\$ '
-#fi
 PS1='\w $ ' ## 相対パスのみ
 
 # terminalの色分け
@@ -28,3 +18,17 @@ fi
 
 # rbenv
 eval "$(rbenv init -)"
+
+# git branchをプロンプトに表示させる
+<< comment
+以下を実行する必要がある
+curl -o "/usr/local/etc/bash_completion.d/git-prompt.sh" https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+comment
+if type __git_ps1 > /dev/null 2>&1 ; then
+  PROMPT_COMMAND="__git_ps1 '\w' '\\\$ '; $PROMPT_COMMAND"
+  GIT_PS1_SHOWDIRTYSTATE=true
+  GIT_PS1_SHOWSTASHSTATE=true
+  GIT_PS1_SHOWUNTRACKEDFILES=true
+  GIT_PS1_SHOWUPSTREAM="auto"
+  GIT_PS1_SHOWCOLORHINTS=true
+fi
