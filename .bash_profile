@@ -4,10 +4,8 @@ PS1='\w $ ' ## 相対パスのみ
 # terminalの色分け
 export LSCOLORS=gxfxcxdxbxegedabagacad
 
-# 重複履歴を無視
-export HISTCONTROL=ignoredups
-#空白から始めたコマンドを無視
-export HISTCONTROL=ignorespace
+# 全履歴に渡り重複を削除
+export HISTCONTROL=erasedups
 
 if [ -f ~/.bashrc ] ; then
 . ~/.bashrc
