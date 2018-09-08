@@ -7,7 +7,6 @@ HISTFILE=~/.histfile
 HISTSIZE=1000
 SAVEHIST=10000
 unsetopt beep
-bindkey -v
 setopt hist_ignore_dups
 setopt hist_ignore_all_dups
 setopt hist_ignore_space
@@ -17,13 +16,8 @@ setopt inc_append_history
 bindkey "^R" history-incremental-search-backward
 setopt share_history
 
-
-# useful settings
-setopt auto_cd
-
-
 # prompt
-PROMPT='$ '
+# PROMPT='$ '
 RPROMPT=$GREEN'[%~]'$WHITE
 setopt transient_rprompt
 ## promptにgitの情報を出す
@@ -36,6 +30,28 @@ zstyle ':vcs_info:*' formats "%F{green}%c%u[%b]%f"
 zstyle ':vcs_info:*' actionformats '[%b|%a]'
 precmd () { vcs_info }
 RPROMPT=$RPROMPT'${vcs_info_msg_0_}'
+## vimモード
+bindkey -v
+
+#zshプロンプトにモード表示####################################
+function zle-line-init zle-keymap-select {
+  case $KEYMAP in
+    vicmd)
+    PROMPT="%F{red}[%f$reset_color%}%F{green}N%f%F{red}]%f%{$reset_color%}$ "
+    ;;
+    main|viins)
+    PROMPT="%F{red}[%f$reset_color%}%F{cyan}I%f%F{red}]%f%{$reset_color%}$ "
+    ;;
+  esac
+  zle reset-prompt
+}
+zle -N zle-line-init
+zle -N zle-keymap-select
+
+
+
+# useful settings
+setopt auto_cd
 
 
 # ls
