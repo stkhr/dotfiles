@@ -123,3 +123,7 @@ alias -g H='| head'
 alias -g T='| tail'
 alias -g G='| egrep'
 alias -g W='| wc -l'
+
+# rbenv
+export PATH="$HOME/.rbenv/bin:$PATH" 
+eval "$(rbenv init - zsh)"
