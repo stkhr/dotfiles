@@ -127,3 +127,9 @@ alias -g W='| wc -l'
 # rbenv
 export PATH="$HOME/.rbenv/bin:$PATH" 
 eval "$(rbenv init - zsh)"
+
+# goenv
+export PATH="$HOME/.goenv/bin:$PATH"
+eval "$(goenv init -)"
+export GOPATH=~/go
+export PATH=$GOPATH/bin:$PATH
