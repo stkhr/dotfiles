@@ -18,6 +18,7 @@ setopt share_history
 
 # prompt
 # PROMPT='$ '
+PS1='$ ' ## 相対パスのみ
 RPROMPT=$GREEN'[%~]'$WHITE
 setopt transient_rprompt
 ## promptにgitの情報を出す
@@ -31,22 +32,22 @@ zstyle ':vcs_info:*' actionformats '[%b|%a]'
 precmd () { vcs_info }
 RPROMPT=$RPROMPT'${vcs_info_msg_0_}'
 ## vimモード
-bindkey -v
+#bindkey -v
 
 #zshプロンプトにモード表示####################################
-function zle-line-init zle-keymap-select {
-  case $KEYMAP in
-    vicmd)
-    PROMPT="%F{red}[%f$reset_color%}%F{green}N%f%F{red}]%f%{$reset_color%}$ "
-    ;;
-    main|viins)
-    PROMPT="%F{red}[%f$reset_color%}%F{cyan}I%f%F{red}]%f%{$reset_color%}$ "
-    ;;
-  esac
-  zle reset-prompt
-}
-zle -N zle-line-init
-zle -N zle-keymap-select
+#function zle-line-init zle-keymap-select {
+#  case $KEYMAP in
+#    vicmd)
+#    PROMPT="%F{red}[%f$reset_color%}%F{green}N%f%F{red}]%f%{$reset_color%}$ "
+#    ;;
+#    main|viins)
+#    PROMPT="%F{red}[%f$reset_color%}%F{cyan}I%f%F{red}]%f%{$reset_color%}$ "
+#    ;;
+#  esac
+#  zle reset-prompt
+#}
+#zle -N zle-line-init
+#zle -N zle-keymap-select
 
 
 
