@@ -124,6 +124,7 @@ alias -g H='| head'
 alias -g T='| tail'
 alias -g G='| egrep'
 alias -g W='| wc -l'
+alias -g B='| base64 --decode | gpg -d'
 
 # rbenv
 export PATH="$HOME/.rbenv/bin:$PATH" 
@@ -134,3 +135,4 @@ export PATH="$HOME/.goenv/bin:$PATH"
 eval "$(goenv init -)"
 export GOPATH=~/go
 export PATH=$GOPATH/bin:$PATH
+export PATH=/usr/local/git/bin:$PATH
