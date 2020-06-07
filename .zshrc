@@ -119,6 +119,7 @@ alias diff='diff -u'
 alias vi="vim"
 alias gb="git branch"
 alias gc="git checkout"
+alias random="openssl rand -base64 12 | fold -w 16 | head -1"
 ## global alias
 alias -g L='| less'
 alias -g H='| head'
