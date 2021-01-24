@@ -139,8 +139,7 @@ export GOPATH=~/go
 export PATH=$GOPATH/bin:$PATH
 export PATH=/usr/local/git/bin:$PATH
 
-# nodebrew
-export PATH=$PATH:~/.nodebrew/current/bin/
+# nodenv
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/stkhr/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/path.zsh.inc'; fi
