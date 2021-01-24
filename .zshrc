@@ -140,6 +140,8 @@ export PATH=$GOPATH/bin:$PATH
 export PATH=/usr/local/git/bin:$PATH
 
 # nodenv
+export PATH="$HOME/.nodenv/bin:$PATH"
+eval "$(nodenv init -)"
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/stkhr/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/path.zsh.inc'; fi
