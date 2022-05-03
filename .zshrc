@@ -120,13 +120,12 @@ alias g="git"
 alias gb="git branch"
 alias gc="git checkout"
 alias gcm="git commit"
+alias gd="git diff"
 alias gp="git pull"
 alias gps="git push"
 alias gr="git rebase"
 alias gs="git status"
 alias gst="git stash"
-
-
 alias random="openssl rand -base64 12 | fold -w 16 | head -1"
 ## global alias
 alias -g L='| less'
