@@ -1,6 +1,5 @@
 # The following lines were added by compinstall
-autoload -Uz compinit
-compinit
+autoload -Uz compinit && compinit -u
 
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
@@ -117,8 +116,17 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias diff='diff -u'
 alias vi="vim"
+alias g="git"
 alias gb="git branch"
 alias gc="git checkout"
+alias gcm="git commit"
+alias gp="git pull"
+alias gps="git push"
+alias gr="git rebase"
+alias gs="git status"
+alias gst="git stash"
+
+
 alias random="openssl rand -base64 12 | fold -w 16 | head -1"
 ## global alias
 alias -g L='| less'
@@ -129,19 +137,19 @@ alias -g W='| wc -l'
 alias -g B='| base64 --decode | gpg -d'
 
 # rbenv
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init - zsh)"
+# export PATH="$HOME/.rbenv/bin:$PATH"
+# eval "$(rbenv init - zsh)"
 
 # goenv
-export PATH="$HOME/.goenv/bin:$PATH"
-eval "$(goenv init -)"
-export GOPATH=~/go
-export PATH=$GOPATH/bin:$PATH
-export PATH=/usr/local/git/bin:$PATH
+# export PATH="$HOME/.goenv/bin:$PATH"
+# eval "$(goenv init -)"
+# export GOPATH=~/go
+# export PATH=$GOPATH/bin:$PATH
+# export PATH=/usr/local/git/bin:$PATH
 
 # nodenv
-export PATH="$HOME/.nodenv/bin:$PATH"
-eval "$(nodenv init -)"
+# export PATH="$HOME/.nodenv/bin:$PATH"
+# eval "$(nodenv init -)"
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/stkhr/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/path.zsh.inc'; fi
@@ -149,3 +157,4 @@ if [ -f '/Users/stkhr/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stkhr/goo
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/stkhr/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/completion.zsh.inc'; fi
 
+export PATH="/opt/homebrew/opt/libpq/bin:/opt/homebrew/bin/:$PATH"
