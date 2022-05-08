@@ -121,6 +121,7 @@ alias gb="git branch"
 alias gc="git checkout"
 alias gcm="git commit"
 alias gd="git diff"
+alias gl="git log"
 alias gp="git pull"
 alias gps="git push"
 alias gr="git rebase"
@@ -155,5 +156,9 @@ if [ -f '/Users/stkhr/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stkhr/goo
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/stkhr/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/completion.zsh.inc'; fi
+
+# gcloud
+source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc
+source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc
 
 export PATH="/opt/homebrew/opt/libpq/bin:/opt/homebrew/bin/:$PATH"
