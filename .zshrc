@@ -116,7 +116,12 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias diff='diff -u'
 alias vi="vim"
-alias g="git"
+
+## ghq
+alias g='cd $(ghq root)/$(ghq list | peco)'
+alias gh='hub browse $(ghq list | peco | cut -d "/" -f 2,3)'
+
+## git
 alias gb="git branch"
 alias gc="git checkout"
 alias gcm="git commit"
