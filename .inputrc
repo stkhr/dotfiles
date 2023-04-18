@@ -1,3 +1,0 @@
-## タブ補完時、大文字小文字無視
-#  on:無視 , off:無視しない
-set completion-ignore-case on

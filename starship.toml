@@ -1,0 +1,35 @@
+add_newline = true
+scan_timeout = 30 # timeout for file scan
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[x](bold red)"
+vimcmd_symbol = "[<](bold green)"
+
+[directory]
+truncation_length = 100
+truncate_to_repo = false
+truncation_symbol = "…/"
+
+[aws]
+format = 'on [$symbol($profile )(\($region\) )]($style)'
+style = "bold blue"
+
+[aws.region_aliases]
+ap-northeast-1 = "jp"
+
+[docker_context]
+format = "via [🐋 $context](blue bold)"
+
+[git_branch]
+symbol = "🌱 "
+
+[username]
+style_user = "white bold"
+style_root = "black bold"
+format = "[$user 🌱]($style) "
+disabled = false
+show_always = true
+
+[time]
+disabled = false
