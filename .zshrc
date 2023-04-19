@@ -36,10 +36,6 @@ alias -g G='| egrep'
 alias -g W='| wc -l'
 alias -g B='| base64 --decode | gpg -d'
 
-# 大文字小文字無視
-# autoload -Uz compinit && compinit -u
-# zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
-
 # ssh configを読み込む
 function _ssh {
   # compadd `fgrep 'Host ' ~/.ssh/config | awk '{print $2}' | sort`;
@@ -62,9 +58,6 @@ if [ -f '/Users/stkhr/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stkhr/goo
 if [ -f '/Users/stkhr/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/completion.zsh.inc'; fi
 source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc
 source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc
-
-# asdf
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
 
 # sheldon
 eval "$(sheldon source)"
