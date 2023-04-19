@@ -49,7 +49,7 @@ function _ssh {
   compadd `find ~/.ssh/* -type file | xargs fgrep 'Host ' | awk '{print $2}' | sort`;
 }
 
-# peco. brew intall pecoをする
+# ctrl + r の検索を peco を使い検索しやすくする
 function peco-history-selection() {
     BUFFER=`history -n 1 | tail -r  | awk '!a[$0]++' | peco`
     CURSOR=$#BUFFER
@@ -67,17 +67,6 @@ source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completio
 source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc
 
 export PATH="/opt/homebrew/opt/libpq/bin:/opt/homebrew/bin/:$PATH"
-
-# # rbenv
-# # export PATH="$HOME/.rbenv/bin:$PATH"
-# # eval "$(rbenv init - zsh)"
-
-# # goenv
-# # export PATH="$HOME/.goenv/bin:$PATH"
-# # eval "$(goenv init -)"
-# # export GOPATH=~/go
-# # export PATH=$GOPATH/bin:$PATH
-# # export PATH=/usr/local/git/bin:$PATH
 
 # # nodenv
 # export PATH="$HOME/.nodenv/bin:$PATH"

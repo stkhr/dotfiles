@@ -25,6 +25,7 @@ brew "tree"
 brew "starship"
 brew "font-hackgen" # font
 brew "font-hackgen-nerd" # font
+brew "font-hack-nerd-font" # font
 
 # tap
 tap "homebrew/cask-fonts" # font
