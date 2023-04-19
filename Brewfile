@@ -14,7 +14,6 @@ brew "hub"
 brew "jq"
 brew "just"
 brew "libpq"
-brew "nodenv"
 brew "peco"
 brew "pinentry-mac"
 brew "pwgen"
@@ -26,6 +25,7 @@ brew "starship"
 brew "font-hackgen" # font
 brew "font-hackgen-nerd" # font
 brew "font-hack-nerd-font" # font
+brew "asdf"
 
 # tap
 tap "homebrew/cask-fonts" # font
