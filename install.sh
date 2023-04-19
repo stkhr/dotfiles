@@ -13,4 +13,6 @@ done
 
 # starship
 mkdir "$HOME"/.config
-ln -snfv "$DIR"/starship.toml "$HOME"/.config/starship.toml
+mkdir "$HOME"/.config/sheldon
+ln -snfv "$DIR"/config/starship.toml "$HOME"/.config/starship.toml
+ln -snfv "$DIR"/config/sheldon/plugins.toml "$HOME"/.config/sheldon/plugins.toml

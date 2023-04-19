@@ -1,6 +1,3 @@
-# starship
-eval "$(starship init zsh)"
-
 # alias
 alias ls="ls -GF"
 alias ll="ls -la"
@@ -40,8 +37,8 @@ alias -g W='| wc -l'
 alias -g B='| base64 --decode | gpg -d'
 
 # 大文字小文字無視
-autoload -Uz compinit && compinit -u
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+# autoload -Uz compinit && compinit -u
+# zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # ssh configを読み込む
 function _ssh {
@@ -66,6 +63,8 @@ if [ -f '/Users/stkhr/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/stk
 source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc
 source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc
 
-export PATH="/opt/homebrew/opt/libpq/bin:/opt/homebrew/bin/:$PATH"
-
+# asdf
 . /opt/homebrew/opt/asdf/libexec/asdf.sh
+
+# sheldon
+eval "$(sheldon source)"
