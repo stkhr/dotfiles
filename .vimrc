@@ -54,5 +54,5 @@ if &term =~ "xterm"
     inoremap <special> <expr> <Esc>[200~ XTermPasteBegin("")
 endif
 
-"color schemeを設定 http://vimcolors.com/
+"color schemeを設定 https://github.com/phanviet/vim-monokai-pro/blob/master/README.md
 colorscheme monokai_pro
