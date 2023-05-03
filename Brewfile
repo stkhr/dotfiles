@@ -26,6 +26,7 @@ brew "font-hackgen-nerd" # font
 brew "font-hack-nerd-font" # font
 brew "asdf"
 brew "sheldon"
+brew "trivy"
 
 # tap
 tap "homebrew/cask-fonts" # font
