@@ -16,7 +16,7 @@ alias vi="vim"
 alias random="openssl rand -base64 12 | fold -w 16 | head -1"
 ## ghq
 alias g='cd $(ghq root)/$(ghq list | peco)'
-alias gh='hub browse $(ghq list | peco | cut -d "/" -f 2,3)'
+alias ghb='hub browse $(ghq list | peco | cut -d "/" -f 2,3)'
 ## git
 alias gb="git branch"
 alias gc="git checkout"
@@ -58,6 +58,11 @@ if [ -f '/Users/stkhr/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stkhr/goo
 if [ -f '/Users/stkhr/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/completion.zsh.inc'; fi
 source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc
 source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc
+
+# history
+export HISTSIZE=10000
+export SAVEHIST=100000
+setopt hist_ignore_dups
 
 # sheldon
 eval "$(sheldon source)"
