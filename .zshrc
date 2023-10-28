@@ -52,12 +52,18 @@ zle -N peco-history-selection
 bindkey '^R' peco-history-selection
 
 # gcloud
-# The next line updates PATH for the Google Cloud SDK.
+## The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/stkhr/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/path.zsh.inc'; fi
-# The next line enables shell command completion for gcloud.
+## The next line enables shell command completion for gcloud.
 if [ -f '/Users/stkhr/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/completion.zsh.inc'; fi
 source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc
 source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc
+## easy to change gcloud project 
+gcp-config() {
+  export config_name=$(gcloud config configurations list | tail -n +2 | awk '{print $1}' | peco)
+  if [[ -z "$config_name" ]]; then return 1; fi
+  gcloud config configurations activate $config_name
+}
 
 # history
 export HISTSIZE=10000

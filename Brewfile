@@ -2,8 +2,11 @@ cask_args appdir: "/Applications"
 
 # brew
 brew "ansible"
+brew "asdf"
 brew "awscli"
+brew "aws-vault"
 brew "circleci"
+brew "curl"
 brew "gh"
 brew "ghq"
 brew "gnu-sed"
@@ -18,16 +21,16 @@ brew "peco"
 brew "pinentry-mac"
 brew "pwgen"
 brew "python@3.9"
+brew "sheldon"
+brew "starship"
 brew "tmux"
 brew "tree"
-brew "starship"
-brew "font-hackgen" # font
-brew "font-hackgen-nerd" # font
-brew "font-hack-nerd-font" # font
-brew "asdf"
-brew "sheldon"
 brew "trivy"
-brew "aws-vault"
+
+# font
+brew "font-hackgen"
+brew "font-hackgen-nerd"
+brew "font-hack-nerd-font
 
 # tap
 tap "homebrew/cask-fonts" # font
@@ -37,13 +40,13 @@ cask "alfred"
 cask "docker"
 cask "iina"
 cask "notion"
-cask "appcleaner "
+cask "appcleaner"
 cask "dropbox"
 cask "iterm2"
 cask "raspberry-pi-imager"
-cask "bettertouchtool "
+cask "bettertouchtool"
 cask "google-chrome"
-cask "jetbrains-toolbox "
+cask "jetbrains-toolbox"
 cask "stats"
 cask "cyberduck"
 cask "google-cloud-sdk"
