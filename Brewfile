@@ -26,6 +26,7 @@ brew "starship"
 brew "tmux"
 brew "tree"
 brew "trivy"
+brew "actionlint"
 
 # font
 brew "font-hackgen"
