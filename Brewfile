@@ -27,6 +27,7 @@ brew "tmux"
 brew "tree"
 brew "trivy"
 brew "actionlint"
+brew "mycli"
 
 # font
 brew "font-hackgen"
