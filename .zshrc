@@ -19,15 +19,15 @@ alias g='cd $(ghq root)/$(ghq list | peco)'
 alias ghb='hub browse $(ghq list | peco | cut -d "/" -f 2,3)'
 ## git
 alias gb="git branch"
-alias gc="git checkout"
-alias gcm="git commit"
+alias gs="git switch"
+alias gc="git commit"
 alias gd="git diff"
 alias gl="git log"
 alias gp="git pull"
 alias gps="git push"
 alias gr="git rebase"
-alias gs="git status"
-alias gst="git stash"
+alias gstat="git status"
+alias gstash="git stash"
 ## pipe
 alias -g L='| less'
 alias -g H='| head'
