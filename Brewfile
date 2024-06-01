@@ -28,6 +28,7 @@ brew "tree"
 brew "trivy"
 brew "actionlint"
 brew "mycli"
+brew "direnv"
 
 # font
 brew "font-hackgen"
@@ -56,3 +57,4 @@ cask "keepassx"
 cask "visual-studio-code"
 cask "slack"
 cask "figma"
+cask "drawio"
