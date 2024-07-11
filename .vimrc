@@ -56,3 +56,5 @@ endif
 
 "color schemeを設定 https://github.com/phanviet/vim-monokai-pro/blob/master/README.md]
 colorscheme monokai_pro
+
+set clipboard+=unnamed
