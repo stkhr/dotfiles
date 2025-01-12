@@ -28,7 +28,6 @@ brew "tree"
 brew "trivy"
 brew "actionlint"
 brew "mycli"
-brew "direnv"
 
 # font
 brew "font-hackgen"
@@ -64,3 +63,4 @@ cask "drawio"
 cask "chatgpt"
 cask "kindle"
 cask "atok"
+cask "cursor"
