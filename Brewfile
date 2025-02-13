@@ -28,15 +28,17 @@ brew "tree"
 brew "trivy"
 brew "actionlint"
 brew "mycli"
-brew "direnv"
 
 # font
 brew "font-hackgen"
 brew "font-hackgen-nerd"
-brew "font-hack-nerd-font
+brew "font-hack-nerd-font"
+
+brew "packers"
 
 # tap
 tap "homebrew/cask-fonts" # font
+tap "hashicorp/tap" # hashicorp
 
 # cask
 cask "alfred"
@@ -59,4 +61,6 @@ cask "slack"
 cask "figma"
 cask "drawio"
 cask "chatgpt"
-cast "kindle"
+cask "kindle"
+cask "atok"
+cask "cursor"
