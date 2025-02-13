@@ -44,5 +44,3 @@ inline = 'eval "$(starship init zsh)"'
 [plugins.compinit]
 inline = "autoload -Uz compinit && compinit -u && zsh-defer compinit && zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'"
 
-[plugins.asdf]
-inline = ". /opt/homebrew/opt/asdf/libexec/asdf.sh"
