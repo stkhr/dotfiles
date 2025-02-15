@@ -1,7 +1,6 @@
 cask_args appdir: "/Applications"
 
 # brew
-brew "ansible"
 brew "asdf"
 brew "awscli"
 brew "aws-vault"
@@ -20,7 +19,6 @@ brew "libpq"
 brew "peco"
 brew "pinentry-mac"
 brew "pwgen"
-brew "python@3.9"
 brew "sheldon"
 brew "starship"
 brew "tmux"

@@ -65,6 +65,9 @@ gcp-config() {
   gcloud config configurations activate $config_name
 }
 
+# asdf
+export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+
 # history
 export HISTSIZE=10000
 export SAVEHIST=100000
