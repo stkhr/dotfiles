@@ -1,0 +1,9 @@
+{
+  "workbench.startupEditor": "none",
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnSave": true,
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.settings.applyToAllProfiles": []
+}
