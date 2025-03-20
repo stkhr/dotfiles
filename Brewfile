@@ -26,6 +26,9 @@ brew "tree"
 brew "trivy"
 brew "actionlint"
 brew "mycli"
+brew "pgcli"
+brew "pinact"
+brew "duckdb"
 
 # font
 brew "font-hackgen"

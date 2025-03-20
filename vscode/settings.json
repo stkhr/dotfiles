@@ -5,5 +5,8 @@
   },
   "editor.formatOnSave": true,
   "workbench.iconTheme": "material-icon-theme",
-  "workbench.settings.applyToAllProfiles": []
+  "workbench.settings.applyToAllProfiles": [],
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
