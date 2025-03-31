@@ -4,7 +4,12 @@
   "workbench.settings.applyToAllProfiles": [],
   "security.workspace.trust.enabled": false,
   "[javascriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.organizeImports.biome": "explicit",
+      "source.addMissingImports": "always" // Biome と関係ないが自動で import してくれる
+    }
   },
   "workbench.iconTheme": "material-icon-theme",
   "[terraform]": {
