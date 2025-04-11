@@ -3,6 +3,7 @@
   "editor.formatOnSave": true,
   "workbench.settings.applyToAllProfiles": [],
   "security.workspace.trust.enabled": false,
+  "files.insertFinalNewline": true,
   "[javascriptreact]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.codeActionsOnSave": {
