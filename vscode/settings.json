@@ -51,5 +51,6 @@
   },
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
-  }
+  },
+  "gitlens.codeLens.enabled": false
 }
