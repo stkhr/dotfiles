@@ -1,3 +1,4 @@
+42crunch.vscode-openapi
 4ops.terraform
 be5invis.toml
 bierner.emojisense
@@ -10,6 +11,7 @@ formulahendry.auto-rename-tag
 github.copilot
 github.copilot-chat
 github.vscode-github-actions
+golang.go
 hashicorp.terraform
 ics.japanese-proofreading
 mechatroner.rainbow-csv
@@ -17,6 +19,7 @@ mquandalle.graphql
 ms-ceintl.vscode-language-pack-ja
 oderwat.indent-rainbow
 pkief.material-icon-theme
+redhat.vscode-yaml
 saoudrizwan.claude-dev
 yzane.markdown-pdf
 zainchen.json

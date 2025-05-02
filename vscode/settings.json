@@ -12,6 +12,14 @@
       "source.addMissingImports": "always" // Biome と関係ないが自動で import してくれる
     }
   },
+  "go.formatTool": "goimports",
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+    "--fast"
+  ],
+  "[go]": {
+    "editor.defaultFormatter": "golang.go"
+  },
   "workbench.iconTheme": "material-icon-theme",
   "workbench.colorCustomizations": {
     "terminal.foreground": "#c6c6c6",
