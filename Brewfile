@@ -29,6 +29,7 @@ brew "mycli"
 brew "pgcli"
 brew "pinact"
 brew "duckdb"
+brew "tflint"
 
 # font
 brew "font-hackgen"
