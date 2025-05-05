@@ -29,13 +29,13 @@ brew "mycli"
 brew "pgcli"
 brew "pinact"
 brew "duckdb"
+brew "amazon-q"
+brew "packer"
 
 # font
 brew "font-hackgen"
 brew "font-hackgen-nerd"
 brew "font-hack-nerd-font"
-
-brew "packers"
 
 # tap
 tap "homebrew/cask-fonts" # font
@@ -52,7 +52,6 @@ cask "iterm2"
 cask "raspberry-pi-imager"
 cask "bettertouchtool"
 cask "google-chrome"
-cask "jetbrains-toolbox"
 cask "stats"
 cask "cyberduck"
 cask "google-cloud-sdk"
