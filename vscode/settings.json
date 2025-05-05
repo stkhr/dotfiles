@@ -1,4 +1,5 @@
 {
+  "editor.accessibilitySupport": "off",
   "security.workspace.trust.untrustedFiles": "open",
   "editor.formatOnSave": true,
   "workbench.settings.applyToAllProfiles": [],
@@ -47,20 +48,12 @@
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform",
     "editor.formatOnSave": true,
-    "editor.formatOnSaveMode": "file",
-    "editor.tabSize": 2
-  },
-  "[terraform-test]": {
-    "editor.defaultFormatter": "hashicorp.terraform",
-    "editor.formatOnSave": true,
-    "editor.formatOnSaveMode": "file",
-    "editor.tabSize": 2
+    "editor.formatOnSaveMode": "file"
   },
   "[terraform-vars]": {
     "editor.defaultFormatter": "hashicorp.terraform",
     "editor.formatOnSave": true,
-    "editor.formatOnSaveMode": "file",
-    "editor.tabSize": 2
+    "editor.formatOnSaveMode": "file"
   },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
@@ -68,5 +61,15 @@
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
-  "gitlens.codeLens.enabled": false
+  "gitlens.codeLens.enabled": false,
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "terminal.integrated.env.osx": {
+    "Q_NEW_SESSION": "1"
+  },
+  "hediet.vscode-drawio.resizeImages": null
 }
