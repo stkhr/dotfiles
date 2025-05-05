@@ -32,6 +32,7 @@ brew "duckdb"
 brew "tflint"
 brew "amazon-q"
 brew "packer"
+brew "graphviz"
 
 # font
 brew "font-hackgen"
