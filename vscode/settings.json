@@ -80,5 +80,6 @@
     "source.organizeImports.biome": "explicit",
     "source.formatAll.terraform": "explicit"
   },
-  "files.autoSaveDelay": 2000
+  "files.autoSaveDelay": 2000,
+  "github.copilot.nextEditSuggestions.enabled": true
 }
