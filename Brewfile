@@ -33,6 +33,7 @@ brew "tflint"
 brew "amazon-q"
 brew "packer"
 brew "graphviz"
+brew "azure-cli"
 
 # font
 brew "font-hackgen"

@@ -67,6 +67,10 @@ gcp-config() {
   gcloud config configurations activate $config_name
 }
 
+# azure
+autoload bashcompinit && bashcompinit
+source $(brew --prefix)/etc/bash_completion.d/az
+
 # asdf
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 
