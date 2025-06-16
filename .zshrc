@@ -73,6 +73,8 @@ source $(brew --prefix)/etc/bash_completion.d/az
 
 # asdf
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+## nom install
+## ln -s .asdf/shims/claude /Users/stkhr/.asdf/installs/nodejs/24.1.0/bin/claude
 
 # history
 export HISTSIZE=10000
