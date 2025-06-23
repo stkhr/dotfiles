@@ -1,11 +1,13 @@
 42crunch.vscode-openapi
 4ops.terraform
+anthropic.claude-code
 be5invis.toml
 bierner.emojisense
 bierner.markdown-mermaid
 biomejs.biome
 dsznajder.es7-react-js-snippets
 eamodio.gitlens
+editorconfig.editorconfig
 esbenp.prettier-vscode
 formulahendry.auto-rename-tag
 github.copilot
@@ -15,6 +17,7 @@ golang.go
 hashicorp.terraform
 hediet.vscode-drawio
 ics.japanese-proofreading
+inferrinizzard.prettier-sql-vscode
 mechatroner.rainbow-csv
 mquandalle.graphql
 ms-azuretools.vscode-containers
