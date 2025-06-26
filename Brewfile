@@ -46,7 +46,7 @@ tap "hashicorp/tap" # hashicorp
 
 # cask
 cask "alfred"
-cask "docker"
+cask "docker-desktop"
 cask "iina"
 cask "notion"
 cask "appcleaner"
@@ -54,7 +54,6 @@ cask "dropbox"
 cask "iterm2"
 cask "raspberry-pi-imager"
 cask "bettertouchtool"
-cask "google-chrome"
 cask "stats"
 cask "cyberduck"
 cask "google-cloud-sdk"
