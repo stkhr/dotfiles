@@ -1,0 +1,26 @@
+{
+    "hooks": {
+        "Notification": [
+            {
+                "matcher": "",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "terminal-notifier -title \"Claude Code\" -message \"入力待ちプロンプトが表示されました\" -sound default"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "matcher": "",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "terminal-notifier -title \"Claude Code\" -message \"作業が完了しました\" -sound Glass"
+                    }
+                ]
+            }
+        ]
+    }
+}

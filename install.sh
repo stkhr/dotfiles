@@ -16,3 +16,11 @@ mkdir "$HOME"/.config
 mkdir "$HOME"/.config/sheldon
 ln -snfv "$DIR"/config/starship.toml "$HOME"/.config/starship.toml
 ln -snfv "$DIR"/config/sheldon/plugins.toml "$HOME"/.config/sheldon/plugins.toml
+
+# claude
+mkdir -p "$HOME"/.claude
+ln -snfv "$DIR"/claude/settings.json "$HOME"/.claude/settings.json
+
+# aws amazonq
+mkdir -p "$HOME"/.aws/amazonq
+ln -snfv "$DIR"/.aws/amazonq/mcp.json "$HOME"/.aws/amazonq/mcp.json
