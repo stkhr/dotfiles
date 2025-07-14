@@ -34,6 +34,7 @@ brew "amazon-q"
 brew "packer"
 brew "graphviz"
 brew "azure-cli"
+brew "terminal-notifier"
 
 # font
 brew "font-hackgen"
