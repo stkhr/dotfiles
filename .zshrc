@@ -76,6 +76,21 @@ export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 ## nom install
 ## ln -s .asdf/shims/claude /Users/stkhr/.asdf/installs/nodejs/24.1.0/bin/claude
 
+# kubectl
+if command -v kubectl >/dev/null 2>&1; then
+  source <(kubectl completion zsh)
+  alias k=kubectl
+  # kubectl alias
+  alias kga='kubectl get all'
+  alias kgp='kubectl get pods'
+  alias kgs='kubectl get services'
+  alias kgn='kubectl get nodes'
+  alias kdp='kubectl describe pod'
+  alias kds='kubectl describe service'
+  alias kdn='kubectl describe node'
+  alias kex='kubectl exec -it'
+fi
+
 # history
 export HISTSIZE=10000
 export SAVEHIST=100000
