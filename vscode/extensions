@@ -15,7 +15,6 @@ github.vscode-github-actions
 golang.go
 hashicorp.terraform
 hediet.vscode-drawio
-ics.japanese-proofreading
 inferrinizzard.prettier-sql-vscode
 mechatroner.rainbow-csv
 mquandalle.graphql
@@ -28,4 +27,5 @@ pmneo.tsimporter
 redhat.vscode-yaml
 saoudrizwan.claude-dev
 yzane.markdown-pdf
+yzhang.markdown-all-in-one
 zainchen.json
