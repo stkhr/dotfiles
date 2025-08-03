@@ -1,0 +1,27 @@
+{
+    "mcpServers": {
+        "serena": {
+            "type": "stdio",
+            "command": "docker",
+            "args": [
+                "run",
+                "--rm",
+                "-i",
+                "--network",
+                "host",
+                "-v",
+                "/Users/stkhr:/workspaces/projects",
+                "ghcr.io/oraios/serena:latest",
+                "serena",
+                "start-mcp-server",
+                "--transport",
+                "stdio",
+                "--context",
+                "ide-assistant",
+                "--project",
+                "/workspaces/projects"
+            ],
+            "env": {}
+        }
+    }
+}
