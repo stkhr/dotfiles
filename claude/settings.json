@@ -24,7 +24,8 @@
         ]
     },
     "enabledMcpjsonServers": [
-        "serena"
+        "serena",
+        "context7"
     ],
     "enableAllProjectMcpServers": true,
     "permissions": {
