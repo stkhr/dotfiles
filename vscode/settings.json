@@ -107,5 +107,6 @@
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
   "chat.mcp.gallery.enabled": true,
-  "settingsSync.ignoredExtensions": []
+  "settingsSync.ignoredExtensions": [],
+  "go.toolsManagement.autoUpdate": true
 }
