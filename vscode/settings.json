@@ -19,6 +19,8 @@
     "--fast"
   ],
   "[go]": {
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
     "editor.defaultFormatter": "golang.go"
   },
   "workbench.iconTheme": "material-icon-theme",
