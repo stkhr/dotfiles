@@ -30,6 +30,10 @@ alias gps="git push"
 alias gr="git rebase"
 alias gstat="git status"
 alias gstash="git stash"
+alias gwtl="git worktree list"
+alias gwta="git worktree add"
+alias gwtrm="git worktree remove"
+alias gwtpr="git worktree prune"
 ## pipe
 alias -g L='| less'
 alias -g H='| head'
