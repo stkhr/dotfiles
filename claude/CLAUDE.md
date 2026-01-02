@@ -75,6 +75,208 @@
 - 明確で説明的なコミットメッセージを英語で記述
 - main/masterブランチへの直接コミットはしない
 
+## Pull Request作成とCI/CD
+
+### PR作成前のチェック（必須）
+**すべてのPRを作成する前に、以下のチェックをローカルで実行し、パスすることを確認する:**
+
+プロジェクトで利用可能なコマンドを実行（例）:
+
+```bash
+# 型チェック（言語により異なる）
+npm run type-check  # TypeScript/JavaScript
+mypy .              # Python
+go vet ./...        # Go
+cargo check         # Rust
+
+# Linting
+npm run lint        # JavaScript/TypeScript
+pylint **/*.py      # Python
+golangci-lint run   # Go
+rubocop             # Ruby
+cargo clippy        # Rust
+
+# フォーマットチェック
+npm run format:check  # Prettier等
+black --check .       # Python
+gofmt -l .            # Go
+cargo fmt -- --check  # Rust
+
+# テスト
+npm test           # JavaScript/TypeScript
+pytest             # Python
+go test ./...      # Go
+bundle exec rspec  # Ruby
+cargo test         # Rust
+
+# ビルド
+npm run build      # JavaScript/TypeScript
+python -m build    # Python
+go build ./...     # Go
+cargo build        # Rust
+
+# プロジェクト固有の統合コマンド（定義されている場合）
+npm run ci
+make ci
+./scripts/ci-local.sh
+```
+
+**重要**:
+- CI/CDで失敗することがわかっているコードはプッシュしない
+- ローカルでパスしない場合は、修正してから再度チェック
+- 時間がない場合でも、最低限**テストとビルド**は必ず実行
+- プロジェクトのREADMEやCI設定ファイル(`.github/workflows/`, `.gitlab-ci.yml`等)を確認し、実際に使用されているコマンドを実行する
+
+### PR作成後のCI/CD監視（必須）
+**PR作成または更新後は、必ずCI/CDステータスを確認する:**
+
+```bash
+# 現在のブランチのPRステータス確認
+gh pr status
+
+# 特定のPRのチェック状況
+gh pr checks [<PR番号>]
+
+# 詳細な状態（JSON）
+gh pr view <PR番号> --json statusCheckRollup
+```
+
+### CI失敗時の対応（自分のPR）
+
+**CI/CDチェックが失敗した場合、即座に以下の対応を実施:**
+
+1. **失敗の詳細を確認**
+   ```bash
+   # 失敗したチェックの詳細
+   gh pr checks
+
+   # ログの確認（GitHub Actions）
+   gh run view <run-id> --log-failed
+   ```
+
+2. **カテゴリ別の対応**
+   - **テスト失敗**: ローカルで該当テストを実行し、原因を特定・修正
+   - **ビルドエラー**: 型エラーやインポートエラーを修正
+   - **Linter/Formatter**: 自動修正コマンドを実行（`lint:fix`, `format`, `black .`, `gofmt -w .`等）
+   - **セキュリティスキャン**: 脆弱性の詳細を確認し、依存関係を更新または修正
+
+3. **修正とプッシュ**
+   ```bash
+   # ローカルで再度CI相当のチェックを実行
+   # 型チェック、テスト、ビルドなど該当するコマンドを実行
+
+   # パスしたら修正をコミット
+   git add .
+   git commit -m "fix: resolve CI failures"
+   git push
+   ```
+
+4. **優先度の認識**
+   - 🔴 **Critical（即座に修正）**: セキュリティスキャン失敗、ビルドエラー
+   - 🟡 **High（マージ前に修正）**: テスト失敗、型エラー
+   - 🟠 **Medium（修正推奨）**: Linter違反、カバレッジ低下
+   - 🟢 **Low（任意）**: Formatterの警告
+
+**絶対に避けるべき行動**:
+- ❌ CI失敗を無視してマージ
+- ❌ CI失敗を放置したまま次の作業に移る
+- ❌ 「あとで直す」と言ってそのまま放置
+
+### 他人のPRレビュー時のCI/CD確認
+
+**レビュー開始前に必ずCI/CDステータスを確認:**
+
+```bash
+gh pr checks <PR番号>
+```
+
+**CI失敗がある場合、レビューコメントに含める:**
+
+```markdown
+## ⚠️ CI/CD Status
+
+現在、以下のCI/CDチェックが失敗しています:
+
+### 失敗しているチェック
+- [チェック名]: [失敗理由の要約]
+
+### 修正が必要なアクション
+1. [具体的な修正内容]
+2. [具体的な修正内容]
+
+---
+
+[以下、通常のコードレビュー]
+```
+
+### pre-commit hookの推奨設定
+
+**CI失敗を事前に防ぐため、pre-commit hookの設定を推奨:**
+
+言語・フレームワークに応じた設定例:
+
+**JavaScript/TypeScript (Husky)**
+```bash
+# .husky/pre-commit
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npm run lint
+npm run type-check
+npm test
+
+# セットアップ
+npm install -D husky
+npx husky init
+```
+
+**Python (pre-commit framework)**
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
+
+# セットアップ
+pip install pre-commit
+pre-commit install
+```
+
+**Go (.git/hooks/pre-commit)**
+```bash
+#!/bin/sh
+gofmt -l . | grep . && exit 1
+go vet ./...
+go test ./...
+```
+
+**汎用 (Makefileを使用)**
+```bash
+# .git/hooks/pre-commit
+#!/bin/sh
+make pre-commit
+
+# Makefile
+.PHONY: pre-commit
+pre-commit:
+	make lint
+	make test
+	make build
+```
+
 ## コードレビューの姿勢
 - レビューコメントは建設的な改善提案として受け取る
 - 個人ではなくコードに焦点を当てる
