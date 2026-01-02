@@ -4,7 +4,6 @@ description: |
   コードレビューを実施する際に使用。プルリクエストのレビュー、コード品質チェック、
   セキュリティ検査、パフォーマンス分析を行う。「レビューして」「コードをチェック」
   「品質を確認」などの指示で起動。
-allowed-tools: Read, Grep, Glob, Bash
 ---
 
 # Code Review Skill
