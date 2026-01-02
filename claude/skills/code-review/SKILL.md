@@ -9,7 +9,7 @@ allowed-tools: Read, Grep, Glob, Bash
 
 # Code Review Skill
 
-## 目的
+## Purpose
 
 このスキルは、以下のガイドライン(`~/.claude/CLAUDE.md`)に基づいた体系的なコードレビューを提供します:
 
@@ -19,7 +19,7 @@ allowed-tools: Read, Grep, Glob, Bash
 - 保守性の評価
 - ベストプラクティスの適用
 
-## 使用タイミング
+## When to Use
 
 以下の場合にこのスキルを使用:
 
@@ -31,7 +31,7 @@ allowed-tools: Read, Grep, Glob, Bash
 
 ## Instructions
 
-### 1. CI/CDステータスの確認
+### 1. Check CI/CD Status
 
 **プルリクエストの場合、最初にCI/CDステータスをチェックする:**
 
@@ -61,7 +61,7 @@ gh pr checks <PR番号>
 gh run view <run-id> --log-failed
 ```
 
-### 2. レビュー範囲の確認
+### 2. Confirm Review Scope
 
 レビュー対象を明確にする:
 
@@ -76,7 +76,7 @@ gh pr diff <PR番号>
 # または特定のファイルが指定されている場合はそれを対象とする
 ```
 
-### 3. コンテキストの理解
+### 3. Understand Context
 
 レビュー前に以下を確認:
 
@@ -85,7 +85,7 @@ gh pr diff <PR番号>
 - テストの存在
 - ドキュメント
 
-### 4. CI失敗時の対応
+### 4. Handle CI Failures
 
 **自分のPRでCI失敗の場合:**
 
@@ -127,7 +127,7 @@ gh pr diff <PR番号>
 ---
 ```
 
-### 5. 体系的レビューの実施
+### 5. Conduct Systematic Review
 
 以下の観点でコードを評価(詳細は[reference.md](reference.md)参照):
 
@@ -167,7 +167,7 @@ gh pr diff <PR番号>
 - 技術的負債の記録
 - 一貫したコーディングスタイル
 
-### 6. フィードバックの提供
+### 6. Provide Feedback
 
 レビュー結果を以下の形式で提供:
 
@@ -195,32 +195,32 @@ gh pr diff <PR番号>
 - [その他の気づき]
 ```
 
-### 7. 建設的なコミュニケーション
+### 7. Constructive Communication
 
 - 個人ではなくコードに焦点を当てる
 - 問題だけでなく、良い点も指摘
 - 具体的な改善案を提示
 - 「なぜ」その変更が必要かを説明
 
-## 重要な原則
+## Key Principles
 
 1. **プロジェクトコンテキストを考慮**: プロトタイプと本番環境では異なる基準を適用
 2. **優先順位付け**: Critical > Warning > Suggestion の順で重要度を明示
 3. **実用性**: 完璧を求めすぎず、適切なバランスを取る
 4. **学習機会**: レビューを教育の機会として活用
 
-## 参照ドキュメント
+## Reference Documents
 
 - [詳細なレビュー基準](reference.md)
 - [レビュー実例](examples.md)
 
-## 依存関係
+## Dependencies
 
 - Git (変更差分の確認用)
 - GitHub CLI (`gh`) - PR情報とCI/CDステータスの取得用
 - プロジェクト固有のlinter/formatter(存在する場合)
 
-## CI/CD統合について
+## CI/CD Integration
 
 このスキルは以下のCI/CDシステムに対応:
 - GitHub Actions
