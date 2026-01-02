@@ -24,7 +24,9 @@
         ]
     },
     "enabledMcpjsonServers": [
-        "serena"
+        "serena",
+        "github",
+        "chrome-devtools"
     ],
     "enableAllProjectMcpServers": true,
     "permissions": {
@@ -32,25 +34,60 @@
             "Read(**)",
             "Write(src/**)",
             "Write(docs/**)",
+            "Write(test/**)",
+            "Write(tests/**)",
+            "Write(__tests__/**)",
             "Write(.tmp/**)",
+            "Write(*.md)",
+            "Write(package.json)",
+            "Write(tsconfig.json)",
+            "Write(*.config.*)",
+            "Write(.gitignore)",
+            "Write(scripts/**)",
             "Bash(git:*)",
-            "Bash(npm install:*)",
-            "Bash(pnpm install:*)",
-            "Bash(rm *)",
+            "Bash(npm:*)",
+            "Bash(pnpm:*)",
+            "Bash(yarn:*)",
+            "Bash(bun:*)",
+            "Bash(rm .tmp/**)",
             "Bash(ls:*)",
-            "Bash(cat **)",
             "Bash(osascript -e:*)",
-            "mcp__context7__resolve-library-id",
-            "mcp__context7__get-library-docs"
+            "mcp__github__*",
+            "mcp__chrome-devtools__*",
+            "mcp__serena__*"
         ],
         "deny": [
             "Bash(sudo:*)",
-            "Read(.env.*)",
-            "Read(id_rsa)",
-            "Read(id_ed25519)",
-            "Write(.env*)",
             "Bash(curl:*)",
-            "Bash(wget:*)"
+            "Bash(wget:*)",
+            "Bash(cat **)",
+            "Bash(rm -rf:*)",
+            "Bash(chmod:*)",
+            "Bash(chown:*)",
+            "Read(.env*)",
+            "Read(**/.env*)",
+            "Read(**/id_rsa*)",
+            "Read(**/id_ed25519*)",
+            "Read(**/.ssh/**)",
+            "Read(**/.aws/**)",
+            "Read(**/.kube/**)",
+            "Read(**/secrets*)",
+            "Read(**/credentials*)",
+            "Read(**/*.key)",
+            "Read(**/*.pem)",
+            "Read(**/.pgpass)",
+            "Read(**/.netrc)",
+            "Write(.env*)",
+            "Write(**/.env*)",
+            "Write(**/.git/config)",
+            "Write(**/package-lock.json)",
+            "Write(**/pnpm-lock.yaml)",
+            "Write(**/yarn.lock)"
         ]
+    },
+    "toolSettings": {
+        "bash": {
+            "timeout": 300000
+        }
     }
 }

@@ -23,13 +23,21 @@
             ],
             "env": {}
         },
-        "context7": {
-            "command": "docker",
+        "github": {
+            "command": "npx",
             "args": [
-                "run",
-                "-i",
-                "--rm",
-                "mcp/context7"
+                "-y",
+                "@modelcontextprotocol/server-github"
+            ],
+            "env": {
+                "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+            }
+        },
+        "chrome-devtools": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "chrome-devtools-mcp@0.12.1"
             ]
         }
     }
