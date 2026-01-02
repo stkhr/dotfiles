@@ -19,7 +19,7 @@ ln -snfv "$DIR"/config/sheldon/plugins.toml "$HOME"/.config/sheldon/plugins.toml
 
 # claude
 mkdir -p "$HOME"/.claude
-ln -snfv "$DIR"/claude/settings.json "$HOME"/.claude/settings.json
+ln -snfv "$DIR"/claude/config.json "$HOME"/.claude/config.json
 ln -snfv "$DIR"/claude/CLAUDE.md "$HOME"/.claude/CLAUDE.md
 ln -snfv "$DIR"/.mcp.json "$HOME"/.mcp.json
 

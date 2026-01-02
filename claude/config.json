@@ -24,8 +24,7 @@
         ]
     },
     "enabledMcpjsonServers": [
-        "serena",
-        "context7"
+        "serena"
     ],
     "enableAllProjectMcpServers": true,
     "permissions": {
@@ -34,13 +33,7 @@
             "Write(src/**)",
             "Write(docs/**)",
             "Write(.tmp/**)",
-            "Bash(git init:*)",
-            "Bash(git add:*)",
-            "Bash(git commit:*)",
-            "Bash(git push origin*:*)",
-            "Bash(git status:*)",
-            "Bash(git diff:*)",
-            "Bash(git log:*)",
+            "Bash(git:*)",
             "Bash(npm install:*)",
             "Bash(pnpm install:*)",
             "Bash(rm *)",
@@ -52,10 +45,6 @@
         ],
         "deny": [
             "Bash(sudo:*)",
-            "Bash(rm -rf:*)",
-            "Bash(git push:*)",
-            "Bash(git reset:*)",
-            "Bash(git rebase:*)",
             "Read(.env.*)",
             "Read(id_rsa)",
             "Read(id_ed25519)",
