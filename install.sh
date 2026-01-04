@@ -22,6 +22,7 @@ mkdir -p "$HOME"/.claude
 ln -snfv "$DIR"/claude/config.json "$HOME"/.claude/config.json
 ln -snfv "$DIR"/claude/CLAUDE.md "$HOME"/.claude/CLAUDE.md
 ln -snfv "$DIR"/claude/mcp.json "$HOME"/.claude/mcp.json
+ln -snfv "$DIR"/claude/statusline.sh "$HOME"/.claude/statusline.sh
 
 # claude skills
 mkdir -p "$HOME"/.claude/skills
@@ -30,6 +31,17 @@ if [ -d "$DIR"/claude/skills ]; then
         if [ -d "$skill_dir" ]; then
             skill_name=$(basename "$skill_dir")
             ln -snfv "$skill_dir" "$HOME/.claude/skills/$skill_name"
+        fi
+    done
+fi
+
+# claude agents
+mkdir -p "$HOME"/.claude/agents
+if [ -d "$DIR"/claude/agents ]; then
+    for agent_file in "$DIR"/claude/agents/*.md; do
+        if [ -f "$agent_file" ]; then
+            agent_name=$(basename "$agent_file")
+            ln -snfv "$agent_file" "$HOME/.claude/agents/$agent_name"
         fi
     done
 fi

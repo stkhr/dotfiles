@@ -39,6 +39,20 @@
                 "-y",
                 "chrome-devtools-mcp@0.12.1"
             ]
+        },
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@context-labs/mcp-server-context7"
+            ]
+        },
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@executeautomation/playwright-mcp-server"
+            ]
         }
     }
 }

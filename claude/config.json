@@ -1,93 +1,104 @@
 {
-    "hooks": {
-        "Notification": [
-            {
-                "matcher": "",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "terminal-notifier -title \"Claude Code\" -message \"入力待ちプロンプトが表示されました\" -sound default"
-                    }
-                ]
-            }
-        ],
-        "Stop": [
-            {
-                "matcher": "",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "terminal-notifier -title \"Claude Code\" -message \"作業が完了しました\" -sound Glass"
-                    }
-                ]
-            }
+  "statusline": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 0
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title \"Claude Code\" -message \"入力待ちプロンプトが表示されました\" -sound default"
+          }
         ]
-    },
-    "enabledMcpjsonServers": [
-        "serena",
-        "github",
-        "chrome-devtools"
+      }
     ],
-    "enableAllProjectMcpServers": true,
-    "permissions": {
-        "allow": [
-            "Read(**)",
-            "Write(src/**)",
-            "Write(docs/**)",
-            "Write(test/**)",
-            "Write(tests/**)",
-            "Write(__tests__/**)",
-            "Write(.tmp/**)",
-            "Write(*.md)",
-            "Write(package.json)",
-            "Write(tsconfig.json)",
-            "Write(*.config.*)",
-            "Write(.gitignore)",
-            "Write(scripts/**)",
-            "Bash(git:*)",
-            "Bash(npm:*)",
-            "Bash(pnpm:*)",
-            "Bash(yarn:*)",
-            "Bash(bun:*)",
-            "Bash(rm .tmp/**)",
-            "Bash(ls:*)",
-            "Bash(osascript -e:*)",
-            "mcp__github__*",
-            "mcp__chrome-devtools__*",
-            "mcp__serena__*"
-        ],
-        "deny": [
-            "Bash(sudo:*)",
-            "Bash(curl:*)",
-            "Bash(wget:*)",
-            "Bash(cat **)",
-            "Bash(rm -rf:*)",
-            "Bash(chmod:*)",
-            "Bash(chown:*)",
-            "Read(.env*)",
-            "Read(**/.env*)",
-            "Read(**/id_rsa*)",
-            "Read(**/id_ed25519*)",
-            "Read(**/.ssh/**)",
-            "Read(**/.aws/**)",
-            "Read(**/.kube/**)",
-            "Read(**/secrets*)",
-            "Read(**/credentials*)",
-            "Read(**/*.key)",
-            "Read(**/*.pem)",
-            "Read(**/.pgpass)",
-            "Read(**/.netrc)",
-            "Write(.env*)",
-            "Write(**/.env*)",
-            "Write(**/.git/config)",
-            "Write(**/package-lock.json)",
-            "Write(**/pnpm-lock.yaml)",
-            "Write(**/yarn.lock)"
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title \"Claude Code\" -message \"作業が完了しました\" -sound Glass"
+          }
         ]
-    },
-    "toolSettings": {
-        "bash": {
-            "timeout": 300000
-        }
+      }
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "serena",
+    "github",
+    "chrome-devtools",
+    "context7",
+    "playwright"
+  ],
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(src/**)",
+      "Write(docs/**)",
+      "Write(test/**)",
+      "Write(tests/**)",
+      "Write(__tests__/**)",
+      "Write(.tmp/**)",
+      "Write(*.md)",
+      "Write(package.json)",
+      "Write(tsconfig.json)",
+      "Write(*.config.*)",
+      "Write(.gitignore)",
+      "Write(scripts/**)",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(pnpm:*)",
+      "Bash(yarn:*)",
+      "Bash(bun:*)",
+      "Bash(rm .tmp/**)",
+      "Bash(ls:*)",
+      "Bash(osascript -e:*)",
+      "WebFetch(**)",
+      "WebSearch(**)",
+      "mcp__github__*",
+      "mcp__chrome-devtools__*",
+      "mcp__serena__*",
+      "mcp__context7__*",
+      "mcp__playwright__*"
+    ],
+    "deny": [
+      "Bash(sudo:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(cat **)",
+      "Bash(rm -rf:*)",
+      "Bash(chmod:*)",
+      "Bash(chown:*)",
+      "Read(.env*)",
+      "Read(**/.env*)",
+      "Read(**/id_rsa*)",
+      "Read(**/id_ed25519*)",
+      "Read(**/.ssh/**)",
+      "Read(**/.aws/**)",
+      "Read(**/.kube/**)",
+      "Read(**/secrets*)",
+      "Read(**/credentials*)",
+      "Read(**/*.key)",
+      "Read(**/*.pem)",
+      "Read(**/.pgpass)",
+      "Read(**/.netrc)",
+      "Write(.env*)",
+      "Write(**/.env*)",
+      "Write(**/.git/config)",
+      "Write(**/package-lock.json)",
+      "Write(**/pnpm-lock.yaml)",
+      "Write(**/yarn.lock)"
+    ]
+  },
+  "toolSettings": {
+    "bash": {
+      "timeout": 300000
     }
+  }
 }
