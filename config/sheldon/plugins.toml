@@ -37,12 +37,20 @@ github = "zsh-users/zsh-completions"
 
 [plugins.zsh-syntax-highlighting]
 github = "zsh-users/zsh-syntax-highlighting"
+apply = ["defer"]
 
 [plugins.zsh-autosuggestions]
 github = "zsh-users/zsh-autosuggestions"
+
+[plugins.zsh-history-substring-search]
+github = "zsh-users/zsh-history-substring-search"
+apply = ["defer"]
 
 [plugins.starship]
 inline = 'eval "$(starship init zsh)"'
 
 [plugins.compinit]
-inline = "autoload -Uz compinit && compinit -u && zsh-defer compinit && zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'"
+inline = '''
+autoload -Uz compinit && compinit -u
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+'''
