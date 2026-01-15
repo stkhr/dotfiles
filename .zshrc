@@ -5,9 +5,9 @@ alias ls="ls -GF"
 alias ll="ls -la"
 alias ld='ls -ld' # Show info about the directory
 alias lt='ls -ltr' # Sort by date, most recent last
-alias cp="${ZSH_VERSION:+nocorrect} cp -i"
-alias mv="${ZSH_VERSION:+nocorrect} mv -i"
-alias mkdir="${ZSH_VERSION:+nocorrect} mkdir"
+alias cp="nocorrect cp -i"
+alias mv="nocorrect mv -i"
+alias mkdir="nocorrect mkdir"
 alias du='du -h'
 alias job='jobs -l'
 alias grep='grep --color=auto'
@@ -58,12 +58,9 @@ zle -N peco-history-selection
 bindkey '^R' peco-history-selection
 
 # gcloud
-## The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/stkhr/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/path.zsh.inc'; fi
-## The next line enables shell command completion for gcloud.
-if [ -f '/Users/stkhr/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/stkhr/google-cloud-sdk/completion.zsh.inc'; fi
-source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc
-source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc
+GCLOUD_SDK_PATH="/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk"
+[[ -f "$GCLOUD_SDK_PATH/path.zsh.inc" ]] && source "$GCLOUD_SDK_PATH/path.zsh.inc"
+[[ -f "$GCLOUD_SDK_PATH/completion.zsh.inc" ]] && source "$GCLOUD_SDK_PATH/completion.zsh.inc"
 ## easy to change gcloud project 
 gcp-config() {
   export config_name=$(gcloud config configurations list | tail -n +2 | awk '{print $1}' | peco)
@@ -72,8 +69,11 @@ gcp-config() {
 }
 
 # azure
-autoload bashcompinit && bashcompinit
-source $(brew --prefix)/etc/bash_completion.d/az
+AZ_COMPLETION="$(brew --prefix 2>/dev/null)/etc/bash_completion.d/az"
+if [[ -f "$AZ_COMPLETION" ]]; then
+  autoload bashcompinit && bashcompinit
+  source "$AZ_COMPLETION"
+fi
 
 # asdf
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
@@ -96,9 +96,14 @@ if command -v kubectl >/dev/null 2>&1; then
 fi
 
 # history
+export HISTFILE=~/.zsh_history
 export HISTSIZE=10000
 export SAVEHIST=100000
-setopt hist_ignore_dups
+setopt hist_ignore_dups      # 連続する重複を無視
+setopt hist_ignore_all_dups  # 履歴全体で重複を削除
+setopt hist_reduce_blanks    # 余分な空白を削除
+setopt share_history         # 複数端末で履歴を共有
+setopt hist_no_store         # historyコマンド自体は記録しない
 
 # sheldon
 eval "$(sheldon source)"
