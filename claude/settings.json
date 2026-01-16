@@ -59,8 +59,6 @@
       "Bash(rm .tmp/**)",
       "Bash(ls:*)",
       "Bash(osascript -e:*)",
-      "WebFetch(**)",
-      "WebSearch(**)",
       "mcp__github__*",
       "mcp__chrome-devtools__*",
       "mcp__serena__*",
