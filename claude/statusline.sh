@@ -6,20 +6,23 @@
 # stdin から JSON データを読み取る
 INPUT=$(cat)
 
-# transcript_path から実際のトークン使用量を取得
-TRANSCRIPT_PATH=$(echo "$INPUT" | jq -r '.transcript_path // empty')
+# context_window からトークン情報を取得
+CONTEXT_SIZE=$(echo "$INPUT" | jq -r '.context_window.context_window_size // 200000')
+USAGE=$(echo "$INPUT" | jq '.context_window.current_usage')
 
-if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-    # transcript.json からトークン使用量を計算
-    USED=$(jq '[.[] | select(.role == "user" or .role == "assistant") | .content // [] | if type == "array" then .[] else . end | select(.type == "text" or type == "tool_use" or type == "tool_result") | .text // .input // .content // "" | length] | add // 0' "$TRANSCRIPT_PATH" 2>/dev/null || echo "0")
-    # おおよその換算（4文字 ≒ 1トークン）
-    USED=$((USED / 4))
+if [ "$USAGE" != "null" ] && [ -n "$USAGE" ]; then
+    # 現在のコンテキスト使用量を計算
+    USED=$(echo "$USAGE" | jq '.input_tokens + .output_tokens + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)')
 else
     USED=0
 fi
 
-# モデルの最大トークン数（一般的な値）
-TOTAL=200000
+# 数値が取得できなかった場合のフォールバック
+if [ -z "$USED" ] || [ "$USED" = "null" ]; then
+    USED=0
+fi
+
+TOTAL=$CONTEXT_SIZE
 
 # 使用率を計算
 if [ "$TOTAL" -gt 0 ]; then
