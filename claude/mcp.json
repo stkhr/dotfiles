@@ -10,7 +10,7 @@
                 "--network",
                 "host",
                 "-v",
-                "/Users/stkhr:/workspaces/projects",
+                "/Users/stkhr/ghq:/workspaces/projects",
                 "ghcr.io/oraios/serena:latest",
                 "serena",
                 "start-mcp-server",
@@ -27,7 +27,7 @@
             "command": "npx",
             "args": [
                 "-y",
-                "@modelcontextprotocol/server-github"
+                "@modelcontextprotocol/server-github@2025.4.8"
             ],
             "env": {
                 "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
@@ -44,14 +44,14 @@
             "command": "npx",
             "args": [
                 "-y",
-                "@context-labs/mcp-server-context7"
+                "@upstash/context7-mcp@2.1.0"
             ]
         },
         "playwright": {
             "command": "npx",
             "args": [
                 "-y",
-                "@executeautomation/playwright-mcp-server"
+                "@executeautomation/playwright-mcp-server@1.0.12"
             ]
         }
     }

@@ -3,8 +3,20 @@
 # Claude Code Statusline Script
 # コンテキストウィンドウの使用状況を表示します
 
+# jqがインストールされているか確認
+if ! command -v jq &> /dev/null; then
+    printf "jq not installed"
+    exit 0
+fi
+
 # stdin から JSON データを読み取る
 INPUT=$(cat)
+
+# 入力が空または無効なJSONの場合のフォールバック
+if [ -z "$INPUT" ] || ! echo "$INPUT" | jq -e . &> /dev/null; then
+    printf "No data"
+    exit 0
+fi
 
 # context_window からトークン情報を取得
 CONTEXT_SIZE=$(echo "$INPUT" | jq -r '.context_window.context_window_size // 200000')
