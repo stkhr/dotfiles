@@ -73,7 +73,7 @@
 - コンベンショナルコミット形式を使用（feat:, fix:, docs:, test:, refactor:, chore:）
 - コミットは原子的で、単一の変更に焦点を当てる
 - 明確で説明的なコミットメッセージを英語で記述
-- main/masterブランチへの直接コミットはしない
+- main/masterブランチへの直接コミットは指示もしくは許可がない限りは絶対に禁止
 
 ## Pull Request Creation and CI/CD
 
