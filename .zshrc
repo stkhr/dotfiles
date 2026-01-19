@@ -34,6 +34,8 @@ alias gwtl="git worktree list"
 alias gwta="git worktree add"
 alias gwtrm="git worktree remove"
 alias gwtpr="git worktree prune"
+## tmux
+alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
 ## pipe
 alias -g L='| less'
 alias -g H='| head'
