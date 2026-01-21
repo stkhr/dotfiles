@@ -1,41 +1,4 @@
 {
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh",
-    "padding": 0
-  },
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "terminal-notifier -title \"Claude Code\" -message \"入力待ちプロンプトが表示されました\" -sound default"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "terminal-notifier -title \"Claude Code\" -message \"作業が完了しました\" -sound Glass"
-          }
-        ]
-      }
-    ]
-  },
-  "enabledMcpjsonServers": [
-    "serena",
-    "github",
-    "chrome-devtools",
-    "context7",
-    "playwright"
-  ],
-  "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
       "Read(**)",
@@ -95,9 +58,49 @@
       "Write(**/yarn.lock)"
     ]
   },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "serena",
+    "github",
+    "chrome-devtools",
+    "context7",
+    "playwright"
+  ],
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title \"Claude Code\" -message \"入力待ちプロンプトが表示されました\" -sound default"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title \"Claude Code\" -message \"作業が完了しました\" -sound Glass"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 0
+  },
   "toolSettings": {
     "bash": {
       "timeout": 300000
     }
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
   }
 }
