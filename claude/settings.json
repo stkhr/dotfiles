@@ -67,6 +67,17 @@
     "playwright"
   ],
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=\"$CLAUDE_FILE\"; if [ -n \"$FILE\" ] && [ -f \"$FILE\" ]; then case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.md) command -v prettier &>/dev/null && prettier --write \"$FILE\" 2>/dev/null ;; *.py) command -v black &>/dev/null && black -q \"$FILE\" 2>/dev/null ;; *.go) command -v gofmt &>/dev/null && gofmt -w \"$FILE\" 2>/dev/null ;; esac; fi"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",
