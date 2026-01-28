@@ -6,6 +6,7 @@ do
     [[ "$f" == ".git" ]] && continue
     [[ "$f" == ".gitignore" ]] && continue
     [[ "$f" == ".DS_Store" ]] && continue
+    [[ "$f" == ".agents" ]] && continue
 
     #echo "$DIR"/"$f"
     ln -snfv "$DIR"/"$f" "$HOME"/"$f"
@@ -44,6 +45,30 @@ if [ -d "$DIR"/claude/agents ]; then
             ln -snfv "$agent_file" "$HOME/.claude/agents/$agent_name"
         fi
     done
+fi
+
+# agent skills (third-party, installed via npx)
+if command -v npx &> /dev/null; then
+    npx -y skills add supabase/agent-skills --yes
+    # Fix CLAUDE.md symlinks (installer points them to a temp dir)
+    for skill_dir in "$DIR"/.agents/skills/*/; do
+        if [ -L "$skill_dir/CLAUDE.md" ]; then
+            rm "$skill_dir/CLAUDE.md"
+            ln -s AGENTS.md "$skill_dir/CLAUDE.md"
+        fi
+    done
+fi
+mkdir -p "$HOME/.agents/skills"
+for skill_dir in "$DIR"/.agents/skills/*/; do
+    if [ -d "$skill_dir" ]; then
+        skill_name=$(basename "$skill_dir")
+        ln -snfv "$skill_dir" "$HOME/.agents/skills/$skill_name"
+    fi
+done
+
+# claude plugins
+if command -v claude &> /dev/null; then
+    claude plugin install superpowers@claude-plugins-official
 fi
 
 # aws amazonq
