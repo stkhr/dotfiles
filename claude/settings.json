@@ -106,12 +106,12 @@
     "command": "~/.claude/statusline.sh",
     "padding": 0
   },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  },
   "toolSettings": {
     "bash": {
       "timeout": 300000
     }
-  },
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
   }
 }
