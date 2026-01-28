@@ -49,22 +49,15 @@ fi
 
 # agent skills (third-party, installed via npx)
 if command -v npx &> /dev/null; then
-    npx -y skills add supabase/agent-skills --yes
+    (cd "$HOME" && npx -y skills add supabase/agent-skills --yes)
     # Fix CLAUDE.md symlinks (installer points them to a temp dir)
-    for skill_dir in "$DIR"/.agents/skills/*/; do
+    for skill_dir in "$HOME"/.agents/skills/*/; do
         if [ -L "$skill_dir/CLAUDE.md" ]; then
             rm "$skill_dir/CLAUDE.md"
             ln -s AGENTS.md "$skill_dir/CLAUDE.md"
         fi
     done
 fi
-mkdir -p "$HOME/.agents/skills"
-for skill_dir in "$DIR"/.agents/skills/*/; do
-    if [ -d "$skill_dir" ]; then
-        skill_name=$(basename "$skill_dir")
-        ln -snfv "$skill_dir" "$HOME/.agents/skills/$skill_name"
-    fi
-done
 
 # claude plugins
 if command -v claude &> /dev/null; then
