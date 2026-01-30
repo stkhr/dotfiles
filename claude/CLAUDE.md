@@ -8,6 +8,28 @@
 - コミットメッセージは英語で記述
 - **IMPORTANT**: main/masterブランチへの直接コミットは指示もしくは許可がない限り禁止
 
+## GitHub CLI (`gh`)
+
+GitHub関連の操作はすべて `gh` コマンドを使用してください（MCPサーバーは使用しない）。
+
+```bash
+# Issue
+gh issue list                    # Issue一覧
+gh issue view <number>           # Issue詳細
+gh issue create                  # Issue作成
+
+# Pull Request
+gh pr list                       # PR一覧
+gh pr view <number>              # PR詳細
+gh pr create                     # PR作成
+gh pr checks                     # CIステータス確認
+gh pr merge                      # PRマージ
+
+# Repository
+gh repo view                     # リポジトリ情報
+gh api <endpoint>                # GitHub API直接呼び出し
+```
+
 ## CI/CD
 
 - PRを作成する前に、必ずローカルでテスト・ビルド・lint を実行
