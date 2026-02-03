@@ -17,6 +17,11 @@ alias diff='diff -u'
 alias vi="vim"
 alias random="openssl rand -base64 12 | fold -w 16 | head -1"
 alias c="code ."
+fv() {
+  local file
+  file=$(fzf --preview "bat --style=numbers --color=always {}")
+  [[ -n "$file" ]] && vim "$file"
+}
 ## ghq
 alias g='cd $(ghq root)/$(ghq list | peco)'
 alias ghb='hub browse $(ghq list | peco | cut -d "/" -f 2,3)'
@@ -109,6 +114,7 @@ setopt share_history         # 複数端末で履歴を共有
 setopt hist_no_store         # historyコマンド自体は記録しない
 
 # fzf
+export FZF_DEFAULT_OPTS='--bind=ctrl-k:up,ctrl-p:up,ctrl-j:down,ctrl-n:down'
 source <(fzf --zsh)
 # fzfのCtrl+Rを上書きしてpecoを使う
 bindkey '^R' peco-history-selection
