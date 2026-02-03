@@ -108,6 +108,11 @@ setopt hist_reduce_blanks    # 余分な空白を削除
 setopt share_history         # 複数端末で履歴を共有
 setopt hist_no_store         # historyコマンド自体は記録しない
 
+# fzf
+source <(fzf --zsh)
+# fzfのCtrl+Rを上書きしてpecoを使う
+bindkey '^R' peco-history-selection
+
 # sheldon
 eval "$(sheldon source)"
 
