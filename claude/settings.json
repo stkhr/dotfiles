@@ -107,7 +107,10 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true,
+    "terraform-code-generation@hashicorp": true,
+    "terraform-module-generation@hashicorp": true,
+    "terraform-provider-development@hashicorp": true
   },
   "toolSettings": {
     "bash": {

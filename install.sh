@@ -62,6 +62,11 @@ fi
 # claude plugins
 if command -v claude &> /dev/null; then
     claude plugin install superpowers@claude-plugins-official
+    # HashiCorp Terraform plugins
+    claude plugin marketplace add hashicorp/agent-skills 2>/dev/null || true
+    claude plugin install terraform-code-generation@hashicorp
+    claude plugin install terraform-module-generation@hashicorp
+    claude plugin install terraform-provider-development@hashicorp
 fi
 
 # aws amazonq
