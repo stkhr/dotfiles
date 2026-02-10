@@ -37,9 +37,32 @@ alias gr="git rebase"
 alias gstat="git status"
 alias gstash="git stash"
 alias gwtl="git worktree list"
-alias gwta="git worktree add"
 alias gwtrm="git worktree remove"
 alias gwtpr="git worktree prune"
+gwta() {
+  if [[ $# -eq 0 ]]; then
+    echo "Usage: gwta <branch-name> [<base-branch>]"
+    echo "  Creates worktree at .worktrees/<branch-name>"
+    echo "  base-branch defaults to HEAD"
+    return 1
+  fi
+  local branch="$1"
+  local base="${2:-HEAD}"
+  if [[ "$branch" =~ ^(main|master)$ ]]; then
+    echo "Error: worktree on protected branch '$branch' is not allowed"
+    return 1
+  fi
+  local worktree_path=".worktrees/$branch"
+  mkdir -p .worktrees
+  if ! grep -qx '.worktrees/' .gitignore 2>/dev/null; then
+    echo '.worktrees/' >> .gitignore
+  fi
+  if git branch --list "$branch" | grep -q "$branch"; then
+    git worktree add "$worktree_path" "$branch" && cd "$worktree_path"
+  else
+    git worktree add -b "$branch" "$worktree_path" "$base" && cd "$worktree_path"
+  fi
+}
 ## tmux
 alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
 ## pipe
