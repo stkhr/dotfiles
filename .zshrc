@@ -44,6 +44,7 @@ _gwtrm() {
   worktrees=(${(f)"$(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2}')"})
   _describe 'worktree' worktrees
 }
+autoload -Uz compinit && compinit
 compdef _gwtrm gwtrm
 gwta() {
   if [[ $# -eq 0 ]]; then
