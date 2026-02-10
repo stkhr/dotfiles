@@ -39,6 +39,12 @@ alias gstash="git stash"
 alias gwtl="git worktree list"
 alias gwtrm="git worktree remove"
 alias gwtpr="git worktree prune"
+_gwtrm() {
+  local -a worktrees
+  worktrees=(${(f)"$(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2}')"})
+  _describe 'worktree' worktrees
+}
+compdef _gwtrm gwtrm
 gwta() {
   if [[ $# -eq 0 ]]; then
     echo "Usage: gwta <branch-name> [<base-branch>]"
