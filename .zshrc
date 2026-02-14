@@ -44,8 +44,6 @@ _gwtrm() {
   worktrees=(${(f)"$(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2}')"})
   _describe 'worktree' worktrees
 }
-autoload -Uz compinit && compinit
-compdef _gwtrm gwtrm
 gwta() {
   if [[ $# -eq 0 ]]; then
     echo "Usage: gwta <branch-name> [<base-branch>]"
@@ -98,20 +96,12 @@ bindkey '^R' peco-history-selection
 # gcloud
 GCLOUD_SDK_PATH="/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk"
 [[ -f "$GCLOUD_SDK_PATH/path.zsh.inc" ]] && source "$GCLOUD_SDK_PATH/path.zsh.inc"
-[[ -f "$GCLOUD_SDK_PATH/completion.zsh.inc" ]] && source "$GCLOUD_SDK_PATH/completion.zsh.inc"
-## easy to change gcloud project 
+## easy to change gcloud project
 gcp-config() {
   export config_name=$(gcloud config configurations list | tail -n +2 | awk '{print $1}' | peco)
   if [[ -z "$config_name" ]]; then return 1; fi
   gcloud config configurations activate $config_name
 }
-
-# azure
-AZ_COMPLETION="$(brew --prefix 2>/dev/null)/etc/bash_completion.d/az"
-if [[ -f "$AZ_COMPLETION" ]]; then
-  autoload bashcompinit && bashcompinit
-  source "$AZ_COMPLETION"
-fi
 
 # asdf
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
@@ -120,9 +110,7 @@ export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 
 # kubectl
 if command -v kubectl >/dev/null 2>&1; then
-  source <(kubectl completion zsh)
   alias k=kubectl
-  # kubectl alias
   alias kga='kubectl get all'
   alias kgp='kubectl get pods'
   alias kgs='kubectl get services'
@@ -151,6 +139,32 @@ bindkey '^R' peco-history-selection
 
 # sheldon
 eval "$(sheldon source)"
+
+# completions (must be after sheldon's compinit)
+autoload -Uz bashcompinit && bashcompinit
+compdef _gwtrm gwtrm
+command -v kubectl >/dev/null 2>&1 && source <(kubectl completion zsh)
+## gcloud
+_gcloud_complete() {
+  local -a completions
+  local prefix=""
+  local comp_line="${words[*]}"
+  local comp_point=${#comp_line}
+  if [[ ${words[CURRENT]} == *'='* ]]; then
+    prefix="${words[CURRENT]%%=*}="
+    comp_line="${comp_line%${words[CURRENT]}}${words[CURRENT]#*=}"
+  fi
+  local raw
+  raw="$(COMP_LINE="$comp_line" COMP_POINT="$comp_point" _ARGCOMPLETE=1 _ARGCOMPLETE_IFS=$'\v' _ARGCOMPLETE_COMP_WORDBREAKS="" gcloud 8>&1 9>&2 1>/dev/null 2>/dev/null)"
+  completions=("${(@ps/\v/)raw}")
+  if [[ ${#completions[@]} -gt 0 ]]; then
+    compadd -p "$prefix" -U -S ' ' -- "${completions[@]}"
+  fi
+}
+compdef _gcloud_complete gcloud
+## azure
+AZ_COMPLETION="$(brew --prefix 2>/dev/null)/etc/bash_completion.d/az"
+[[ -f "$AZ_COMPLETION" ]] && source "$AZ_COMPLETION"
 
 # Amazon Q post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/amazon-q/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/zshrc.post.zsh"
