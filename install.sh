@@ -67,6 +67,8 @@ if command -v claude &> /dev/null; then
     claude plugin install terraform-code-generation@hashicorp
     claude plugin install terraform-module-generation@hashicorp
     claude plugin install terraform-provider-development@hashicorp
+    claude plugin install frontend-design@claude-plugins-official
+    claude plugin install context7@claude-plugins-official
 fi
 
 # aws amazonq

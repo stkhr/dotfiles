@@ -110,7 +110,9 @@
     "superpowers@claude-plugins-official": true,
     "terraform-code-generation@hashicorp": true,
     "terraform-module-generation@hashicorp": true,
-    "terraform-provider-development@hashicorp": true
+    "terraform-provider-development@hashicorp": true,
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true
   },
   "toolSettings": {
     "bash": {
