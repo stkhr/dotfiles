@@ -6,7 +6,9 @@
 
 - コンベンショナルコミット形式を使用: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`
 - コミットメッセージは英語で記述
-- **IMPORTANT**: main/masterブランチへの直接コミットは指示もしくは許可がない限り禁止
+- **CRITICAL - MANDATORY RULE**: main/masterブランチへの直接コミットは絶対に禁止。ユーザーが明示的に「mainに直接コミットしてよい」と指示した場合のみ例外とする
+- コミット前に必ず `git branch --show-current` で現在のブランチを確認すること
+- main/masterにいる場合は、まずフィーチャーブランチを作成してからコミットすること
 
 ## GitHub CLI (`gh`)
 
