@@ -25,6 +25,18 @@ ln -snfv "$DIR"/claude/CLAUDE.md "$HOME"/.claude/CLAUDE.md
 ln -snfv "$DIR"/claude/mcp.json "$HOME"/.claude/mcp.json
 ln -snfv "$DIR"/claude/statusline.sh "$HOME"/.claude/statusline.sh
 
+# claude hooks
+mkdir -p "$HOME"/.claude/hooks
+if [ -d "$DIR"/claude/hooks ]; then
+    for hook_file in "$DIR"/claude/hooks/*.sh; do
+        if [ -f "$hook_file" ]; then
+            hook_name=$(basename "$hook_file")
+            ln -snfv "$hook_file" "$HOME/.claude/hooks/$hook_name"
+            chmod +x "$HOME/.claude/hooks/$hook_name"
+        fi
+    done
+fi
+
 # claude skills
 mkdir -p "$HOME"/.claude/skills
 if [ -d "$DIR"/claude/skills ]; then
