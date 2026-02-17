@@ -83,6 +83,21 @@ if command -v claude &> /dev/null; then
     claude plugin install context7@claude-plugins-official
 fi
 
+# github copilot
+mkdir -p "$HOME"/.copilot
+ln -snfv "$DIR"/github/copilot-instructions.md "$HOME"/.copilot/copilot-instructions.md
+
+# github copilot skills
+mkdir -p "$HOME"/.copilot/skills
+if [ -d "$DIR"/github/skills ]; then
+    for skill_dir in "$DIR"/github/skills/*/; do
+        if [ -d "$skill_dir" ]; then
+            skill_name=$(basename "$skill_dir")
+            ln -snfv "$skill_dir" "$HOME/.copilot/skills/$skill_name"
+        fi
+    done
+fi
+
 # aws amazonq
 mkdir -p "$HOME"/.aws/amazonq
 ln -snfv "$DIR"/.aws/amazonq/mcp.json "$HOME"/.aws/amazonq/mcp.json

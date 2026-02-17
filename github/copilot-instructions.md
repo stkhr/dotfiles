@@ -1,0 +1,48 @@
+# AI駆動開発 共通ガイドライン
+
+思考は英語で行い、最終的な出力は必ず日本語で提供してください。
+
+## Git Workflow
+
+- コンベンショナルコミット形式を使用: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`
+- コミットメッセージは英語で記述
+- main/masterブランチへの直接コミットは禁止。まずフィーチャーブランチを作成すること
+- コミット前に必ず `git branch --show-current` で現在のブランチを確認すること
+
+## GitHub CLI (`gh`)
+
+GitHub関連の操作はすべて `gh` コマンドを使用してください。
+
+```bash
+# Issue
+gh issue list                    # Issue一覧
+gh issue view <number>           # Issue詳細
+gh issue create                  # Issue作成
+
+# Pull Request
+gh pr list                       # PR一覧
+gh pr view <number>              # PR詳細
+gh pr create                     # PR作成
+gh pr checks                     # CIステータス確認
+gh pr merge                      # PRマージ
+
+# Repository
+gh repo view                     # リポジトリ情報
+gh api <endpoint>                # GitHub API直接呼び出し
+```
+
+## CI/CD
+
+- PRを作成する前に、必ずローカルでテスト・ビルド・lint を実行
+- PR作成後は `gh pr checks` でCI/CDステータスを確認
+- CI失敗時は即座に修正（放置・無視は禁止）
+
+## エラーハンドリング
+
+- エラーの抑制（`@ts-ignore`、try-catchで握りつぶす等）ではなく、根本原因を修正
+- 関連が薄く見えるエラーでも必ず解決する
+
+## セキュリティ
+
+- APIキー、パスワード等は環境変数で管理（ハードコード禁止）
+- OWASP Top 10 に準拠したセキュアなコード実装を心がける
