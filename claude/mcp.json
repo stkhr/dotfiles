@@ -43,6 +43,13 @@
                 "-y",
                 "@executeautomation/playwright-mcp-server@1.0.12"
             ]
+        },
+        "drawio": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@drawio/mcp"
+            ]
         }
     }
 }
