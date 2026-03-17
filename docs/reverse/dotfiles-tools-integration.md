@@ -299,9 +299,6 @@ code --list-extensions > ./vscode/extensions
 
 # 拡張機能一括インストール
 xargs -n 1 code --install-extension < ./vscode/extensions
-
-# Cursor への同期
-xargs -n 1 cursor --install-extension < ./vscode/extensions
 ```
 
 ## バージョン管理統合
