@@ -5,7 +5,7 @@
 
 claude mcp add serena --scope user \
     -- docker run --rm -i --network host \
-    -v /Users/stkhr/ghq:/workspaces/projects \
+    -v "$HOME/ghq:/workspaces/projects" \
     ghcr.io/oraios/serena:latest \
     serena start-mcp-server \
     --transport stdio \
