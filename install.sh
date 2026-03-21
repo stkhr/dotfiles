@@ -22,8 +22,12 @@ ln -snfv "$DIR"/config/sheldon/plugins.toml "$HOME"/.config/sheldon/plugins.toml
 mkdir -p "$HOME"/.claude
 ln -snfv "$DIR"/claude/settings.json "$HOME"/.claude/settings.json
 ln -snfv "$DIR"/claude/CLAUDE.md "$HOME"/.claude/CLAUDE.md
-ln -snfv "$DIR"/claude/mcp.json "$HOME"/.claude/mcp.json
 ln -snfv "$DIR"/claude/statusline.sh "$HOME"/.claude/statusline.sh
+
+# claude mcp servers
+if command -v claude &> /dev/null; then
+    zsh "$DIR"/claude/mcp-setup.sh
+fi
 
 # claude hooks
 mkdir -p "$HOME"/.claude/hooks
