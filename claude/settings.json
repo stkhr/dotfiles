@@ -169,6 +169,7 @@
       }
     }
   },
+  "skipAutoPermissionPrompt": true,
   "toolSettings": {
     "bash": {
       "timeout": 300000
