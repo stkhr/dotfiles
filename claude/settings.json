@@ -3,7 +3,6 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "Read(**)",
       "Write(src/**)",
@@ -59,8 +58,19 @@
       "Write(**/.git/config)",
       "Write(**/package-lock.json)",
       "Write(**/pnpm-lock.yaml)",
-      "Write(**/yarn.lock)"
-    ]
+      "Write(**/yarn.lock)",
+      "Write(**/biome.json)",
+      "Write(**/.eslintrc)",
+      "Write(**/.eslintrc.*)",
+      "Write(**/ruff.toml)",
+      "Write(**/.ruff.toml)",
+      "Write(**/.golangci.yml)",
+      "Write(**/.golangci.yaml)",
+      "Write(**/clippy.toml)",
+      "Write(**/.tflint.hcl)",
+      "Write(**/.oxlintrc*)"
+    ],
+    "defaultMode": "auto"
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
@@ -89,6 +99,11 @@
           {
             "type": "command",
             "command": "FILE=\"$CLAUDE_FILE\"; if [ -n \"$FILE\" ] && [ -f \"$FILE\" ]; then case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.md) command -v prettier &>/dev/null && prettier --write \"$FILE\" 2>/dev/null ;; *.py) command -v black &>/dev/null && black -q \"$FILE\" 2>/dev/null ;; *.go) command -v gofmt &>/dev/null && gofmt -w \"$FILE\" 2>/dev/null ;; esac; fi"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/lint-feedback.sh",
+            "statusMessage": "Linting..."
           }
         ]
       }
@@ -104,10 +119,27 @@
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/precompact-context.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
         "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/verify-tests.sh",
+            "statusMessage": "Verifying tests...",
+            "timeout": 100
+          },
           {
             "type": "command",
             "command": "terminal-notifier -title \"Claude Code\" -message \"作業が完了しました\" -sound Glass"
