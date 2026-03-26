@@ -73,7 +73,24 @@ if [ -n "$(git log @{u}.. 2>/dev/null)" ]; then
 fi
 ```
 
-### 4. Create Pull Request
+### 4. Independent Code Review
+
+**PR作成前に独立したコードレビューエージェントを起動する（自己評価での代替不可）:**
+
+```bash
+# SHAを取得
+BASE_SHA=$(git merge-base HEAD origin/main 2>/dev/null || git rev-parse HEAD~1)
+HEAD_SHA=$(git rev-parse HEAD)
+```
+
+`superpowers:requesting-code-review` スキルを実行し、`superpowers:code-reviewer` サブエージェントを起動すること。
+
+**結果に応じた対応:**
+- Critical issues → 修正してからこのステップを再実行
+- Important issues → 修正してからPR作成に進む
+- 問題なし → PR作成に進む
+
+### 5. Create Pull Request
 
 **GitHub CLIでPRを作成:**
 
@@ -98,7 +115,7 @@ gh pr create --base develop
 - 適切なラベルやレビュアーの指定
 - PRテンプレートの内容確認
 
-### 5. Clean Up Worktree
+### 6. Clean Up Worktree
 
 **PR作成成功後、worktreeを削除:**
 
@@ -117,7 +134,7 @@ git checkout main  # または develop など
 git worktree remove "$WORKTREE_PATH"
 ```
 
-### 6. Report Status
+### 7. Report Status
 
 完了後、以下の情報をユーザーに提供:
 
@@ -140,7 +157,7 @@ git worktree remove "$WORKTREE_PATH"
 - `gh pr merge` - PRをマージ（承認後）
 ```
 
-### 7. Handle Edge Cases
+### 8. Handle Edge Cases
 
 #### Case 1: PR作成のみ（worktreeは残す）
 
