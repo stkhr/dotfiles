@@ -1,5 +1,3 @@
-# Amazon Q pre block. Keep at the top of this file.
-[[ -f "${HOME}/Library/Application Support/amazon-q/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/zshrc.pre.zsh"
 # alias
 alias ls="ls -GF"
 alias ll="ls -la"
@@ -94,7 +92,7 @@ zle -N peco-history-selection
 bindkey '^R' peco-history-selection
 
 # gcloud
-GCLOUD_SDK_PATH="/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk"
+GCLOUD_SDK_PATH="/opt/homebrew/Caskroom/gcloud-cli/latest/google-cloud-sdk"
 [[ -f "$GCLOUD_SDK_PATH/path.zsh.inc" ]] && source "$GCLOUD_SDK_PATH/path.zsh.inc"
 ## easy to change gcloud project
 gcp-config() {
@@ -165,8 +163,5 @@ compdef _gcloud_complete gcloud
 ## azure
 AZ_COMPLETION="$(brew --prefix 2>/dev/null)/etc/bash_completion.d/az"
 [[ -f "$AZ_COMPLETION" ]] && source "$AZ_COMPLETION"
-
-# Amazon Q post block. Keep at the bottom of this file.
-[[ -f "${HOME}/Library/Application Support/amazon-q/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/zshrc.post.zsh"
 
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
