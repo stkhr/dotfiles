@@ -32,16 +32,10 @@ brew "pgcli"
 brew "pinact"
 brew "duckdb"
 brew "tflint"
-brew "amazon-q"
 brew "packer"
 brew "graphviz"
 brew "azure-cli"
 brew "terminal-notifier"
-
-# font
-brew "font-hackgen"
-brew "font-hackgen-nerd"
-brew "font-hack-nerd-font"
 
 # tap
 tap "homebrew/cask-fonts" # font
@@ -59,7 +53,6 @@ cask "raspberry-pi-imager"
 cask "bettertouchtool"
 cask "stats"
 cask "cyberduck"
-cask "google-cloud-sdk"
 cask "gcloud-cli"
 cask "keepassx"
 cask "visual-studio-code"
@@ -67,8 +60,12 @@ cask "slack"
 cask "figma"
 cask "drawio"
 cask "chatgpt"
-cask "kindle"
 cask "atok"
 cask "claude"
 cask "claude-code"
 cask "pgadmin4"
+
+# font
+cask "font-hackgen"
+cask "font-hackgen-nerd"
+cask "font-hack-nerd-font"
