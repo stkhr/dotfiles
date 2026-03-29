@@ -40,7 +40,7 @@ case "$FILE" in
     ;;
   *.go)
     if command -v golangci-lint &>/dev/null; then
-      DIAG=$(golangci-lint run --out-format=line-number "$FILE" 2>&1 | head -30) || true
+      DIAG=$(golangci-lint run "$FILE" 2>&1 | head -30) || true
     fi
     ;;
   *.rs)
