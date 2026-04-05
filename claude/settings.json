@@ -33,7 +33,9 @@
       "Bash(make:*)",
       "Bash(docker:*)",
       "Bash(python:*)",
+      "Bash(python3:*)",
       "Bash(pip:*)",
+      "Bash(pip3:*)",
       "Bash(terraform:*)",
       "Bash(rm .tmp/**)",
       "Bash(ls:*)",
@@ -140,7 +142,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "FILE=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$FILE\" ] && [ -f \"$FILE\" ]; then case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.md) command -v prettier &>/dev/null && prettier --write \"$FILE\" 2>/dev/null ;; *.py) command -v black &>/dev/null && black -q \"$FILE\" 2>/dev/null ;; *.go) command -v gofmt &>/dev/null && gofmt -w \"$FILE\" 2>/dev/null ;; esac; fi"
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$FILE\" ] && [ -f \"$FILE\" ]; then case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.md) command -v prettier &>/dev/null && prettier --write \"$FILE\" 2>/dev/null ;; *.py) command -v black &>/dev/null && black -q \"$FILE\" 2>/dev/null ;; *.go) command -v gofmt &>/dev/null && gofmt -w \"$FILE\" 2>/dev/null ;; esac; fi"
           },
           {
             "type": "command",
