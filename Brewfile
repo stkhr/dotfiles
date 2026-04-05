@@ -36,6 +36,7 @@ brew "packer"
 brew "graphviz"
 brew "azure-cli"
 brew "terminal-notifier"
+brew "cloudflare-wrangler"
 
 # tap
 tap "homebrew/cask-fonts" # font
