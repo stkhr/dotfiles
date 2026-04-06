@@ -56,8 +56,15 @@ fi
 # No recognized test runner - pass through
 [ -z "$TEST_CMD" ] && exit 0
 
-# Run tests with 90s timeout
-OUTPUT=$(timeout 90 bash -c "$TEST_CMD" 2>&1 | tail -30)
+# Run tests with 90s timeout (use gtimeout on macOS if available, else run without timeout)
+if command -v timeout &>/dev/null; then
+  TIMEOUT_CMD="timeout 90"
+elif command -v gtimeout &>/dev/null; then
+  TIMEOUT_CMD="gtimeout 90"
+else
+  TIMEOUT_CMD=""
+fi
+OUTPUT=$($TIMEOUT_CMD bash -c "$TEST_CMD" 2>&1 | tail -30)
 EXIT_CODE=$?
 
 [ "$EXIT_CODE" -eq 0 ] && exit 0

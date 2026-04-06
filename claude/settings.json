@@ -181,8 +181,8 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/verify-tests.sh",
-            "statusMessage": "Verifying tests...",
-            "timeout": 100
+            "timeout": 100,
+            "statusMessage": "Verifying tests..."
           },
           {
             "type": "command",
