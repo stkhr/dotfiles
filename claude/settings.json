@@ -107,6 +107,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus",
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "serena",
@@ -218,5 +219,6 @@
     "bash": {
       "timeout": 300000
     }
-  }
+  },
+  "effortLevel": "high"
 }
