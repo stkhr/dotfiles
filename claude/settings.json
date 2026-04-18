@@ -63,7 +63,8 @@
       "WebFetch(domain:datatracker.ietf.org)",
       "WebFetch(domain:tools.ietf.org)",
       "WebFetch(domain:www.iana.org)",
-      "WebFetch(domain:www.icann.org)"
+      "WebFetch(domain:www.icann.org)",
+      "WebFetch(domain:googlecloudplatform.github.io)"
     ],
     "deny": [
       "Bash(sudo:*)",
@@ -107,7 +108,6 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "serena",
@@ -214,11 +214,11 @@
       }
     }
   },
+  "effortLevel": "high",
   "skipAutoPermissionPrompt": true,
   "toolSettings": {
     "bash": {
       "timeout": 300000
     }
-  },
-  "effortLevel": "high"
+  }
 }
