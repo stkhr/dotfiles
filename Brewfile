@@ -37,10 +37,12 @@ brew "graphviz"
 brew "azure-cli"
 brew "terminal-notifier"
 brew "cloudflare-wrangler"
+brew "joachimbrindeau/ccusage-monitor/ccusage-monitor"
 
 # tap
 tap "homebrew/cask-fonts" # font
 tap "hashicorp/tap" # hashicorp
+tap "joachimbrindeau/ccusage-monitor" # claude code usage menu bar
 
 # cask
 cask "alfred"
