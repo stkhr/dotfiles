@@ -1,6 +1,10 @@
 {
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "BASH_DEFAULT_TIMEOUT_MS": "300000"
+  },
+  "attribution": {
+    "commit": ""
   },
   "permissions": {
     "allow": [
@@ -40,7 +44,6 @@
       "Bash(rm .tmp/**)",
       "Bash(ls:*)",
       "Bash(osascript -e:*)",
-      "mcp__github__*",
       "mcp__chrome-devtools__*",
       "mcp__serena__*",
       "mcp__context7__*",
@@ -108,10 +111,8 @@
     ],
     "defaultMode": "auto"
   },
-  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "serena",
-    "github",
     "chrome-devtools",
     "context7",
     "playwright"
@@ -214,11 +215,12 @@
       }
     }
   },
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "skipAutoPermissionPrompt": true,
-  "toolSettings": {
-    "bash": {
-      "timeout": 300000
-    }
+  "tui": "fullscreen",
+  "autoUpdatesChannel": "stable",
+  "showThinkingSummaries": true,
+  "worktree": {
+    "symlinkDirectories": ["node_modules", ".cache"]
   }
 }
