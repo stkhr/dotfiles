@@ -82,7 +82,6 @@ function _ssh {
   compadd `find ~/.ssh/* -type file | xargs fgrep 'Host ' | awk '{print $2}' | sort`;
 }
 
-
 # gcloud
 GCLOUD_SDK_PATH="/opt/homebrew/Caskroom/gcloud-cli/latest/google-cloud-sdk"
 [[ -f "$GCLOUD_SDK_PATH/path.zsh.inc" ]] && source "$GCLOUD_SDK_PATH/path.zsh.inc"
