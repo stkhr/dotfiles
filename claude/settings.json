@@ -48,28 +48,8 @@
       "mcp__serena__*",
       "mcp__context7__*",
       "mcp__playwright__*",
-      "WebFetch(domain:aws.amazon.com)",
-      "WebFetch(domain:awscli.amazonaws.com)",
-      "WebFetch(domain:docs.aws.amazon.com)",
-      "WebFetch(domain:repost.aws)",
-      "WebFetch(domain:docs.cloud.google.com)",
-      "WebFetch(domain:support.google.com)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:api.github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:registry.terraform.io)",
-      "WebFetch(domain:registry.circleci.com)",
-      "WebFetch(domain:circleci.com)",
-      "WebFetch(domain:go.dev)",
-      "WebFetch(domain:code.claude.com)",
-      "WebFetch(domain:www.hashicorp.com)",
-      "WebFetch(domain:datatracker.ietf.org)",
-      "WebFetch(domain:tools.ietf.org)",
-      "WebFetch(domain:www.iana.org)",
-      "WebFetch(domain:www.icann.org)",
-      "WebFetch(domain:googlecloudplatform.github.io)",
-      "WebFetch(domain:qiita.com)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebSearch",
+      "WebFetch"
     ],
     "deny": [
       "Bash(sudo:*)",
@@ -223,12 +203,12 @@
       }
     }
   },
+  "language": "japanese",
   "effortLevel": "xhigh",
+  "showClearContextOnPlanAccept": true,
   "autoUpdatesChannel": "stable",
   "tui": "fullscreen",
   "showThinkingSummaries": true,
-  "language": "japanese",
-  "showClearContextOnPlanAccept": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true
 }

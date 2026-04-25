@@ -21,8 +21,8 @@ fv() {
   [[ -n "$file" ]] && vim "$file"
 }
 ## ghq
-alias g='cd $(ghq root)/$(ghq list | peco)'
-alias ghb='hub browse $(ghq list | peco | cut -d "/" -f 2,3)'
+alias g='cd $(ghq root)/$(ghq list | fzf)'
+alias ghb='gh browse $(ghq list | fzf | cut -d "/" -f 2,3)'
 ## git
 alias gb="git branch"
 alias gs="git switch"
@@ -82,21 +82,13 @@ function _ssh {
   compadd `find ~/.ssh/* -type file | xargs fgrep 'Host ' | awk '{print $2}' | sort`;
 }
 
-# ctrl + r の検索を peco を使い検索しやすくする
-function peco-history-selection() {
-    BUFFER=`history -n 1 | tail -r  | awk '!a[$0]++' | peco`
-    CURSOR=$#BUFFER
-    zle reset-prompt
-}
-zle -N peco-history-selection
-bindkey '^R' peco-history-selection
 
 # gcloud
 GCLOUD_SDK_PATH="/opt/homebrew/Caskroom/gcloud-cli/latest/google-cloud-sdk"
 [[ -f "$GCLOUD_SDK_PATH/path.zsh.inc" ]] && source "$GCLOUD_SDK_PATH/path.zsh.inc"
 ## easy to change gcloud project
 gcp-config() {
-  export config_name=$(gcloud config configurations list | tail -n +2 | awk '{print $1}' | peco)
+  export config_name=$(gcloud config configurations list | tail -n +2 | awk '{print $1}' | fzf)
   if [[ -z "$config_name" ]]; then return 1; fi
   gcloud config configurations activate $config_name
 }
@@ -132,8 +124,6 @@ setopt hist_no_store         # historyコマンド自体は記録しない
 # fzf
 export FZF_DEFAULT_OPTS='--bind=ctrl-k:up,ctrl-p:up,ctrl-j:down,ctrl-n:down'
 source <(fzf --zsh)
-# fzfのCtrl+Rを上書きしてpecoを使う
-bindkey '^R' peco-history-selection
 
 # sheldon
 eval "$(sheldon source)"
