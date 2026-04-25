@@ -67,7 +67,9 @@
       "WebFetch(domain:tools.ietf.org)",
       "WebFetch(domain:www.iana.org)",
       "WebFetch(domain:www.icann.org)",
-      "WebFetch(domain:googlecloudplatform.github.io)"
+      "WebFetch(domain:googlecloudplatform.github.io)",
+      "WebFetch(domain:qiita.com)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": [
       "Bash(sudo:*)",
@@ -194,6 +196,12 @@
       }
     ]
   },
+  "worktree": {
+    "symlinkDirectories": [
+      "node_modules",
+      ".cache"
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",
@@ -216,11 +224,11 @@
     }
   },
   "effortLevel": "xhigh",
-  "skipAutoPermissionPrompt": true,
-  "tui": "fullscreen",
   "autoUpdatesChannel": "stable",
+  "tui": "fullscreen",
   "showThinkingSummaries": true,
-  "worktree": {
-    "symlinkDirectories": ["node_modules", ".cache"]
-  }
+  "language": "japanese",
+  "showClearContextOnPlanAccept": true,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true
 }
