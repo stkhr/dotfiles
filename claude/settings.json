@@ -48,6 +48,7 @@
       "mcp__serena__*",
       "mcp__context7__*",
       "mcp__playwright__*",
+      "mcp__aws__*",
       "WebSearch",
       "WebFetch"
     ],
@@ -97,7 +98,8 @@
     "serena",
     "chrome-devtools",
     "context7",
-    "playwright"
+    "playwright",
+    "aws"
   ],
   "hooks": {
     "PreToolUse": [
