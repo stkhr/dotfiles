@@ -217,6 +217,7 @@ dotfilesで管理している`claude/mcp.json`はリファレンス用です。
 3. **chrome-devtools**: Chrome DevToolsとの連携・ブラウザ操作
 4. **context7**: 技術ドキュメント検索（React、Next.js、TypeScriptなど）
 5. **playwright**: E2Eテスト自動化・ブラウザ操作
+6. **aws**: AWS API 操作（IAM SigV4 で `~/.aws` のローカル認証を利用）。`brew install uv` が前提
 
 ### 初回セットアップ手順
 
@@ -535,3 +536,4 @@ claude
 - ✅ chrome-devtools
 - ✅ context7
 - ✅ playwright
+- ✅ aws
