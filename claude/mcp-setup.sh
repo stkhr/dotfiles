@@ -26,3 +26,16 @@ claude mcp add drawio --scope user \
 
 claude mcp add notion --transport http --scope user \
     https://mcp.notion.com/mcp
+
+# AWS MCP Server (GA: https://aws.amazon.com/jp/blogs/aws/the-aws-mcp-server-is-now-generally-available/)
+# Proxy: https://github.com/aws/mcp-proxy-for-aws (official, Apache-2.0)
+# Requires: uv (https://astral.sh/uv) and configured AWS credentials (IAM SigV4 auth)
+# endpoint=us-east-1 is the public regional MCP endpoint; AWS_REGION targets the actual API calls.
+if command -v uvx &> /dev/null; then
+    claude mcp add aws --scope user \
+        -- uvx mcp-proxy-for-aws@latest \
+           https://aws-mcp.us-east-1.api.aws/mcp \
+           --metadata AWS_REGION=ap-northeast-1
+else
+    echo "[mcp-setup] skip: aws MCP requires 'uvx' (install via: brew install uv)" >&2
+fi
