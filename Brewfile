@@ -42,7 +42,6 @@ tap "joachimbrindeau/ccusage-monitor" # claude code usage menu bar
 
 # cask
 cask "alfred"
-cask "docker-desktop"
 cask "iina"
 cask "notion"
 cask "appcleaner"
