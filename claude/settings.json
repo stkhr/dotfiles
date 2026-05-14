@@ -206,6 +206,7 @@
     }
   },
   "language": "japanese",
+  "model": "claude-opus-4-7",
   "effortLevel": "xhigh",
   "showClearContextOnPlanAccept": true,
   "autoUpdatesChannel": "stable",
