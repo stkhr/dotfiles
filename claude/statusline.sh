@@ -23,8 +23,9 @@ CONTEXT_SIZE=$(echo "$INPUT" | jq -r '.context_window.context_window_size // 200
 USAGE=$(echo "$INPUT" | jq '.context_window.current_usage')
 
 if [ "$USAGE" != "null" ] && [ -n "$USAGE" ]; then
-    # 現在のコンテキスト使用量を計算
-    USED=$(echo "$USAGE" | jq '.input_tokens + .output_tokens + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)')
+    # コンテキストの input トークン合計 = 新規 input + キャッシュ作成 + キャッシュ読み込み
+    # output_tokens は次ターンで input 側に回るが、現時点の context input 占有量には含めない
+    USED=$(echo "$USAGE" | jq '.input_tokens + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)')
 else
     USED=0
 fi
