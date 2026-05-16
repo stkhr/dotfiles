@@ -50,7 +50,9 @@
       "mcp__playwright__*",
       "mcp__aws__*",
       "WebSearch",
-      "WebFetch"
+      "WebFetch",
+      "Skill(superpowers:requesting-code-review)",
+      "Skill(superpowers:requesting-code-review:*)",
     ],
     "deny": [
       "Bash(sudo:*)",
@@ -94,6 +96,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "claude-opus-4-7",
   "enabledMcpjsonServers": [
     "serena",
     "chrome-devtools",
@@ -206,7 +209,6 @@
     }
   },
   "language": "japanese",
-  "model": "claude-opus-4-7",
   "effortLevel": "xhigh",
   "showClearContextOnPlanAccept": true,
   "autoUpdatesChannel": "stable",
