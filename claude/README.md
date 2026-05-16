@@ -252,7 +252,7 @@ export GITHUB_PERSONAL_ACCESS_TOKEN="ghp_xxxxxxxxxxxxx"
     "command": "docker",
     "args": [
       "run", "--rm", "-i", "--network", "host",
-      "-v", "$HOME:/workspaces/projects",
+      "-v", "${HOME}:/workspaces/projects",
       "ghcr.io/oraios/serena:latest",
       "serena", "start-mcp-server",
       "--transport", "stdio",
@@ -285,7 +285,8 @@ export GITHUB_PERSONAL_ACCESS_TOKEN="ghp_xxxxxxxxxxxxx"
 
 **注意点**:
 - `~/.claude.json`のトップレベルの`mcpServers`に追加（`projects`の外）
-- Serenaの`$HOME`パスは環境に応じて変更してください
+- Serenaのマウント元パス（例: `${HOME}` を `${HOME}/src` 等に変更）は環境に応じて調整してください
+- Claude Code のMCP設定では `${VAR}` 形式の環境変数展開がサポートされています
 - JSONの構文エラーに注意（カンマの位置など）
 
 #### 3. 設定の確認

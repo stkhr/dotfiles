@@ -95,7 +95,7 @@ gcp-config() {
 # asdf
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 ## nom install
-## ln -s .asdf/shims/claude "$HOME"/.asdf/installs/nodejs/24.1.0/bin/claude
+## ln -s .asdf/shims/claude "$HOME/.asdf/installs/nodejs/24.1.0/bin/claude"
 
 # kubectl
 if command -v kubectl >/dev/null 2>&1; then
