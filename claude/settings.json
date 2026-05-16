@@ -52,7 +52,7 @@
       "WebSearch",
       "WebFetch",
       "Skill(superpowers:requesting-code-review)",
-      "Skill(superpowers:requesting-code-review:*)",
+      "Skill(superpowers:requesting-code-review:*)"
     ],
     "deny": [
       "Bash(sudo:*)",
