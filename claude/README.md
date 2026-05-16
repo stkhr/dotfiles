@@ -252,7 +252,7 @@ export GITHUB_PERSONAL_ACCESS_TOKEN="ghp_xxxxxxxxxxxxx"
     "command": "docker",
     "args": [
       "run", "--rm", "-i", "--network", "host",
-      "-v", "/Users/stkhr:/workspaces/projects",
+      "-v", "$HOME:/workspaces/projects",
       "ghcr.io/oraios/serena:latest",
       "serena", "start-mcp-server",
       "--transport", "stdio",
@@ -285,7 +285,7 @@ export GITHUB_PERSONAL_ACCESS_TOKEN="ghp_xxxxxxxxxxxxx"
 
 **注意点**:
 - `~/.claude.json`のトップレベルの`mcpServers`に追加（`projects`の外）
-- Serenaの`/Users/stkhr`パスは環境に応じて変更してください
+- Serenaの`$HOME`パスは環境に応じて変更してください
 - JSONの構文エラーに注意（カンマの位置など）
 
 #### 3. 設定の確認
