@@ -52,7 +52,10 @@
       "WebSearch",
       "WebFetch",
       "Skill(superpowers:requesting-code-review)",
-      "Skill(superpowers:requesting-code-review:*)"
+      "Skill(superpowers:requesting-code-review:*)",
+      "Read(~/.claude/plugins/cache/claude-plugins-official/superpowers/*/skills/requesting-code-review/**)",
+      "Skill(session-start)",
+      "Skill(session-start:*)"
     ],
     "deny": [
       "Bash(sudo:*)",
