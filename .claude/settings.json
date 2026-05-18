@@ -4,7 +4,7 @@
       "mcp__claude_ai_Slack__slack_search_public_and_private",
       "mcp__claude_ai_Slack__slack_read_thread",
       "mcp__claude_ai_Atlassian_Rovo__searchJiraIssuesUsingJql",
-      "Bash(uv run ruff *)",
+      "Bash(uv run ruff check *)",
       "Bash(uv run pyright *)",
       "Bash(shellcheck *)",
       "Bash(actionlint *)",
