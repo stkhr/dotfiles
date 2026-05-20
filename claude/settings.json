@@ -187,7 +187,7 @@
           },
           {
             "type": "command",
-            "command": "[ -f ~/.claude/hooks/session-sync.sh ] && bash ~/.claude/hooks/session-sync.sh || true"
+            "command": "if [ -x ~/.claude/hooks/session-sync.sh ]; then ~/.claude/hooks/session-sync.sh || true; fi"
           }
         ]
       }
