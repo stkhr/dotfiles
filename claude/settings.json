@@ -184,6 +184,10 @@
           {
             "type": "command",
             "command": "terminal-notifier -title \"Claude Code\" -message \"作業が完了しました\" -sound Glass"
+          },
+          {
+            "type": "command",
+            "command": "if [ -x ~/.claude/hooks/session-sync.sh ]; then ~/.claude/hooks/session-sync.sh || true; fi"
           }
         ]
       }
