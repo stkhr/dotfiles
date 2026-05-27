@@ -201,10 +201,11 @@ git commit -m "fix: improve code-review performance analysis"
 - `commit-helper` - コンベンショナルコミット形式の支援
 - `debug-workflow` - デバッグの体系的アプローチ
 - `refactor-guide` - リファクタリング手順
-- `security-check` - セキュリティチェックリスト
 - `test-strategy` - テスト戦略の立案
 - `api-design` - REST/GraphQL APIの設計支援
 - `performance-audit` - パフォーマンス監査
+
+※ セキュリティ関連は `security-guidance` plugin（自動検出）と `security-hardening` skill（能動的強化）でカバー済み
 
 ## 📖 参考資料
 
