@@ -96,7 +96,7 @@ mkdir -p "$OUT_DIR" || { warn "mkdir failed: $OUT_DIR"; exit 0; }
 #   through the marker itself,
 #   up to (but not including) the next session marker or EOF.
 # Trailing blanks at EOF are also dropped so the file stays compact across reruns.
-if [ -f "$OUT_FILE" ] && grep -qE "^<!-- session: ${SESSION_ID} -->$" "$OUT_FILE"; then
+if [ -f "$OUT_FILE" ] && grep -qFx "<!-- session: ${SESSION_ID} -->" "$OUT_FILE"; then
   TMP=$(mktemp "${OUT_FILE}.XXXXXX") || { warn "mktemp failed"; exit 0; }
   awk -v sid="$SESSION_ID" '
     BEGIN { pending = ""; skip = 0 }
