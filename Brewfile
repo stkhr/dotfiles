@@ -35,7 +35,6 @@ brew "terminal-notifier"
 brew "cloudflare-wrangler"
 
 # tap
-tap "homebrew/cask-fonts" # font
 tap "hashicorp/tap" # hashicorp
 
 # cask
