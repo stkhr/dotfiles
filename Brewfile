@@ -58,6 +58,7 @@ cask "atok"
 cask "claude"
 cask "claude-code"
 cask "pgadmin4"
+cask "homerow"
 
 # font
 cask "font-hackgen"
