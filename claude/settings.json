@@ -233,6 +233,7 @@
   "autoUpdatesChannel": "stable",
   "tui": "fullscreen",
   "showThinkingSummaries": true,
+  "theme": "dark",
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true
