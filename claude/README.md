@@ -160,7 +160,7 @@ Claude Codeの応答が完了した時に通知:
         "hooks": [
           {
             "type": "command",
-            "command": "terminal-notifier -title \"Claude Code\" -message \"作業が完了しました\" -sound Glass"
+            "command": "osascript -e 'display notification \"作業が完了しました\" with title \"Claude Code\" sound name \"Glass\"'"
           }
         ]
       }
@@ -182,7 +182,7 @@ Claude Codeの応答が完了した時に通知:
         "hooks": [
           {
             "type": "command",
-            "command": "terminal-notifier -title \"Claude Code\" -message \"入力待ちプロンプトが表示されました\" -sound default"
+            "command": "osascript -e 'display notification \"入力待ちプロンプトが表示されました\" with title \"Claude Code\" sound name \"Ping\"'"
           }
         ]
       }
@@ -191,12 +191,9 @@ Claude Codeの応答が完了した時に通知:
 }
 ```
 
-**要件**: macOS の `terminal-notifier` が必要です。
+**要件**: macOS 標準の `osascript` を使用するため追加インストールは不要です。
 
-インストール:
-```bash
-brew install terminal-notifier
-```
+サウンド名は `/System/Library/Sounds/` に存在するファイル名 (`Glass`, `Ping`, `Tink`, `Pop` など) を指定します。
 
 ## MCPサーバー設定
 
@@ -508,8 +505,8 @@ jq '.mcpServers | keys' ~/.claude.json
 # 3. 有効化されているMCPサーバーの確認
 jq '.enabledMcpjsonServers' ~/.claude/config.json
 
-# 4. terminal-notifierの確認
-which terminal-notifier
+# 4. 通知音声経路の確認 (osascript は macOS 標準)
+osascript -e 'display notification "test" with title "Claude Code" sound name "Glass"'
 
 # 5. Claude Codeを起動して確認
 claude
