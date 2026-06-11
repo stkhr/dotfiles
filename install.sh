@@ -77,15 +77,20 @@ fi
 
 # claude plugins
 if command -v claude &> /dev/null; then
+    # Register marketplaces first (idempotent — safe to re-run)
+    claude plugin marketplace add anthropics/claude-plugins-official
+    claude plugin marketplace add hashicorp/agent-skills
+
+    # Anthropic official plugins
     claude plugin install superpowers@claude-plugins-official
-    # HashiCorp Terraform plugins
-    claude plugin marketplace add hashicorp/agent-skills 2>/dev/null || true
-    claude plugin install terraform-code-generation@hashicorp
-    claude plugin install terraform-module-generation@hashicorp
-    claude plugin install terraform-provider-development@hashicorp
     claude plugin install frontend-design@claude-plugins-official
     claude plugin install context7@claude-plugins-official
     claude plugin install security-guidance@claude-plugins-official
+
+    # HashiCorp Terraform plugins
+    claude plugin install terraform-code-generation@hashicorp
+    claude plugin install terraform-module-generation@hashicorp
+    claude plugin install terraform-provider-development@hashicorp
 fi
 
 # aws amazonq
