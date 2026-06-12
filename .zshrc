@@ -1,16 +1,21 @@
 # alias
-alias ls="ls -GF"
-alias ll="ls -la"
-alias ld='ls -ld' # Show info about the directory
-alias lt='ls -ltr' # Sort by date, most recent last
+if command -v eza >/dev/null 2>&1; then
+  alias ls="eza --classify"
+  alias ll="eza -la --git"
+  alias ld="eza -ld" # Show info about the directory
+  alias lt="eza -l --sort=modified" # Sort by date, most recent last
+else
+  alias ls="ls -GF"
+  alias ll="ls -la"
+  alias ld='ls -ld' # Show info about the directory
+  alias lt='ls -ltr' # Sort by date, most recent last
+fi
 alias cp="nocorrect cp -i"
 alias mv="nocorrect mv -i"
 alias mkdir="nocorrect mkdir"
 alias du='du -h'
 alias job='jobs -l'
 alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
 alias diff='diff -u'
 alias vi="vim"
 alias random="openssl rand -base64 12 | fold -w 16 | head -1"
@@ -72,7 +77,7 @@ alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
 alias -g L='| less'
 alias -g H='| head'
 alias -g T='| tail'
-alias -g G='| egrep'
+alias -g G='| grep -E'
 alias -g W='| wc -l'
 alias -g B='| base64 --decode | gpg -d'
 
@@ -122,6 +127,10 @@ setopt hist_no_store         # historyコマンド自体は記録しない
 
 # fzf
 export FZF_DEFAULT_OPTS='--bind=ctrl-k:up,ctrl-p:up,ctrl-j:down,ctrl-n:down'
+if command -v fd >/dev/null 2>&1; then
+  export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+fi
 source <(fzf --zsh)
 
 # sheldon
@@ -152,5 +161,8 @@ compdef _gcloud_complete gcloud
 ## azure
 AZ_COMPLETION="$(brew --prefix 2>/dev/null)/etc/bash_completion.d/az"
 [[ -f "$AZ_COMPLETION" ]] && source "$AZ_COMPLETION"
+
+# zoxide (smart cd: z / zi) — compinit 後に初期化する
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
 
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
