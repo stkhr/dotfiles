@@ -7,14 +7,18 @@ do
     [[ "$f" == ".gitignore" ]] && continue
     [[ "$f" == ".DS_Store" ]] && continue
     [[ "$f" == ".agents" ]] && continue
+    # リポジトリ運用ガイド。~/.CLAUDE.md として配置する用途はない
+    [[ "$f" == ".CLAUDE.md" ]] && continue
+    # ~/.claude はディレクトリ丸ごとリンクすると Claude Code の実行時ファイルが
+    # リポジトリ内に書き込まれてしまう。必要なファイルだけ後続セクションで個別にリンクする
+    [[ "$f" == ".claude" ]] && continue
 
     #echo "$DIR"/"$f"
     ln -snfv "$DIR"/"$f" "$HOME"/"$f"
 done
 
 # starship
-mkdir "$HOME"/.config
-mkdir "$HOME"/.config/sheldon
+mkdir -p "$HOME"/.config/sheldon
 ln -snfv "$DIR"/config/starship.toml "$HOME"/.config/starship.toml
 ln -snfv "$DIR"/config/sheldon/plugins.toml "$HOME"/.config/sheldon/plugins.toml
 
@@ -92,7 +96,3 @@ if command -v claude &> /dev/null; then
     claude plugin install terraform-module-generation@hashicorp
     claude plugin install terraform-provider-development@hashicorp
 fi
-
-# aws amazonq
-mkdir -p "$HOME"/.aws/amazonq
-ln -snfv "$DIR"/.aws/amazonq/mcp.json "$HOME"/.aws/amazonq/mcp.json

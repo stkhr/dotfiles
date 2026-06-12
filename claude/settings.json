@@ -104,7 +104,6 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-opus-4-7",
   "enabledMcpjsonServers": [
     "serena",
     "chrome-devtools",
