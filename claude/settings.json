@@ -1,10 +1,12 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "BASH_DEFAULT_TIMEOUT_MS": "300000"
   },
   "attribution": {
-    "commit": ""
+    "commit": "",
+    "pr": ""
   },
   "permissions": {
     "allow": [
@@ -122,7 +124,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/notify-pr-created.sh"
+            "command": "~/.claude/hooks/notify-pr-created.sh",
+            "if": "Bash(gh pr create*)"
           }
         ]
       },
