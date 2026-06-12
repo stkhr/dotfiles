@@ -13,16 +13,16 @@ claude mcp add serena --scope user \
     --project /workspaces/projects
 
 claude mcp add chrome-devtools --scope user \
-    -- npx -y chrome-devtools-mcp@0.12.1
+    -- npx -y chrome-devtools-mcp@1.2.0
 
 claude mcp add context7 --scope user \
-    -- npx -y @upstash/context7-mcp@2.1.0
+    -- npx -y @upstash/context7-mcp@3.2.0
 
 claude mcp add playwright --scope user \
     -- npx -y @executeautomation/playwright-mcp-server@1.0.12
 
 claude mcp add drawio --scope user \
-    -- npx -y @drawio/mcp
+    -- npx -y @drawio/mcp@1.2.7
 
 claude mcp add notion --transport http --scope user \
     https://mcp.notion.com/mcp
