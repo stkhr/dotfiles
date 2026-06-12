@@ -32,11 +32,16 @@ if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then exit 0; fi
 # Must be inside a git repo to verify anything.
 git -C "$CWD" rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
 
-# Extract recent assistant text from the transcript JSONL. Parse line-by-line
-# with fromjson? so a truncated/partial line can never break the whole parse.
+# Extract the FINAL assistant message only, not a rolling window: a claim
+# from an older turn ("pushしました", true at the time) must not be re-checked
+# against the current repo state, or an honest follow-up ("pushはまだ") gets
+# blocked. Parse line-by-line with fromjson? so a truncated/partial line can
+# never break the whole parse; -c keeps each message on one line (newlines
+# escaped) so `tail -n 1` selects whole messages, then jq -r unescapes.
 LAST_MSG=$(tail -n 400 "$TRANSCRIPT" 2>/dev/null \
-  | jq -Rr 'fromjson? | select(.type == "assistant") | (.message.content // [])[]? | select(.type == "text") | .text' 2>/dev/null \
-  | tail -n 60)
+  | jq -Rc 'fromjson? | select(.type == "assistant") | [(.message.content // [])[]? | select(.type == "text") | .text] | join("\n") | select(length > 0)' 2>/dev/null \
+  | tail -n 1 \
+  | jq -r '.' 2>/dev/null)
 
 [ -z "$LAST_MSG" ] && exit 0
 
@@ -71,10 +76,18 @@ if echo "$CLAIM" | grep -q 'push'; then
   # ls-remote failed (network/no remote) -> inconclusive, skip.
 fi
 
-# --- Verify PR claim: an open PR exists for the current branch ---
+# --- Verify PR claim: the claimed PR exists ---
+# Prefer a PR number from a URL in the message: it stays correct even when the
+# claim is about another branch (e.g. worktree cleanup switched back to main).
+# Fall back to the current branch's PR only when no number is present.
 if echo "$CLAIM" | grep -q 'PR作成'; then
   if command -v gh >/dev/null 2>&1 && (cd "$CWD" && ${TO:+$TO 10} gh auth status >/dev/null 2>&1); then
-    if ! (cd "$CWD" && ${TO:+$TO 15} gh pr view --json url >/dev/null 2>&1); then
+    PR_NUM=$(echo "$LAST_MSG" | grep -oE '/pull/[0-9]+' | tail -n 1 | grep -oE '[0-9]+')
+    if [ -n "$PR_NUM" ]; then
+      if ! (cd "$CWD" && ${TO:+$TO 15} gh pr view "$PR_NUM" --json url >/dev/null 2>&1); then
+        PROBLEMS="${PROBLEMS}- PR #${PR_NUM} を作成したと報告したが、gh で見つからない\n"
+      fi
+    elif ! (cd "$CWD" && ${TO:+$TO 15} gh pr view --json url >/dev/null 2>&1); then
       PROBLEMS="${PROBLEMS}- PRを作成したと報告したが、現ブランチ($BRANCH)に対応するPRが gh で見つからない\n"
     fi
   fi
@@ -85,15 +98,8 @@ fi
 
 REASON=$(printf '完了報告の事実性チェックに失敗しました。直近の報告(%s)と実態が矛盾しています:\n%b実際に実行するか、報告を「未完了/未確認」に訂正してください。検証: git status -sb / gh pr view' "$CLAIM" "$PROBLEMS")
 
+# Exit 2 blocks the stop and feeds stderr back to Claude as the correction
+# instruction. Do NOT emit JSON here: stdout is only parsed on exit 0, and
+# "continue: false" would halt the session instead of forcing a correction.
 echo "$REASON" >&2
-
-jq -Rn --arg msg "$REASON" '{
-  continue: false,
-  stopReason: "完了報告と実態が矛盾しています。実行するか訂正してください。",
-  hookSpecificOutput: {
-    hookEventName: "Stop",
-    additionalContext: $msg
-  }
-}'
-
 exit 2

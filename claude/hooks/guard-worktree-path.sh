@@ -30,7 +30,7 @@ try:
     toks = shlex.split(sys.stdin.read())
 except Exception:
     sys.exit(0)
-valopts = {"-b", "-B", "--reason"}   # flags that consume the next token
+valopts = {"-b", "-B", "--reason", "--orphan"}   # flags that consume the next token
 i = 0
 while i < len(toks):
     t = toks[i]
