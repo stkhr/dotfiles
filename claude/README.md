@@ -70,7 +70,7 @@ GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP
 |---|---|---|
 | `protect-main-branch.sh` | PreToolUse (Bash) | main/master への `git commit` をブロック |
 | `lint-feedback.sh` | PostToolUse (Edit\|Write) | 編集ファイルを lint し、エラーをモデルにフィードバック |
-| `format-on-edit.sh` | PostToolUse (Edit\|Write) | prettier / black / gofmt による自動整形 |
+| `format-on-edit.sh` | PostToolUse (Edit\|Write) | prettier / black / gofmt / terraform fmt による自動整形 |
 | `notify-pr-created.sh` | PostToolUse (Bash) | `gh pr create` 実行時に PR URL を通知 |
 | `precompact-context.sh` | PreCompact | git の作業状態を compaction サマリに注入 |
 | `verify-tests.sh` | Stop | 応答完了時のテスト検証 |

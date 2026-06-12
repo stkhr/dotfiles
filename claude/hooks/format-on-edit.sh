@@ -19,6 +19,10 @@ case "$FILE" in
   *.go)
     command -v gofmt &>/dev/null && gofmt -w "$FILE" 2>/dev/null
     ;;
+  *.tf|*.tfvars)
+    # 変更ファイル単位で整形する（-recursive でスコープ外まで整形しない）
+    command -v terraform &>/dev/null && terraform fmt "$FILE" >/dev/null 2>&1
+    ;;
 esac
 
 exit 0
