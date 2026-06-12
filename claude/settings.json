@@ -104,7 +104,6 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5[1m]",
   "enabledMcpjsonServers": [
     "serena",
     "chrome-devtools",
