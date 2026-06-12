@@ -32,6 +32,11 @@ brew "packer"
 brew "graphviz"
 brew "azure-cli"
 brew "cloudflare-wrangler"
+## modern CLI
+brew "eza"     # ls代替
+brew "fd"      # find代替
+brew "ripgrep" # grep代替
+brew "zoxide"  # smart cd
 
 # tap
 tap "hashicorp/tap" # hashicorp
