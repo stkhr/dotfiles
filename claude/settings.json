@@ -114,6 +114,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/protect-main-branch.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/guard-worktree-path.sh"
           }
         ]
       }
@@ -170,6 +174,12 @@
       {
         "matcher": "",
         "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/verify-completion-claims.sh",
+            "timeout": 30,
+            "statusMessage": "Verifying completion claims..."
+          },
           {
             "type": "command",
             "command": "~/.claude/hooks/verify-tests.sh",
