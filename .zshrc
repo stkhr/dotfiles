@@ -167,3 +167,11 @@ AZ_COMPLETION="$(brew --prefix 2>/dev/null)/etc/bash_completion.d/az"
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
 
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
+
+# Claude Code等の非対話エージェントでは、出力フォーマット変更や
+# グローバルエイリアスが誤読・コマンド汚染を招くため無効化する。
+# 対話シェル(iTerm/tmux等, CLAUDECODE未設定)の体験は変わらない。
+if [[ -n "$CLAUDECODE" ]]; then
+  unalias ls ll ld lt cp mv grep diff du 2>/dev/null
+  unalias L H T G W B 2>/dev/null   # global aliases (alias -g)
+fi
