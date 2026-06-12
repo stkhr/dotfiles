@@ -131,6 +131,7 @@ if command -v fd >/dev/null 2>&1; then
   export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
   export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 fi
+export FZF_CTRL_T_OPTS='--preview "bat --style=numbers --color=always {}" --preview-window=right:60%'
 source <(fzf --zsh)
 
 # sheldon
