@@ -55,7 +55,7 @@ cask "drawio"
 cask "chatgpt"
 cask "atok"
 cask "claude"
-cask "claude-code"
+cask "claude-code@latest"
 cask "pgadmin4"
 cask "homerow"
 
