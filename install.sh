@@ -9,11 +9,9 @@ do
     [[ "$f" == ".agents" ]] && continue
     # リポジトリ運用ガイド。~/.CLAUDE.md として配置する用途はない
     [[ "$f" == ".CLAUDE.md" ]] && continue
-    # ~/.claude と ~/.aws はディレクトリ丸ごとリンクすると、Claude Code の
-    # 実行時ファイルや AWS 認証情報がリポジトリ内に書き込まれてしまう。
-    # 必要なファイルだけ後続セクションで個別にリンクする
+    # ~/.claude はディレクトリ丸ごとリンクすると Claude Code の実行時ファイルが
+    # リポジトリ内に書き込まれてしまう。必要なファイルだけ後続セクションで個別にリンクする
     [[ "$f" == ".claude" ]] && continue
-    [[ "$f" == ".aws" ]] && continue
 
     #echo "$DIR"/"$f"
     ln -snfv "$DIR"/"$f" "$HOME"/"$f"
@@ -98,7 +96,3 @@ if command -v claude &> /dev/null; then
     claude plugin install terraform-module-generation@hashicorp
     claude plugin install terraform-provider-development@hashicorp
 fi
-
-# aws amazonq
-mkdir -p "$HOME"/.aws/amazonq
-ln -snfv "$DIR"/.aws/amazonq/mcp.json "$HOME"/.aws/amazonq/mcp.json
