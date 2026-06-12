@@ -104,13 +104,6 @@
     ],
     "defaultMode": "auto"
   },
-  "enabledMcpjsonServers": [
-    "serena",
-    "chrome-devtools",
-    "context7",
-    "playwright",
-    "aws"
-  ],
   "hooks": {
     "PreToolUse": [
       {
@@ -129,7 +122,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r 'if (.tool_input.command // \"\" | test(\"gh pr create\")) then (.tool_response.stdout // \"\" | match(\"https://github\\\\.com/\\\\S+\") | .string) // empty else empty end' | { read -r url; [ -n \"$url\" ] && echo \"{\\\"systemMessage\\\": \\\"PR が作成されました: $url\\\"}\"; } 2>/dev/null || true"
+            "command": "~/.claude/hooks/notify-pr-created.sh"
           }
         ]
       },
@@ -138,7 +131,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$FILE\" ] && [ -f \"$FILE\" ]; then case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.md) command -v prettier &>/dev/null && prettier --write \"$FILE\" 2>/dev/null ;; *.py) command -v black &>/dev/null && black -q \"$FILE\" 2>/dev/null ;; *.go) command -v gofmt &>/dev/null && gofmt -w \"$FILE\" 2>/dev/null ;; esac; fi"
+            "command": "~/.claude/hooks/format-on-edit.sh"
           },
           {
             "type": "command",
