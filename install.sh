@@ -21,7 +21,6 @@ done
 mkdir -p "$HOME"/.ssh/conf.d
 chmod 700 "$HOME"/.ssh/conf.d
 ln -snfv "$DIR"/ssh/conf.d/general.conf "$HOME"/.ssh/conf.d/general.conf
-chmod 600 "$HOME"/.ssh/conf.d/general.conf
 # ~/.ssh/config の先頭に Include がなければ追記
 if ! grep -q "Include conf.d/\*.conf" "$HOME/.ssh/config" 2>/dev/null; then
     if [ -f "$HOME/.ssh/config" ]; then

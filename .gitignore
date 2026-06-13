@@ -3,3 +3,4 @@
 .agents/
 .worktrees/
 docs/
+ssh/conf.d/private*.conf
