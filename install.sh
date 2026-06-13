@@ -17,6 +17,21 @@ do
     ln -snfv "$DIR"/"$f" "$HOME"/"$f"
 done
 
+# ssh conf.d
+mkdir -p "$HOME"/.ssh/conf.d
+chmod 700 "$HOME"/.ssh/conf.d
+ln -snfv "$DIR"/ssh/conf.d/general.conf "$HOME"/.ssh/conf.d/general.conf
+# ~/.ssh/config の先頭に Include がなければ追記
+if ! grep -q "Include conf.d/\*.conf" "$HOME/.ssh/config" 2>/dev/null; then
+    if [ -f "$HOME/.ssh/config" ]; then
+        printf "Include conf.d/*.conf\n\n" | cat - "$HOME/.ssh/config" > "$HOME/.ssh/config.tmp"
+        mv "$HOME/.ssh/config.tmp" "$HOME/.ssh/config"
+    else
+        printf "Include conf.d/*.conf\n" > "$HOME/.ssh/config"
+    fi
+    chmod 600 "$HOME/.ssh/config"
+fi
+
 # starship
 mkdir -p "$HOME"/.config/sheldon
 ln -snfv "$DIR"/config/starship.toml "$HOME"/.config/starship.toml
