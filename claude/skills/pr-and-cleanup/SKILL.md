@@ -85,37 +85,48 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 `superpowers:requesting-code-review` スキルを実行し、`superpowers:code-reviewer` サブエージェントを起動すること。
 
-**結果に応じた対応:**
+**結果に応じた対応（Draft PR フロー）:**
 - Critical issues → 修正してからこのステップを再実行
-- Important issues → 修正してからPR作成に進む
+- Important / Minor issues → 修正は必須とせず、Draft PR 本文の「レビュー所見」セクションに記載し、人間レビューでの判断に委ねる
 - 問題なし → PR作成に進む
 
-### 5. Create Pull Request
+非Draft（Ready）PR を作成する場合は、Important issues も修正してから進む。
 
-**GitHub CLIでPRを作成:**
+### 5. Create Draft Pull Request
+
+委譲タスクの既定の終点は **Draft PR**。事前のユーザー承認は挟まず作成する（Draft PR の作成はハードゲート対象外）。
+
+**本文の構成**: `## Summary`（なぜ中心の変更要旨 2〜4 点）に加えて `## レビュー所見` セクションを設け、Step 4 の独立レビュー結果を Critical（修正済み）/ Important・Minor（未対応・要判断）に分けて列挙する。これにより PR description とコードの指摘が PR 上で1か所にまとまる。
 
 ```bash
-# 基本的なPR作成（インタラクティブ）
-gh pr create
+# Draft PR を作成（既定）。本文は Summary + レビュー所見
+gh pr create --draft \
+  --title "feat: ..." \
+  --body "$(cat <<'EOF'
+## Summary
+- <変更点1>
+- <変更点2>
 
-# または、タイトルと説明を指定
-gh pr create \
-  --title "feat: add user authentication" \
-  --body "This PR implements basic user authentication using JWT tokens."
+## レビュー所見
+- ✅ Critical（修正済み）: <内容>
+- ⚠️ Important（未対応・要判断）: <内容>
+- 💡 Minor: <内容>
+EOF
+)"
 
-# ドラフトPRとして作成
-gh pr create --draft
-
-# ベースブランチを指定
-gh pr create --base develop
+# ベースブランチを指定する場合
+gh pr create --draft --base develop
 ```
 
-**PR作成前の確認事項:**
-- CI/CDが実行されているか
-- 適切なラベルやレビュアーの指定
-- PRテンプレートの内容確認
+**作成前のローカル確認:**
+- ローカルで lint/format/テストを実行済みか
+- リポジトリの PR テンプレート有無を確認（あれば従う）
+
+**Ready PR 化（Draft → Ready）・マージは別途ユーザー承認が必要**（ハードゲート対象）。
 
 ### 6. Clean Up Worktree
+
+> **Draft PR レビューフローの注意**: Draft PR を作成してユーザーのレビューを待つ場合は、worktree を残す（`--pr-only` 相当）。レビュー反映（コード修正・PR更新）が済んでからクリーンアップする。
 
 **PR作成成功後、worktreeを削除:**
 
