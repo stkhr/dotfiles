@@ -68,7 +68,6 @@
       "Bash(sudo:*)",
       "Bash(terraform apply:*)",
       "Bash(terraform destroy:*)",
-      "Bash(curl:*)",
       "Bash(wget:*)",
       "Bash(cat:*)",
       "Bash(rm -rf:*)",
