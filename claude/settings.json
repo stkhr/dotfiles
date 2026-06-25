@@ -232,6 +232,9 @@
     }
   },
   "language": "japanese",
+  "fallbackModel": [
+    "claude-opus-4-6"
+  ],
   "effortLevel": "xhigh",
   "showClearContextOnPlanAccept": true,
   "autoUpdatesChannel": "stable",
