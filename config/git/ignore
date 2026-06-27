@@ -1,2 +1,4 @@
 **/.claude/settings.local.json
 .worktrees/
+# crit のレビューコメント（ローカル専用）
+.crit/
