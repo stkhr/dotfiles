@@ -36,6 +36,9 @@
       "Bash(bun:*)",
       "Bash(gh:*)",
       "Bash(go:*)",
+      "Bash(crit review:*)",
+      "Bash(crit status:*)",
+      "Bash(crit comment:*)",
       "Bash(make:*)",
       "Bash(docker:*)",
       "Bash(python:*)",
@@ -215,7 +218,8 @@
     "terraform-provider-development@hashicorp": true,
     "frontend-design@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
-    "security-guidance@claude-plugins-official": true
+    "security-guidance@claude-plugins-official": true,
+    "crit@crit-marketplace": true
   },
   "extraKnownMarketplaces": {
     "hashicorp": {
@@ -228,6 +232,12 @@
       "source": {
         "source": "github",
         "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "crit-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "kevindutra/crit"
       }
     }
   },

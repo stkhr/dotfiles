@@ -98,11 +98,45 @@ if command -v npx &> /dev/null; then
     done
 fi
 
+# crit (AI code review TUI)
+# Homebrew formula/tap は未公開、Go も前提にできないため GitHub Releases のバイナリを直接取得する
+CRIT_VERSION="v0.2.2"
+CRIT_MARKER="$HOME/.local/bin/.crit-version"
+# 同バージョンが入っていれば skip。CRIT_VERSION を上げて再実行すると更新される
+if [ "$(cat "$CRIT_MARKER" 2>/dev/null)" != "$CRIT_VERSION" ]; then
+    case "$(uname -s)-$(uname -m)" in
+        Darwin-arm64)  CRIT_ASSET="crit_darwin_arm64.tar.gz" ;;
+        Darwin-x86_64) CRIT_ASSET="crit_darwin_amd64.tar.gz" ;;
+        Linux-aarch64) CRIT_ASSET="crit_linux_arm64.tar.gz" ;;
+        Linux-x86_64)  CRIT_ASSET="crit_linux_amd64.tar.gz" ;;
+        *)             CRIT_ASSET="" ;;
+    esac
+    if [ -n "$CRIT_ASSET" ]; then
+        CRIT_TMP=$(mktemp -d)
+        CRIT_BASE="https://github.com/kevindutra/crit/releases/download/${CRIT_VERSION}"
+        if command -v shasum &> /dev/null; then CRIT_VERIFY="shasum -a 256 -c"; else CRIT_VERIFY="sha256sum -c"; fi
+        # バイナリと checksums を取得し、PATH に置く前に sha256 を検証する
+        if curl -fsSL "$CRIT_BASE/$CRIT_ASSET" -o "$CRIT_TMP/$CRIT_ASSET" \
+            && curl -fsSL "$CRIT_BASE/crit_${CRIT_VERSION#v}_checksums.txt" -o "$CRIT_TMP/checksums.txt" \
+            && grep " ${CRIT_ASSET}\$" "$CRIT_TMP/checksums.txt" | (cd "$CRIT_TMP" && ${=CRIT_VERIFY} -) &> /dev/null; then
+            tar xzf "$CRIT_TMP/$CRIT_ASSET" -C "$CRIT_TMP" crit
+            mkdir -p "$HOME/.local/bin"
+            mv "$CRIT_TMP/crit" "$HOME/.local/bin/crit"
+            chmod +x "$HOME/.local/bin/crit"
+            echo "$CRIT_VERSION" > "$CRIT_MARKER"
+        else
+            echo "crit: download or checksum verification failed, skipping install" >&2
+        fi
+        rm -rf "$CRIT_TMP"
+    fi
+fi
+
 # claude plugins
 if command -v claude &> /dev/null; then
     # Register marketplaces first (idempotent — safe to re-run)
     claude plugin marketplace add anthropics/claude-plugins-official
     claude plugin marketplace add hashicorp/agent-skills
+    claude plugin marketplace add kevindutra/crit
 
     # Anthropic official plugins
     claude plugin install superpowers@claude-plugins-official
@@ -114,4 +148,7 @@ if command -v claude &> /dev/null; then
     claude plugin install terraform-code-generation@hashicorp
     claude plugin install terraform-module-generation@hashicorp
     claude plugin install terraform-provider-development@hashicorp
+
+    # crit review plugin
+    claude plugin install crit@crit-marketplace
 fi
