@@ -18,7 +18,7 @@
 
 ## 破壊的・外部影響操作の確認ハードゲート
 
-git/gh の破壊的操作(force push / `--no-verify` / ブランチ削除 / PRの close・comment・merge・ready / 非Draft PR作成)は hook が確認プロンプトを強制する。hook が検知できない以下の操作も、実行前に「文面提示 → ユーザー承認 → 実行」を経ること:
+git/gh の破壊的操作(force push / `--no-verify` / ブランチ削除 / PRの close・comment・merge・ready・review / 非Draft PR作成)は hook が確認プロンプトを強制する。hook が検知できない以下の操作も、実行前に「文面提示 → ユーザー承認 → 実行」を経ること:
 
 - 外部チャネル(チャット・チケットシステム等)への投稿・状態変更
 - 既存ファイルの大量削除 / 一括リネーム

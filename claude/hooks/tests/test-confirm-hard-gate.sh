@@ -50,8 +50,15 @@ run_case ask 'gh pr ready 12'
 run_case ask 'gh pr comment 12 --body "hi"'
 run_case ask 'gh pr review 12 --approve'
 
+# --- ask: refspec forms ---
+run_case ask 'git push origin +main'
+run_case ask 'git push origin :feature-x'
+run_case ask 'git -C /tmp push --force'
+
 # --- ask: non-draft pr create ---
 run_case ask 'gh pr create --title "x" --body "y"'
+run_case ask 'gh pr create --draft=false --title "x"'
+run_case ask 'gh pr create --title "x" --body "fix -d handling in parser"'
 
 # --- pass: normal operations ---
 run_case pass 'git push origin main'
@@ -66,6 +73,10 @@ run_case pass 'gh pr list'
 run_case pass 'git branch feature-x'
 run_case pass 'git branch --show-current'
 run_case pass 'git commit -m "feat: x"'
+run_case pass 'git commit -m "do not use --no-verify"'
+run_case pass 'git push origin HEAD:main'
+run_case pass 'git commit && rm -f /tmp/x && git push origin feature'
+run_case pass 'gh pr create --draft=true --title "x"'
 run_case pass 'ls -la'
 run_case pass ''
 
