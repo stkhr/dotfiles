@@ -32,6 +32,7 @@ brew "packer"
 brew "graphviz"
 brew "azure-cli"
 brew "cloudflare-wrangler"
+brew "playwright-cli"
 ## modern CLI
 brew "eza"     # ls代替
 brew "fd"      # find代替
