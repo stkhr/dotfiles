@@ -120,6 +120,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/guard-worktree-path.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/confirm-hard-gate.sh"
           }
         ]
       }
