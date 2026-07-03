@@ -90,6 +90,17 @@ if [ -d "$DIR"/claude/agents ]; then
     done
 fi
 
+# herdr agent integrations(エージェント状態検知・セッション復元)
+# hook 本体はマシンローカル配置。integration install は settings.json 等を
+# 再整形して書き込むため、未導入・要更新のときだけ実行して作業ツリーを汚さない
+if command -v herdr &> /dev/null; then
+    herdr_integrations=$(herdr integration status 2>/dev/null)
+    echo "$herdr_integrations" | grep -q '^claude: current' || herdr integration install claude
+    if [ -d "$HOME/.codex" ]; then
+        echo "$herdr_integrations" | grep -q '^codex: current' || herdr integration install codex
+    fi
+fi
+
 # agent skills (third-party, installed via npx)
 if command -v npx &> /dev/null; then
     (cd "$HOME" && npx -y skills add supabase/agent-skills --yes)
