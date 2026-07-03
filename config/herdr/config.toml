@@ -1,0 +1,28 @@
+# herdr configuration
+# schema: `herdr --default-config` (v0.7.1)
+
+# 初回起動の通知設定ウィザードを抑止する。herdr が config.toml(dotfiles への
+# symlink)を書き換えて symlink が実体ファイルに置き換わる事故を避けるため、
+# 起動時に書き込みが発生する設定はあらかじめ明示しておく
+onboarding = false
+
+[keys]
+# tmux の手癖を維持: prefix+= で上下分割、prefix+| で左右分割
+# (herdr の "vertical/horizontal" は分割線ではなく分割方向の呼称。
+#  split_vertical = 左右に並ぶ / split_horizontal = 上下に積む)
+split_vertical = "prefix+|"
+split_horizontal = "prefix+="
+
+# tmux の bind -n S-left 等と同じ、prefix なし Shift+矢印でペイン移動
+focus_pane_left = "shift+left"
+focus_pane_down = "shift+down"
+focus_pane_up = "shift+up"
+focus_pane_right = "shift+right"
+
+[ui.toast]
+# エージェント状態変化の通知はアプリ内トーストで受ける
+delivery = "herdr"
+
+[advanced]
+# tmux の history-limit 100000 行(約10MB)以上を確保
+scrollback_limit_bytes = 20000000
