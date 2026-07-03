@@ -19,6 +19,13 @@ focus_pane_down = "shift+down"
 focus_pane_up = "shift+up"
 focus_pane_right = "shift+right"
 
+# workspace(space)間の直接移動。デフォルトは picker (prefix+w) のみで
+# next/previous が未割り当てのため、tmux の prefix+( / prefix+) 相当を補う
+next_workspace = "prefix+down"
+previous_workspace = "prefix+up"
+# 番号ジャンプ(tab の prefix+1..9 と対になる)
+switch_workspace = "prefix+shift+1..9"
+
 [ui.toast]
 # エージェント状態変化の通知はアプリ内トーストで受ける
 delivery = "herdr"
