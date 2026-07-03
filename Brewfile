@@ -16,6 +16,7 @@ brew "jq"
 brew "just"
 brew "libpq"
 brew "pinentry-mac"
+brew "herdr" # agent multiplexer
 brew "sheldon"
 brew "starship"
 brew "tmux"

@@ -73,6 +73,22 @@ gwta() {
 }
 ## tmux
 alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
+## herdr
+# herdr のペイン内で実行すると、現在のタブを tmuxg と同じ4ペインレイアウトにする
+# (上60%メイン、下段は左1 + 右上下2)。分割ペインは実行ペインの cwd を継承する
+herdrg() {
+  local main p2 p3
+  main=$(herdr pane current 2>/dev/null | jq -r '.result.pane.pane_id // empty')
+  if [[ -z "$main" ]]; then
+    echo "herdrg: herdr ペイン内で実行してください(herdr 未起動の可能性もあります)" >&2
+    return 1
+  fi
+  p2=$(herdr pane split --pane "$main" --direction down --ratio 0.6 --cwd "$PWD" --no-focus | jq -r '.result.pane.pane_id // empty')
+  [[ -n "$p2" ]] || { echo "herdrg: 分割に失敗しました" >&2; return 1; }
+  p3=$(herdr pane split --pane "$p2" --direction right --ratio 0.5 --cwd "$PWD" --no-focus | jq -r '.result.pane.pane_id // empty')
+  [[ -n "$p3" ]] || { echo "herdrg: 分割に失敗しました" >&2; return 1; }
+  herdr pane split --pane "$p3" --direction down --ratio 0.5 --cwd "$PWD" --no-focus >/dev/null
+}
 ## pipe
 alias -g L='| less'
 alias -g H='| head'

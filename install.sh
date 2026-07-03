@@ -37,6 +37,10 @@ mkdir -p "$HOME"/.config/sheldon
 ln -snfv "$DIR"/config/starship.toml "$HOME"/.config/starship.toml
 ln -snfv "$DIR"/config/sheldon/plugins.toml "$HOME"/.config/sheldon/plugins.toml
 
+# herdr
+mkdir -p "$HOME"/.config/herdr
+ln -snfv "$DIR"/config/herdr/config.toml "$HOME"/.config/herdr/config.toml
+
 # git global ignore (core.excludesFile のデフォルト位置)
 mkdir -p "$HOME"/.config/git
 ln -snfv "$DIR"/config/git/ignore "$HOME"/.config/git/ignore
