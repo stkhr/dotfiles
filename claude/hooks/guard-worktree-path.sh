@@ -2,7 +2,7 @@
 # PreToolUse (Bash): block `git worktree add` that places the worktree OUTSIDE
 # the repository root. Sibling/absolute worktrees cause the Bash tool's cwd to
 # silently reset to the launch root, leaking artifacts (.venv, uv.lock, ...) to
-# the wrong tree. Steer to an in-repo path such as .worktrees/<branch>.
+# the wrong tree. Steer to an in-repo path such as .claude/worktrees/<branch>.
 # Exit code 2 blocks the tool execution and shows stderr to Claude.
 
 set -uo pipefail
@@ -59,7 +59,7 @@ if [ "$INSIDE" = "no" ]; then
 BLOCKED: worktree をリポジトリ外に作成しようとしています ($TARGET)。
 リポジトリ外(兄弟階層/絶対パス)の worktree は Bash の cwd が起動ルートに戻り、
 成果物(.venv / uv.lock 等)が誤ったツリーに漏れます。
-リポジトリ内に作成してください。例: git worktree add .worktrees/<branch>
+リポジトリ内に作成してください。例: git worktree add .claude/worktrees/<branch>
 EOF
   exit 2
 fi
