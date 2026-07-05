@@ -3,6 +3,7 @@ cask_args appdir: "/Applications"
 # brew
 brew "asdf"
 brew "awscli"
+brew "backlog-md" # markdown task manager for AI agents
 brew "bat"
 brew "curl"
 brew "gh"
