@@ -42,6 +42,11 @@ alias gstash="git stash"
 alias gwtl="git worktree list"
 alias gwtrm="git worktree remove"
 alias gwtpr="git worktree prune"
+
+# Claude Code モデル切替(デフォルトは settings.json の claude-opus-4-8 = 1M なし)
+alias copus='claude --model claude-opus-4-8'
+alias copus1m='claude --model "claude-opus-4-8[1m]"'
+alias csonnet='claude --model claude-sonnet-5'
 _gwtrm() {
   local -a worktrees
   worktrees=(${(f)"$(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2}')"})
