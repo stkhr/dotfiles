@@ -261,6 +261,7 @@
   "fallbackModel": [
     "claude-opus-4-6"
   ],
+  "advisorModel": "opus",
   "effortLevel": "xhigh",
   "showClearContextOnPlanAccept": true,
   "autoUpdatesChannel": "stable",
