@@ -23,6 +23,7 @@ brew "tmux"
 brew "tree"
 brew "trivy"
 brew "actionlint"
+brew "zizmor" # GitHub Actions security scanner
 brew "mycli"
 brew "pgcli"
 brew "pinact"
