@@ -108,6 +108,9 @@
     ],
     "defaultMode": "auto"
   },
+  "fallbackModel": [
+    "claude-opus-4-6"
+  ],
   "hooks": {
     "PreToolUse": [
       {
@@ -258,11 +261,8 @@
     }
   },
   "language": "japanese",
-  "fallbackModel": [
-    "claude-opus-4-6"
-  ],
-  "advisorModel": "fable",
   "effortLevel": "xhigh",
+  "advisorModel": "fable",
   "showClearContextOnPlanAccept": true,
   "autoUpdatesChannel": "stable",
   "tui": "fullscreen",
@@ -270,5 +270,6 @@
   "theme": "dark",
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "model": "sonnet"
 }
