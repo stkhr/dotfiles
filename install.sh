@@ -7,8 +7,6 @@ do
     [[ "$f" == ".gitignore" ]] && continue
     [[ "$f" == ".DS_Store" ]] && continue
     [[ "$f" == ".agents" ]] && continue
-    # リポジトリ運用ガイド。~/.CLAUDE.md として配置する用途はない
-    [[ "$f" == ".CLAUDE.md" ]] && continue
     # ~/.claude はディレクトリ丸ごとリンクすると Claude Code の実行時ファイルが
     # リポジトリ内に書き込まれてしまう。必要なファイルだけ後続セクションで個別にリンクする
     [[ "$f" == ".claude" ]] && continue
