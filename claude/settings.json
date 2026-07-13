@@ -137,8 +137,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/notify-pr-created.sh",
-            "if": "Bash(gh pr create*)"
+            "command": "~/.claude/hooks/notify-pr-created.sh"
           }
         ]
       },

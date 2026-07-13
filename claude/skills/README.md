@@ -4,32 +4,22 @@
 
 ## 📋 利用可能なSkills
 
-### code-review
-**説明**: コードレビューを体系的に実施するスキル
+| Skill | 用途 |
+|---|---|
+| `adr` | Architecture Decision Record の作成・更新 |
+| `code-review` | 体系的なコードレビュー(品質・セキュリティ・パフォーマンス) |
+| `debugging` | 障害調査・バグ調査の進め方(原因特定先行・レイヤ切り替え) |
+| `external-api-precheck` | クラウドAPI・外部SaaS実装前の一次情報確認 |
+| `monthly-dev-report` | GitHubコミット履歴からの月次開発レポート生成 |
+| `pdm-assist` | プロダクトマネジメント(何を・誰に・いくらで)の意思決定補佐 |
+| `pm-assist` | プロジェクトマネジメント(タスク・リスク洗い出し)の補佐 |
+| `pr-and-cleanup` | worktree 環境での PR 作成とクリーンアップの一括実行 |
+| `pr-creation` | PRテンプレート探索・Draft PRフロー・CI確認の手順 |
+| `security-hardening` | 境界レビュー・脅威モデリング等の能動的セキュリティ強化 |
+| `session-start` | セッション開始時の作業状態把握ルーティン |
+| `terraform-style` | Terraform のスタイル規範 |
 
-**使用タイミング**:
-- プルリクエストのレビュー時
-- 「コードをレビューして」という指示
-- セキュリティチェックが必要な時
-
-**主な機能**:
-- コード品質の評価
-- セキュリティ脆弱性の検出
-- パフォーマンス問題の特定
-- テストカバレッジの確認
-- ベストプラクティスの適用
-
-**ファイル構成**:
-- `SKILL.md` - メインの定義とワークフロー
-- `reference.md` - 詳細なレビュー基準とチェックリスト
-- `examples.md` - 実際のレビュー例
-
-**起動例**:
-```
-このコードをレビューしてください
-セキュリティの観点でチェックして
-パフォーマンス問題がないか確認
-```
+各スキルの詳細・起動条件は各ディレクトリの `SKILL.md` frontmatter(`description`)を参照。
 
 ---
 
@@ -199,7 +189,6 @@ git commit -m "fix: improve code-review performance analysis"
 ## 🎯 推奨Skillsのアイデア
 
 - `commit-helper` - コンベンショナルコミット形式の支援
-- `debug-workflow` - デバッグの体系的アプローチ
 - `refactor-guide` - リファクタリング手順
 - `test-strategy` - テスト戦略の立案
 - `api-design` - REST/GraphQL APIの設計支援
