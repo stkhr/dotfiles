@@ -36,6 +36,7 @@
       "Bash(bun:*)",
       "Bash(gh:*)",
       "Bash(go:*)",
+      "Bash(~/.claude/crit-review.sh:*)",
       "Bash(crit review:*)",
       "Bash(crit status:*)",
       "Bash(crit comment:*)",

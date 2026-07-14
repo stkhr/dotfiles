@@ -23,7 +23,7 @@
 ## レビューゲート
 
 - 対話セッションで設計/プランファイルを生成・更新したら、実装前に crit レビューを通す(順序: 設計の crit → 実装 → `superpowers:requesting-code-review` → Draft PR)。headless 自走時は Draft PR を人間レビューのゲートとする
-- crit は tmux 内で `crit review <file> --detach --wait`(Bash timeout 600000ms)→ `crit status <file>` のコメントを反映。tmux 外ではブロッキング起動せず手動実行をユーザーに依頼する。TUI 表示中は対象ファイルを編集しない
+- crit は `~/.claude/crit-review.sh <file>`(Bash timeout 600000ms)で起動し、完了後に `crit status <file>` のコメントを反映。スクリプトが tmux / herdr を自動判別して隣ペインに TUI を開く。どちらでもない環境ではスクリプトが失敗するので、ブロッキング起動せず手動実行をユーザーに依頼する。TUI 表示中は対象ファイルを編集しない
 - 可読性を下げる指摘(否定形への反転、抽象化の追加、将来仮定への対応)はそのまま適用せず、該当箇所・指摘要約・代替案(適用しない案を含む)を添えてユーザーの判断を仰ぐ
 - 「CIが通った」「レビューエージェントが承認した」を設計判断の正当性の根拠としない。指摘への反論コメントの投稿は文面の承認を得てから
 

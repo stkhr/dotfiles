@@ -48,6 +48,7 @@ mkdir -p "$HOME"/.claude
 ln -snfv "$DIR"/claude/settings.json "$HOME"/.claude/settings.json
 ln -snfv "$DIR"/claude/CLAUDE.md "$HOME"/.claude/CLAUDE.md
 ln -snfv "$DIR"/claude/statusline.sh "$HOME"/.claude/statusline.sh
+ln -snfv "$DIR"/claude/crit-review.sh "$HOME"/.claude/crit-review.sh
 
 # claude mcp servers
 if command -v claude &> /dev/null; then
