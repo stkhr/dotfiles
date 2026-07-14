@@ -10,6 +10,7 @@ claude/
 ├── settings.json    # グローバル設定（permissions / hooks / statusline / plugins）
 ├── CLAUDE.md        # グローバルプロンプト（全プロジェクト共通ガイドライン）
 ├── statusline.sh    # ステータスライン表示スクリプト
+├── crit-review.sh   # crit レビュー TUI 起動ラッパー（tmux / herdr 対応）
 ├── mcp-setup.sh     # MCPサーバー登録スクリプト
 ├── hooks/           # フックスクリプト
 ├── skills/          # カスタムスキル
@@ -26,6 +27,7 @@ claude/
 | `claude/settings.json` | `~/.claude/settings.json` |
 | `claude/CLAUDE.md` | `~/.claude/CLAUDE.md` |
 | `claude/statusline.sh` | `~/.claude/statusline.sh` |
+| `claude/crit-review.sh` | `~/.claude/crit-review.sh` |
 | `claude/hooks/*.sh` | `~/.claude/hooks/`（個別リンク + `chmod +x`） |
 | `claude/skills/*/` | `~/.claude/skills/`（ディレクトリ単位でリンク） |
 | `claude/agents/*.md` | `~/.claude/agents/`（個別リンク） |
@@ -103,6 +105,20 @@ install.sh が marketplace を登録し、以下をインストールする
 - `superpowers` / `frontend-design` / `context7` / `security-guidance`（anthropics/claude-plugins-official）
 - `terraform-code-generation` / `terraform-module-generation` / `terraform-provider-development`（hashicorp/agent-skills）
 - `crit`（kevindutra/crit）
+
+## crit レビューラッパー
+
+CLAUDE.md のレビューゲートは `crit review` を直接ではなく `crit-review.sh <file>` 経由で
+起動する。crit 本体の `--detach`（TUI を隣ペインに開く機能）が tmux 専用のため、
+ラッパーが実行環境を判別して同じ体験を提供する:
+
+- tmux 内（`$TMUX`）: `crit review <file> --detach --wait` にそのまま委譲
+- herdr 内（`$HERDR_PANE_ID`）: `herdr pane split` で隣ペインを作り TUI を起動、
+  終了マーカーの出力を `herdr wait output` で待つ（`--detach --wait` 相当）
+- どちらでもない: エラー終了し、手動実行を促す
+
+待ち時間の上限は 540000ms（env `CRIT_REVIEW_TIMEOUT_MS` で変更可）。
+herdr フローは `jq` に依存する。
 
 ## Statusline
 
