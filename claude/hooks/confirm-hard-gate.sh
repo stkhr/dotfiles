@@ -2,9 +2,11 @@
 # PreToolUse (Bash): force a permission prompt ("ask") for hard-gated
 # destructive / externally-visible operations (force push, --no-verify,
 # branch deletion, gh pr close/merge/ready/comment/review, non-draft
-# gh pr create). On detection: exit 0 + permissionDecision "ask"
-# (confirmation, not a hard block). Non-matching or unparsable input
-# passes through silently so a gate bug never stalls normal work.
+# gh pr create, and the same PR comment/review/merge actions issued via
+# raw `gh api` instead of the wrapped `gh pr` subcommands). On detection:
+# exit 0 + permissionDecision "ask" (confirmation, not a hard block).
+# Non-matching or unparsable input passes through silently so a gate bug
+# never stalls normal work.
 #
 # Quoted strings are stripped before matching so flags inside message
 # bodies (--body "fix -d handling") neither trigger nor bypass the gate;
@@ -66,6 +68,20 @@ check_segment() {
   if echo "$seg" | grep -qE '(^|[[:space:]])gh[[:space:]]+pr[[:space:]]+create([[:space:]]|$)' \
     && ! echo "$seg" | grep -qE '(^|[[:space:]])(--draft(=true)?|-d)([[:space:]]|$)'; then
     add_reason "非Draft PR の作成"
+  fi
+
+  # gh pr comment/review/merge の素通し防止: raw `gh api` で同じ REST
+  # エンドポイントを直接叩くと上の gh pr サブコマンド一致では検知できない
+  # ため、mutating メソッドの指定(-f/-F/--input/-X POST 等)と組み合わさった
+  # 場合だけ別途検知する。GET 専用の読み取り(一覧取得等)は対象外。
+  if echo "$seg" | grep -qE '(^|[[:space:]])gh[[:space:]]+api[[:space:]]' \
+    && echo "$seg" | grep -qE '(^|[[:space:]])(-f|-F|--input|-X[[:space:]]*(POST|PATCH|PUT|DELETE)|--method[[:space:]]+(POST|PATCH|PUT|DELETE))([[:space:]=]|$)'; then
+    if echo "$seg" | grep -qiE '/(pulls|issues)/[^[:space:]]*/(comments|reviews)(/|[[:space:]]|$)'; then
+      add_reason "gh api 経由の PR/Issue へのコメント・レビュー投稿"
+    fi
+    if echo "$seg" | grep -qiE '/pulls/[0-9]+/merge([[:space:]]|$)'; then
+      add_reason "gh api 経由の PR マージ"
+    fi
   fi
 }
 
