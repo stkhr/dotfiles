@@ -3,7 +3,7 @@ if command -v eza >/dev/null 2>&1; then
   alias ls="eza --classify=auto"
   alias ll="eza -la --git"
   alias ld="eza -ld" # Show info about the directory
-  alias lt="eza -l --sort=modified" # Sort by date, most recent last
+  alias lt="eza -l --git --icons --sort=modified --reverse"
 else
   alias ls="ls -GF"
   alias ll="ls -la"
