@@ -96,7 +96,7 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 委譲タスクの既定の終点は **Draft PR**。事前のユーザー承認は挟まず作成する（Draft PR の作成はハードゲート対象外）。
 
-**本文の構成**: `## Summary` のみ（なぜ中心の変更要旨、3 項目以内・各 1 文）。Step 4 のレビュー結果は本文に書かず、作成後のチャット応答で共有する。書かないものと置き場所は `pr-creation` スキルに従う。
+**本文の構成**: `## Summary` のみ（なぜ中心の変更要旨）。Step 4 のレビュー結果は本文に書かず、Step 7 の報告で共有する。項目数・書かないもの・置き場所は `pr-creation` スキルに従う。
 
 ```bash
 # Draft PR を作成（既定）
@@ -150,6 +150,8 @@ git worktree remove "$WORKTREE_PATH"
 **PR URL:** <pr-url>
 **削除したworktree:** <worktree-path>
 **現在のブランチ:** main
+
+**レビュー所見:** Step 4 の結果を全件列挙（Critical=修正済み / Important・Minor=未対応・要判断）
 
 **次のステップ:**
 1. PRのレビューを依頼
@@ -218,6 +220,7 @@ git worktree remove "$WORKTREE_PATH"
 
 - **create-worktree**: このスキルで作成したworktreeのクリーンアップ
 - **code-review**: PR作成後のコードレビュー実施
+- **pr-creation**: PR 本文フォーマットの規定元
 
 ## Best Practices
 
