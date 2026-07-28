@@ -87,7 +87,7 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 **結果に応じた対応（Draft PR フロー）:**
 - Critical issues → 修正してからこのステップを再実行
-- Important / Minor issues → 修正は必須とせず、Draft PR 本文の「レビュー所見」セクションに記載し、人間レビューでの判断に委ねる
+- Important / Minor issues → 修正は必須とせず、PR 作成後のチャット応答で全件共有し、人間レビューでの判断に委ねる
 - 問題なし → PR作成に進む
 
 非Draft（Ready）PR を作成する場合は、Important issues も修正してから進む。
@@ -96,21 +96,16 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 委譲タスクの既定の終点は **Draft PR**。事前のユーザー承認は挟まず作成する（Draft PR の作成はハードゲート対象外）。
 
-**本文の構成**: `## Summary`（なぜ中心の変更要旨 2〜4 点）に加えて `## レビュー所見` セクションを設け、Step 4 の独立レビュー結果を Critical（修正済み）/ Important・Minor（未対応・要判断）に分けて列挙する。これにより PR description とコードの指摘が PR 上で1か所にまとまる。
+**本文の構成**: `## Summary` のみ（なぜ中心の変更要旨）。Step 4 のレビュー結果は本文に書かず、Step 7 の報告で共有する。項目数・書かないもの・置き場所は `pr-creation` スキルに従う。
 
 ```bash
-# Draft PR を作成（既定）。本文は Summary + レビュー所見
+# Draft PR を作成（既定）
 gh pr create --draft \
   --title "feat: ..." \
   --body "$(cat <<'EOF'
 ## Summary
 - <変更点1>
 - <変更点2>
-
-## レビュー所見
-- ✅ Critical（修正済み）: <内容>
-- ⚠️ Important（未対応・要判断）: <内容>
-- 💡 Minor: <内容>
 EOF
 )"
 
@@ -155,6 +150,8 @@ git worktree remove "$WORKTREE_PATH"
 **PR URL:** <pr-url>
 **削除したworktree:** <worktree-path>
 **現在のブランチ:** main
+
+**レビュー所見:** Step 4 の結果を全件列挙（Critical=修正済み / Important・Minor=未対応・要判断）
 
 **次のステップ:**
 1. PRのレビューを依頼
@@ -223,6 +220,7 @@ git worktree remove "$WORKTREE_PATH"
 
 - **create-worktree**: このスキルで作成したworktreeのクリーンアップ
 - **code-review**: PR作成後のコードレビュー実施
+- **pr-creation**: PR 本文フォーマットの規定元
 
 ## Best Practices
 
