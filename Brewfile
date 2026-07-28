@@ -17,6 +17,7 @@ brew "just"
 brew "libpq"
 brew "pinentry-mac"
 brew "herdr" # agent multiplexer
+brew "crit"  # AI レビュー(plan/diff)
 brew "sheldon"
 brew "starship"
 brew "tmux"

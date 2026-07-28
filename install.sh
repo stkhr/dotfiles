@@ -10,6 +10,8 @@ do
     # ~/.claude はディレクトリ丸ごとリンクすると Claude Code の実行時ファイルが
     # リポジトリ内に書き込まれてしまう。必要なファイルだけ後続セクションで個別にリンクする
     [[ "$f" == ".claude" ]] && continue
+    # ~/.crit は crit がレビュー状態を書き込むディレクトリ。同じ理由でリンクしない
+    [[ "$f" == ".crit" ]] && continue
 
     #echo "$DIR"/"$f"
     ln -snfv "$DIR"/"$f" "$HOME"/"$f"
@@ -48,7 +50,6 @@ mkdir -p "$HOME"/.claude
 ln -snfv "$DIR"/claude/settings.json "$HOME"/.claude/settings.json
 ln -snfv "$DIR"/claude/CLAUDE.md "$HOME"/.claude/CLAUDE.md
 ln -snfv "$DIR"/claude/statusline.sh "$HOME"/.claude/statusline.sh
-ln -snfv "$DIR"/claude/crit-review.sh "$HOME"/.claude/crit-review.sh
 
 # claude mcp servers
 if command -v claude &> /dev/null; then
@@ -112,37 +113,14 @@ if command -v npx &> /dev/null; then
     done
 fi
 
-# crit (AI code review TUI)
-# Homebrew formula/tap は未公開、Go も前提にできないため GitHub Releases のバイナリを直接取得する
-CRIT_VERSION="v0.2.2"
-CRIT_MARKER="$HOME/.local/bin/.crit-version"
-# 同バージョンが入っていれば skip。CRIT_VERSION を上げて再実行すると更新される
-if [ "$(cat "$CRIT_MARKER" 2>/dev/null)" != "$CRIT_VERSION" ]; then
-    case "$(uname -s)-$(uname -m)" in
-        Darwin-arm64)  CRIT_ASSET="crit_darwin_arm64.tar.gz" ;;
-        Darwin-x86_64) CRIT_ASSET="crit_darwin_amd64.tar.gz" ;;
-        Linux-aarch64) CRIT_ASSET="crit_linux_arm64.tar.gz" ;;
-        Linux-x86_64)  CRIT_ASSET="crit_linux_amd64.tar.gz" ;;
-        *)             CRIT_ASSET="" ;;
-    esac
-    if [ -n "$CRIT_ASSET" ]; then
-        CRIT_TMP=$(mktemp -d)
-        CRIT_BASE="https://github.com/kevindutra/crit/releases/download/${CRIT_VERSION}"
-        if command -v shasum &> /dev/null; then CRIT_VERIFY="shasum -a 256 -c"; else CRIT_VERIFY="sha256sum -c"; fi
-        # バイナリと checksums を取得し、PATH に置く前に sha256 を検証する
-        if curl -fsSL "$CRIT_BASE/$CRIT_ASSET" -o "$CRIT_TMP/$CRIT_ASSET" \
-            && curl -fsSL "$CRIT_BASE/crit_${CRIT_VERSION#v}_checksums.txt" -o "$CRIT_TMP/checksums.txt" \
-            && grep " ${CRIT_ASSET}\$" "$CRIT_TMP/checksums.txt" | (cd "$CRIT_TMP" && ${=CRIT_VERIFY} -) &> /dev/null; then
-            tar xzf "$CRIT_TMP/$CRIT_ASSET" -C "$CRIT_TMP" crit
-            mkdir -p "$HOME/.local/bin"
-            mv "$CRIT_TMP/crit" "$HOME/.local/bin/crit"
-            chmod +x "$HOME/.local/bin/crit"
-            echo "$CRIT_VERSION" > "$CRIT_MARKER"
-        else
-            echo "crit: download or checksum verification failed, skipping install" >&2
-        fi
-        rm -rf "$CRIT_TMP"
-    fi
+# crit 移行クリーンアップ(旧 kevindutra/crit → Homebrew の tomasz-tomczyk/crit)
+# ~/.local/bin は PATH 上で /opt/homebrew/bin より前(.zshrc)なので、旧バイナリを
+# 消さないと brew 版が隠れる。全マシンの移行が済んだらこのブロックごと削除してよい
+rm -f "$HOME/.local/bin/crit" "$HOME/.local/bin/.crit-version" "$HOME/.claude/crit-review.sh"
+[ -L "$HOME/.crit" ] && rm -f "$HOME/.crit"
+if command -v claude &> /dev/null; then
+    claude plugin uninstall crit@crit-marketplace 2>/dev/null
+    claude plugin marketplace remove crit-marketplace 2>/dev/null
 fi
 
 # claude plugins
@@ -150,7 +128,7 @@ if command -v claude &> /dev/null; then
     # Register marketplaces first (idempotent — safe to re-run)
     claude plugin marketplace add anthropics/claude-plugins-official
     claude plugin marketplace add hashicorp/agent-skills
-    claude plugin marketplace add kevindutra/crit
+    claude plugin marketplace add tomasz-tomczyk/crit
 
     # Anthropic official plugins
     claude plugin install superpowers@claude-plugins-official
@@ -164,5 +142,5 @@ if command -v claude &> /dev/null; then
     claude plugin install terraform-provider-development@hashicorp
 
     # crit review plugin
-    claude plugin install crit@crit-marketplace
+    claude plugin install crit@crit
 fi
