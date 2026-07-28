@@ -37,10 +37,7 @@
       "Bash(bun:*)",
       "Bash(gh:*)",
       "Bash(go:*)",
-      "Bash(~/.claude/crit-review.sh:*)",
-      "Bash(crit review:*)",
-      "Bash(crit status:*)",
-      "Bash(crit comment:*)",
+      "Bash(crit:*)",
       "Bash(make:*)",
       "Bash(docker:*)",
       "Bash(python:*)",
@@ -73,6 +70,10 @@
       "Bash(sudo:*)",
       "Bash(terraform apply:*)",
       "Bash(terraform destroy:*)",
+      "Bash(crit share:*)",
+      "Bash(crit push:*)",
+      "Bash(crit unpublish:*)",
+      "Bash(crit auth:*)",
       "Bash(wget:*)",
       "Bash(cat:*)",
       "Bash(rm -rf:*)",
@@ -240,7 +241,7 @@
     "frontend-design@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
-    "crit@crit-marketplace": true
+    "crit@crit": true
   },
   "extraKnownMarketplaces": {
     "hashicorp": {
@@ -255,10 +256,10 @@
         "repo": "anthropics/claude-plugins-official"
       }
     },
-    "crit-marketplace": {
+    "crit": {
       "source": {
         "source": "github",
-        "repo": "kevindutra/crit"
+        "repo": "tomasz-tomczyk/crit"
       }
     }
   },
