@@ -113,7 +113,7 @@ gcp-config() {
   gcloud config configurations activate $config_name
 }
 
-# user-local binaries（brew/asdf 管理外: crit 等）
+# user-local binaries（brew/asdf 管理外のツール用）
 export PATH="$HOME/.local/bin:$PATH"
 
 # asdf

@@ -114,10 +114,19 @@ if command -v npx &> /dev/null; then
 fi
 
 # crit 移行クリーンアップ(旧 kevindutra/crit → Homebrew の tomasz-tomczyk/crit)
-# ~/.local/bin は PATH 上で /opt/homebrew/bin より前(.zshrc)なので、旧バイナリを
-# 消さないと brew 版が隠れる。全マシンの移行が済んだらこのブロックごと削除してよい
-rm -f "$HOME/.local/bin/crit" "$HOME/.local/bin/.crit-version" "$HOME/.claude/crit-review.sh"
-[ -L "$HOME/.crit" ] && rm -f "$HOME/.crit"
+# 全マシンの移行が済んだらこのブロックごと削除してよい
+rm -f "$HOME/.claude/crit-review.sh"
+# 新 crit はここにレビュー状態を書くので、実体ディレクトリは残してリンクだけ外す
+if [ -L "$HOME/.crit" ]; then
+    rm -f "$HOME/.crit"
+fi
+# ~/.local/bin は PATH 上で /opt/homebrew/bin より前(.zshrc)なので、旧バイナリを残すと
+# brew 版が隠れる。ただし brew bundle 前に消すと crit が消滅するため入れ替わりを待つ
+if command -v brew &> /dev/null && brew list crit &> /dev/null; then
+    rm -f "$HOME/.local/bin/crit" "$HOME/.local/bin/.crit-version"
+elif [ -e "$HOME/.local/bin/crit" ]; then
+    echo "crit: brew 版が未導入のため旧バイナリを残した。'brew bundle' 後に install.sh を再実行すること" >&2
+fi
 if command -v claude &> /dev/null; then
     claude plugin uninstall crit@crit-marketplace 2>/dev/null
     claude plugin marketplace remove crit-marketplace 2>/dev/null

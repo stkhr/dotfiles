@@ -109,11 +109,14 @@ install.sh が marketplace を登録し、以下をインストールする
 CLAUDE.md のレビューゲートで使うレビューツール。バイナリは Brewfile（`brew "crit"`）で
 導入し、Claude Code 連携はプラグインの `crit` スキルが担う。
 
-`crit <file>` はブラウザでレビュー UI を開き「Finish Review」が押されるまでブロックする
-（旧構成にあった tmux / herdr のペイン分割ラッパーは不要になったため削除した）。
+`crit <file>` はブラウザでレビュー UI を開き「Finish Review」が押されるまでブロックする。
 
 レビュー状態は `~/.crit/` に書かれるので、install.sh はこのディレクトリを
 dotfiles にリンクしない（`~/.claude` と同じ扱い）。
+
+プラグインは `ExitPlanMode` に `PermissionRequest` フック（`crit plan-hook`）を全プロジェクト
+共通で登録する。プラン確定時にレビューが挟まるのはこのフックによるもので、
+`settings.json` 側には現れない。
 
 ## Statusline
 
