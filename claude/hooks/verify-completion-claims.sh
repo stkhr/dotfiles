@@ -62,15 +62,32 @@ BRANCH=$(git -C "$CWD" symbolic-ref --short HEAD 2>/dev/null || true)
 PROBLEMS=""
 
 # --- Verify push claim: remote has this branch at the local HEAD ---
-# (Assumes the claim is about the currently checked-out branch.)
+# Prefer the configured upstream: worktree branches often have a local name
+# (worktree-feat+x) that differs from the pushed remote name (feat/x), so a
+# same-name lookup would false-positive "not pushed". Fall back to same-name
+# on origin only when no upstream is set.
 if echo "$CLAIM" | grep -q 'push'; then
-  if LSREMOTE=$(cd "$CWD" && ${TO:+$TO 15} git ls-remote --heads origin "$BRANCH" 2>/dev/null); then
+  # Trust only a remote-tracking upstream: branch.X.remote=. resolves @{u} to
+  # a local ref, and ls-remote against it would turn the check into a skip.
+  UPSTREAM=""
+  UPSTREAM_FULL=$(git -C "$CWD" rev-parse --symbolic-full-name '@{u}' 2>/dev/null || true)
+  case "$UPSTREAM_FULL" in
+    refs/remotes/*) UPSTREAM="${UPSTREAM_FULL#refs/remotes/}" ;;
+  esac
+  if [ -n "$UPSTREAM" ]; then
+    REMOTE="${UPSTREAM%%/*}"
+    RBRANCH="${UPSTREAM#*/}"
+  else
+    REMOTE="origin"
+    RBRANCH="$BRANCH"
+  fi
+  if LSREMOTE=$(cd "$CWD" && ${TO:+$TO 15} git ls-remote --heads "$REMOTE" "$RBRANCH" 2>/dev/null); then
     REMOTE_HASH=$(echo "$LSREMOTE" | awk 'NR==1{print $1}')
     LOCAL_HASH=$(git -C "$CWD" rev-parse HEAD 2>/dev/null)
     if [ -z "$REMOTE_HASH" ]; then
-      PROBLEMS="${PROBLEMS}- pushしたと報告したが、リモートに $BRANCH が存在しない\n"
+      PROBLEMS="${PROBLEMS}- pushしたと報告したが、リモート($REMOTE)に $RBRANCH が存在しない\n"
     elif [ "$REMOTE_HASH" != "$LOCAL_HASH" ]; then
-      PROBLEMS="${PROBLEMS}- pushしたと報告したが、リモートの $BRANCH がローカルHEADと一致しない（未pushのコミットがある）\n"
+      PROBLEMS="${PROBLEMS}- pushしたと報告したが、リモートの $RBRANCH がローカルHEADと一致しない（未pushのコミットがある）\n"
     fi
   fi
   # ls-remote failed (network/no remote) -> inconclusive, skip.
