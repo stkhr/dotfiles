@@ -12,3 +12,7 @@ description: |
 - `count` / `for_each` の三項演算子は肯定形を使う(OK: `var.env_name == "stg" ? 1 : 0` / NG: `var.env_name != "prd" ? 1 : 0`)
 - `terraform fmt` は変更ファイル単位で実行する(`-recursive` でスコープ外まで整形しない)
 - `terraform plan` に replace / destroy が含まれる場合、apply を提案する前にその理由を明示する
+- 既存リソースの import は、plan の `N to import, 0 to add, 0 to destroy` を確認してから apply する。apply 後は import block を削除する
+- `removed` ブロックは count / for_each の条件分岐と併用できない
+- plan が意味論まで検証しない設定値(CloudWatch Metrics Insights のクエリ構文、Chatbot のイベント対応可否等)は、apply 前に公式ドキュメントで確認する
+- 監視閾値を他環境から移植する時は、値をそのまま写さず対象システムの実態(タスク数・キャパシティ)と突き合わせる
