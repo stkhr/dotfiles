@@ -4,6 +4,8 @@
 # Usage: bash claude/hooks/tests/test-session-sync-masking.sh
 set -uo pipefail
 
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
+
 HOOK="$(cd "$(dirname "$0")/.." && pwd)/session-sync.sh"
 PASS=0
 FAIL=0
@@ -13,7 +15,7 @@ trap 'rm -rf "$WORK"' EXIT
 export OBSIDIAN_VAULT="$WORK/vault"
 mkdir -p "$OBSIDIAN_VAULT"
 
-TEXT='export AWS_ACCESS_KEY_ID=ASIAQAWOTESTKEY12345 AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY99" AWS_SESSION_TOKEN=IQoJb3JpZ2luX2VjEBcaCXVzLWVhc3QtMSJHtest ghp_AbCdEfGhIjKlMnOpQrStUvWxYz0123456789 xoxb-1234567890-abcdefghij github_pat_11ABCDEFG0123456789_abcdef keep-this-plain-sentence'
+TEXT='export AWS_ACCESS_KEY_ID=ASIAQAWOTESTKEY12345 AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY99" AWS_SESSION_TOKEN=IQoJb3JpZ2luX2VjEBcaCXVzLWVhc3QtMSJHtest {"SecretAccessKey": "stsJsonSecretValue0123456789abcdef", "SessionToken": "IQoJstsJsonTokenValue0123456789"} ghp_AbCdEfGhIjKlMnOpQrStUvWxYz0123456789 xoxb-1234567890-abcdefghij github_pat_11ABCDEFG0123456789_abcdef keep-this-plain-sentence'
 
 jq -nc --arg t "$TEXT" '{type:"assistant", isSidechain:false,
   timestamp:"2026-07-30T04:00:00.000Z",
@@ -47,6 +49,8 @@ check_present() {
 check_absent "AWS access key id"    'ASIAQAWOTESTKEY12345'
 check_absent "AWS secret key"       'wJalrXUtnFEMIK7MDENG'
 check_absent "AWS session token"    'IQoJb3JpZ2luX2Vj'
+check_absent "STS JSON secret key"  'stsJsonSecretValue'
+check_absent "STS JSON token"       'IQoJstsJsonTokenValue'
 check_absent "GitHub token"         'ghp_AbCdEfGhIjKlMnOp'
 check_absent "GitHub fine-grained"  'github_pat_11ABCDEFG'
 check_absent "Slack token"          'xoxb-1234567890'

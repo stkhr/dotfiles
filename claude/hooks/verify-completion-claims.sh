@@ -67,7 +67,13 @@ PROBLEMS=""
 # same-name lookup would false-positive "not pushed". Fall back to same-name
 # on origin only when no upstream is set.
 if echo "$CLAIM" | grep -q 'push'; then
-  UPSTREAM=$(git -C "$CWD" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)
+  # Trust only a remote-tracking upstream: branch.X.remote=. resolves @{u} to
+  # a local ref, and ls-remote against it would turn the check into a skip.
+  UPSTREAM=""
+  UPSTREAM_FULL=$(git -C "$CWD" rev-parse --symbolic-full-name '@{u}' 2>/dev/null || true)
+  case "$UPSTREAM_FULL" in
+    refs/remotes/*) UPSTREAM="${UPSTREAM_FULL#refs/remotes/}" ;;
+  esac
   if [ -n "$UPSTREAM" ]; then
     REMOTE="${UPSTREAM%%/*}"
     RBRANCH="${UPSTREAM#*/}"

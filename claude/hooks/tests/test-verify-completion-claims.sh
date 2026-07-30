@@ -3,6 +3,9 @@
 # Usage: bash claude/hooks/tests/test-verify-completion-claims.sh
 set -uo pipefail
 
+# Hermetic against the machine's git config (branch.autosetupmerge etc.)
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
+
 HOOK="$(cd "$(dirname "$0")/.." && pwd)/verify-completion-claims.sh"
 PASS=0
 FAIL=0
@@ -61,6 +64,11 @@ run_case pass "same-name fallback pushed" 'pushしました'
 # --- no upstream, branch never pushed ---
 $GIT checkout -q -b never-pushed
 run_case block "never pushed" 'pushしました'
+
+# --- upstream pointing at a local branch is ignored (same-name fallback) ---
+$GIT checkout -q -b local-track
+$GIT branch -q --set-upstream-to=main local-track
+run_case block "local-branch upstream falls back to same-name" 'pushしました'
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

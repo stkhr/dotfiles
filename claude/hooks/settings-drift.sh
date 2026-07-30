@@ -20,11 +20,15 @@ REPO_DIR=$(cd "$(dirname "$REAL")" 2>/dev/null && git rev-parse --show-toplevel 
 [ -n "$REPO_DIR" ] || exit 0
 REL="${REAL#"$REPO_DIR"/}"
 
-if git -C "$REPO_DIR" diff --quiet -- "$REL" 2>/dev/null; then
-  exit 0
-fi
+# diff against HEAD so staged-but-uncommitted drift is also caught.
+# Exit 1 means drift; anything else is a git failure and stays silent.
+git -C "$REPO_DIR" diff --quiet HEAD -- "$REL" 2>/dev/null
+case $? in
+  1) ;;
+  *) exit 0 ;;
+esac
 
-SUMMARY=$(git -C "$REPO_DIR" diff --unified=0 -- "$REL" 2>/dev/null \
+SUMMARY=$(git -C "$REPO_DIR" diff --unified=0 HEAD -- "$REL" 2>/dev/null \
   | grep -E '^[+-][^+-]' | head -n 6 | tr -s '[:space:]' ' ' | cut -c 1-300)
 echo "[settings-drift] $REL に未コミット差分があります: ${SUMMARY:-（要約取得失敗、git diff で確認）}"
 exit 0

@@ -53,8 +53,10 @@ MESSAGES=$(jq -c '
 [ -z "$MESSAGES" ] && exit 0
 
 # Secret masking is limited to unambiguous known prefixes and assignment
-# contexts: a bare 40-char secret key with no surrounding context cannot be
-# told apart from ordinary base64 and is intentionally left alone.
+# contexts (env/ini snake_case and STS-JSON CamelCase): a bare 40-char secret
+# key with no surrounding context cannot be told apart from ordinary base64
+# and is intentionally left alone, as are space-separated assignments
+# (`aws configure set aws_secret_access_key <value>`).
 # \x27 is the apostrophe (avoids quoting it inside this single-quoted program).
 CLEANED=$(printf '%s\n' "$MESSAGES" | jq -c '
   .text |= (
@@ -68,8 +70,8 @@ CLEANED=$(printf '%s\n' "$MESSAGES" | jq -c '
     | gsub("(?s)<local-command-stderr>.*?</local-command-stderr>"; "")
     | gsub("(?s)<user-prompt-submit-hook>.*?</user-prompt-submit-hook>"; "")
     | gsub("(AKIA|ASIA)[0-9A-Z]{16}"; "[MASKED_AWS_KEY_ID]")
-    | gsub("(?<k>aws_secret_access_key[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
-    | gsub("(?<k>aws_session_token[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
+    | gsub("(?<k>(aws_)?secret_?access_?key[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
+    | gsub("(?<k>(aws_)?session_?token[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
     | gsub("gh[pousr]_[A-Za-z0-9]{20,}"; "[MASKED_GITHUB_TOKEN]")
     | gsub("github_pat_[A-Za-z0-9_]{20,}"; "[MASKED_GITHUB_TOKEN]")
     | gsub("xox[baprs]-[A-Za-z0-9-]{10,}"; "[MASKED_SLACK_TOKEN]")
