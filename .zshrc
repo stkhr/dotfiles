@@ -192,5 +192,7 @@ command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
 # 対話シェル(iTerm/tmux等, CLAUDECODE未設定)の体験は変わらない。
 if [[ -n "$CLAUDECODE" ]]; then
   unalias ls ll ld lt cp mv grep diff du 2>/dev/null
-  unalias L H T G W B 2>/dev/null   # global aliases (alias -g)
+  # クォートしないと引数側でグローバルエイリアスが展開され、
+  # `unalias | less | head | ...` になって unalias が引数なしで失敗する
+  unalias "L" "H" "T" "G" "W" "B" 2>/dev/null
 fi
