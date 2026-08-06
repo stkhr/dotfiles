@@ -74,20 +74,35 @@ gwta() {
 ## tmux
 alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
 ## herdr
+# herdr の TUI は起動時に端末へカラークエリ(OSC 10/11/4)を送るが応答を読み切らずに終了する。
+# 残りが次のプロンプトに文字として流れ込むため、復帰後に端末の入力キューを捨てる。
+# 既に画面へエコーされた分は消せないので対象外。
+# nomultibyte にしないと、キューが不完全なマルチバイト文字で終わった時に read -k が固まる
+herdr() {
+  command herdr "$@"
+  local ret=$?
+  if [[ -t 0 ]]; then
+    setopt localoptions nomultibyte
+    local discard
+    while read -t 0.1 -k 1 -s discard 2>/dev/null; do :; done
+  fi
+  return $ret
+}
 # herdr のペイン内で実行すると、現在のタブを tmuxg と同じ4ペインレイアウトにする
 # (上60%メイン、下段は左1 + 右上下2)。分割ペインは実行ペインの cwd を継承する
 herdrg() {
   local main p2 p3
-  main=$(herdr pane current 2>/dev/null | jq -r '.result.pane.pane_id // empty')
+  # pane サブコマンドはカラークエリを送らないので、上のドレイン付きラッパーを迂回する
+  main=$(command herdr pane current 2>/dev/null | jq -r '.result.pane.pane_id // empty')
   if [[ -z "$main" ]]; then
     echo "herdrg: herdr ペイン内で実行してください(herdr 未起動の可能性もあります)" >&2
     return 1
   fi
-  p2=$(herdr pane split --pane "$main" --direction down --ratio 0.6 --cwd "$PWD" --no-focus | jq -r '.result.pane.pane_id // empty')
+  p2=$(command herdr pane split --pane "$main" --direction down --ratio 0.6 --cwd "$PWD" --no-focus | jq -r '.result.pane.pane_id // empty')
   [[ -n "$p2" ]] || { echo "herdrg: 分割に失敗しました" >&2; return 1; }
-  p3=$(herdr pane split --pane "$p2" --direction right --ratio 0.5 --cwd "$PWD" --no-focus | jq -r '.result.pane.pane_id // empty')
+  p3=$(command herdr pane split --pane "$p2" --direction right --ratio 0.5 --cwd "$PWD" --no-focus | jq -r '.result.pane.pane_id // empty')
   [[ -n "$p3" ]] || { echo "herdrg: 分割に失敗しました" >&2; return 1; }
-  herdr pane split --pane "$p3" --direction down --ratio 0.5 --cwd "$PWD" --no-focus >/dev/null
+  command herdr pane split --pane "$p3" --direction down --ratio 0.5 --cwd "$PWD" --no-focus >/dev/null
 }
 ## pipe
 alias -g L='| less'
