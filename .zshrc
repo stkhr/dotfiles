@@ -74,28 +74,20 @@ gwta() {
 ## tmux
 alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
 ## herdr
-# herdr は起動時にホスト端末へカラークエリ(OSC 4/10/11)を投げるが、返ってきた応答を
-# 自分で読み切らずペインの pty へ素通しする。応答はプロンプトに文字として打ち込まれ、
-# Enter で `command not found: 4` のように実行されてしまう。
-# ZLE に ESC ] が届いたら終端(ST または BEL)まで読み捨てて、行バッファへの混入を防ぐ。
-# 到着時刻が読めないので、herdr 終了後にまとめてキューを捨てる方式では捕まえられない。
-# ZLE が素の行編集状態にない間(起動前・ブラケットペースト中)に届いた分は取りこぼす。
-# 起動前の分は端末がエコー済みで表示だけ残り、実行される危険はない。
-_herdr-discard-osc-response() {
-  # マルチバイト解釈が入ると、終端の ESC \ が継続バイトとして食われて抜けられなくなる
-  setopt localoptions nomultibyte
-  local c
-  # 終端を返さない端末で固まらないよう、無音 0.2 秒で打ち切る
-  while read -t 0.2 -k 1 -s c; do
-    [[ $c == $'\a' ]] && return
-    if [[ $c == $'\e' ]]; then
-      read -t 0.2 -k 1 -s c || return
-      [[ $c == '\' ]] && return
-    fi
-  done
+# herdr は起動時にホスト端末へカラークエリ(OSC 4/10/11)を投げるが、応答の導入部
+# `ESC ]` と番号までしか消費せず、残りをペインの pty へ素通しする。ペインのシェルには
+# `;rgb:0000/afaf/d7d7` + ST の並びが入力として届き、プロンプトに打ち込まれてしまう。
+# 導入部が来ない以上 ESC を手がかりにできないので、必ず届く終端 ST を引き金にして、
+# 直前に挿入された応答の断片を行バッファから取り除く。
+# 打ちかけの入力が16進数字やスラッシュで終わっていると巻き込むが、ST が届くのは
+# この漏れの時だけなので、実際に噛み合うのは再 attach と打鍵が重なった時に限られる。
+# ZLE が立つ前に届いた分は端末がエコー済みで表示だけ残り、実行される危険はない。
+_herdr-drop-osc-tail() {
+  setopt localoptions extended_glob
+  LBUFFER=${LBUFFER%%(';rgb:'|'/')[0-9a-fA-F/]#}
 }
-zle -N _herdr-discard-osc-response
-bindkey '\e]' _herdr-discard-osc-response
+zle -N _herdr-drop-osc-tail
+bindkey '\e\\' _herdr-drop-osc-tail
 # herdr のペイン内で実行すると、現在のタブを tmuxg と同じ4ペインレイアウトにする
 # (上60%メイン、下段は左1 + 右上下2)。分割ペインは実行ペインの cwd を継承する
 herdrg() {
