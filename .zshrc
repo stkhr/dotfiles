@@ -74,20 +74,6 @@ gwta() {
 ## tmux
 alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
 ## herdr
-# herdr 起動時、ペインのシェルにカラークエリ(OSC 4/10/11)応答の断片が入力として届き、
-# プロンプトに打ち込まれる。ZLE が受け取ったバイトを1つずつ記録して確かめたところ、
-# 届くのは `;rgb:d7d7/d7d7/ffff` や `/ffff` といった断片と、その直後の ST だけで、
-# 導入部の `ESC ]` は一度も来ない。#85 が ESC ] を引き金にして不発だったのはこれが理由。
-# そこで ST を引き金にし、直前に挿入された断片を行バッファから取り除く。
-# 断片の桁数まで一致させているのは、貪欲に削ると打ちかけの `cd /tmp/` の末尾まで
-# 巻き込むため。BEL で終端する端末は対象外だが、BEL は send-break なので行が捨てられる
-# だけで、実行される側には倒れない。
-_herdr-drop-osc-tail() {
-  setopt localoptions extended_glob
-  LBUFFER=${LBUFFER%%(';rgb:'[0-9a-fA-F](#c1,4)('/'[0-9a-fA-F](#c1,4))(#c0,2)|'/'[0-9a-fA-F](#c1,4))}
-}
-zle -N _herdr-drop-osc-tail
-bindkey '\e\\' _herdr-drop-osc-tail
 # herdr のペイン内で実行すると、現在のタブを tmuxg と同じ4ペインレイアウトにする
 # (上60%メイン、下段は左1 + 右上下2)。分割ペインは実行ペインの cwd を継承する
 herdrg() {
