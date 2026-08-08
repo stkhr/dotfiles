@@ -78,6 +78,3 @@ format = "[$user 🌱]($style) "
 show_always = true
 style_root = "black bold"
 style_user = "white bold"
-
-[time]
-disabled = true
