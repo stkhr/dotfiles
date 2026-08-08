@@ -74,28 +74,20 @@ gwta() {
 ## tmux
 alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
 ## herdr
-# herdr は起動時にホスト端末へカラークエリ(OSC 4/10/11)を投げるが、返ってきた応答を
-# 自分で読み切らずペインの pty へ素通しする。応答はプロンプトに文字として打ち込まれ、
-# Enter で `command not found: 4` のように実行されてしまう。
-# ZLE に ESC ] が届いたら終端(ST または BEL)まで読み捨てて、行バッファへの混入を防ぐ。
-# 到着時刻が読めないので、herdr 終了後にまとめてキューを捨てる方式では捕まえられない。
-# ZLE が素の行編集状態にない間(起動前・ブラケットペースト中)に届いた分は取りこぼす。
-# 起動前の分は端末がエコー済みで表示だけ残り、実行される危険はない。
-_herdr-discard-osc-response() {
-  # マルチバイト解釈が入ると、終端の ESC \ が継続バイトとして食われて抜けられなくなる
-  setopt localoptions nomultibyte
-  local c
-  # 終端を返さない端末で固まらないよう、無音 0.2 秒で打ち切る
-  while read -t 0.2 -k 1 -s c; do
-    [[ $c == $'\a' ]] && return
-    if [[ $c == $'\e' ]]; then
-      read -t 0.2 -k 1 -s c || return
-      [[ $c == '\' ]] && return
-    fi
-  done
+# herdr 起動時、ペインのシェルにカラークエリ(OSC 4/10/11)応答の断片が入力として届き、
+# プロンプトに打ち込まれる。ZLE が受け取ったバイトを1つずつ記録して確かめたところ、
+# 届くのは `;rgb:d7d7/d7d7/ffff` や `/ffff` といった断片と、その直後の ST だけで、
+# 導入部の `ESC ]` は一度も来ない。#85 が ESC ] を引き金にして不発だったのはこれが理由。
+# そこで ST を引き金にし、直前に挿入された断片を行バッファから取り除く。
+# 断片の桁数まで一致させているのは、貪欲に削ると打ちかけの `cd /tmp/` の末尾まで
+# 巻き込むため。BEL で終端する端末は対象外だが、BEL は send-break なので行が捨てられる
+# だけで、実行される側には倒れない。
+_herdr-drop-osc-tail() {
+  setopt localoptions extended_glob
+  LBUFFER=${LBUFFER%%(';rgb:'[0-9a-fA-F](#c1,4)('/'[0-9a-fA-F](#c1,4))(#c0,2)|'/'[0-9a-fA-F](#c1,4))}
 }
-zle -N _herdr-discard-osc-response
-bindkey '\e]' _herdr-discard-osc-response
+zle -N _herdr-drop-osc-tail
+bindkey '\e\\' _herdr-drop-osc-tail
 # herdr のペイン内で実行すると、現在のタブを tmuxg と同じ4ペインレイアウトにする
 # (上60%メイン、下段は左1 + 右上下2)。分割ペインは実行ペインの cwd を継承する
 herdrg() {
