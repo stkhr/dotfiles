@@ -74,28 +74,6 @@ gwta() {
 ## tmux
 alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
 ## herdr
-# herdr は起動時にホスト端末へカラークエリ(OSC 4/10/11)を投げるが、返ってきた応答を
-# 自分で読み切らずペインの pty へ素通しする。応答はプロンプトに文字として打ち込まれ、
-# Enter で `command not found: 4` のように実行されてしまう。
-# ZLE に ESC ] が届いたら終端(ST または BEL)まで読み捨てて、行バッファへの混入を防ぐ。
-# 到着時刻が読めないので、herdr 終了後にまとめてキューを捨てる方式では捕まえられない。
-# ZLE が素の行編集状態にない間(起動前・ブラケットペースト中)に届いた分は取りこぼす。
-# 起動前の分は端末がエコー済みで表示だけ残り、実行される危険はない。
-_herdr-discard-osc-response() {
-  # マルチバイト解釈が入ると、終端の ESC \ が継続バイトとして食われて抜けられなくなる
-  setopt localoptions nomultibyte
-  local c
-  # 終端を返さない端末で固まらないよう、無音 0.2 秒で打ち切る
-  while read -t 0.2 -k 1 -s c; do
-    [[ $c == $'\a' ]] && return
-    if [[ $c == $'\e' ]]; then
-      read -t 0.2 -k 1 -s c || return
-      [[ $c == '\' ]] && return
-    fi
-  done
-}
-zle -N _herdr-discard-osc-response
-bindkey '\e]' _herdr-discard-osc-response
 # herdr のペイン内で実行すると、現在のタブを tmuxg と同じ4ペインレイアウトにする
 # (上60%メイン、下段は左1 + 右上下2)。分割ペインは実行ペインの cwd を継承する
 herdrg() {
