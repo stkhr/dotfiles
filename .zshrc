@@ -97,12 +97,6 @@ alias -g G='| grep -E'
 alias -g W='| wc -l'
 alias -g B='| base64 --decode | gpg -d'
 
-# ssh configを読み込む
-function _ssh {
-  # compadd `fgrep 'Host ' ~/.ssh/config | awk '{print $2}' | sort`;
-  compadd `find ~/.ssh/* -type file | xargs fgrep 'Host ' | awk '{print $2}' | sort`;
-}
-
 # gcloud
 GCLOUD_SDK_PATH="/opt/homebrew/Caskroom/gcloud-cli/latest/google-cloud-sdk"
 [[ -f "$GCLOUD_SDK_PATH/path.zsh.inc" ]] && source "$GCLOUD_SDK_PATH/path.zsh.inc"
@@ -118,8 +112,6 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # asdf
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
-## nom install
-## ln -s .asdf/shims/claude "$HOME/.asdf/installs/nodejs/24.1.0/bin/claude"
 
 # kubectl
 if command -v kubectl >/dev/null 2>&1; then
