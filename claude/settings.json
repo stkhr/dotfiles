@@ -111,9 +111,8 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
   "fallbackModel": [
-    "claude-opus-4-6"
+    "sonnet[1m]"
   ],
   "hooks": {
     "PreToolUse": [
@@ -279,5 +278,7 @@
   "theme": "dark",
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "switchModelsOnFlag": true,
+  "model": "opus[1m]"
 }
