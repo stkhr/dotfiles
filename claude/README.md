@@ -102,7 +102,7 @@ Notification / Stop 通知）を設定している。
 install.sh が marketplace を登録し、以下をインストールする
 （`settings.json` の `enabledPlugins` / `extraKnownMarketplaces` と対応）:
 
-- `superpowers` / `frontend-design` / `context7` / `security-guidance`（anthropics/claude-plugins-official）
+- `superpowers` / `frontend-design` / `context7` / `security-guidance` / `gopls-lsp`（anthropics/claude-plugins-official）
 - `terraform`（hashicorp/agent-skills）
 - `crit`（tomasz-tomczyk/crit）
 
