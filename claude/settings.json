@@ -280,5 +280,5 @@
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "switchModelsOnFlag": true,
-  "model": "opus[1m]"
+  "model": "opus"
 }
