@@ -1,1 +1,39 @@
-prefix_rule(pattern=["gh", "pr", "view"], decision="allow")
+# Codex 実行ポリシー。decision は forbidden > prompt > allow の順に強い。
+# pattern は位置ベースの前方一致のみで、任意位置のフラグ(`git push --force` の
+# `--force` 等)は表現できない。そちらは AGENTS.md の確認手順で担保する。
+
+prefix_rule(
+    pattern = ["gh", "pr", "view"],
+    decision = "allow",
+    justification = "PR の閲覧は read-only",
+    match = [
+        "gh pr view 123",
+        "gh pr view --json title,body",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", ["merge", "close", "ready", "review", "comment"]],
+    decision = "prompt",
+    justification = "PR の状態変更・外部への発信は文面の承認を得てから",
+    match = [
+        "gh pr merge 123 --squash",
+        "gh pr ready 123",
+        "gh pr comment 123 --body x",
+    ],
+    not_match = [
+        "gh pr view 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "branch", ["-D", "-d", "--delete"]],
+    decision = "prompt",
+    justification = "ブランチ削除は取り消せない",
+    match = [
+        "git branch -D feature",
+    ],
+    not_match = [
+        "git branch --show-current",
+    ],
+)

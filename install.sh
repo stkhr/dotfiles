@@ -103,6 +103,7 @@ mkdir -p "$HOME"/.codex/skills
 codex_skills=(
     adr
     aws-investigation
+    code-review
     debugging
     external-api-precheck
     legal-review
@@ -110,7 +111,9 @@ codex_skills=(
     org-survey
     pdm-assist
     pm-assist
+    pr-creation
     security-hardening
+    session-start
     terraform-style
 )
 for skill_name in "${codex_skills[@]}"; do
@@ -128,7 +131,9 @@ done
 if command -v herdr &> /dev/null; then
     herdr_integrations=$(herdr integration status 2>/dev/null)
     echo "$herdr_integrations" | grep -q '^claude: current' || herdr integration install claude
-    if [ -d "$HOME/.codex" ]; then
+    # codex セクションが ~/.codex を先に作るので、ディレクトリの有無ではなく
+    # CLI の導入有無で判定する
+    if command -v codex &> /dev/null; then
         echo "$herdr_integrations" | grep -q '^codex: current' || herdr integration install codex
     fi
 fi
