@@ -39,7 +39,8 @@ description: コミット・PR作成を伴う作業の終盤に使用。PRテン
 ## 3. Draft PR フロー(委譲タスクの既定の終点)
 
 1. ローカルでテスト・ビルド・lint/format を実行し、通ることを確認する
-2. `superpowers:requesting-code-review` を実行し、Critical な指摘を修正して再レビュー
+2. 差分のコードレビューを通し、Critical な指摘を修正して再レビュー
+   (Claude Code では `superpowers:requesting-code-review`、それ以外では `code-review` スキル)
 3. `gh pr create --draft` で Draft PR を作成(事前のユーザー承認は不要)
 4. 作成後に PR URL・本文要旨・残レビュー所見を共有する
 
@@ -57,4 +58,5 @@ Important・Minor=未対応・要判断)。PR 上に残す必要があるかは�
 ## 注意
 
 - Draft → Ready 変換、PR の close / comment / merge / review、非Draft PR の作成は
-  hook が確認プロンプトを出す(ハードゲート対象)
+  ハードゲート対象。Claude Code では hook が、Codex では `~/.codex/rules/` が
+  確認プロンプトを出す。ゲートが無い操作は自分で「文面提示 → 承認 → 実行」を経る

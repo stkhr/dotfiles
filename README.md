@@ -9,7 +9,7 @@ macOS 向けの各種ツール設定を管理するリポジトリ。`install.sh
 # Homebrew パッケージのインストール
 brew bundle
 
-# シンボリックリンクの配置 + Claude Code セットアップ
+# シンボリックリンクの配置 + Claude Code / Codex セットアップ
 zsh install.sh
 ```
 
@@ -25,6 +25,7 @@ install.sh は再実行可能（リンクは `ln -snf` で張り直されるた�
 | `config/sheldon/plugins.toml` | `~/.config/sheldon/` | zsh プラグイン管理（sheldon） |
 | `config/herdr/config.toml` | `~/.config/herdr/` | エージェントマルチプレクサ（herdr） |
 | `claude/` | `~/.claude/` | Claude Code 設定一式（詳細は [claude/README.md](claude/README.md)） |
+| `codex/` | `~/.codex/` | Codex 設定一式（詳細は [codex/README.md](codex/README.md)） |
 | `vscode/` | （手動） | VSCode 設定・拡張リスト |
 | `Brewfile` | - | Homebrew パッケージ定義 |
 

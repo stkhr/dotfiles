@@ -92,6 +92,8 @@ Notification / Stop 通知）を設定している。
   description / tools / model を記述）
 - 追加・削除したら install.sh を再実行する。リポジトリ側でファイルを削除した場合、
   `~/.claude/` 側に壊れたリンクが残るので手動で削除する
+- スキルの一部は Codex にも共有している。対象は install.sh の `codex_skills` 配列
+  （[codex/README.md](../codex/README.md) 参照）
 
 確認: Claude Code 内で `/agents`、スキルは会話中の available-skills 一覧に表示される。
 

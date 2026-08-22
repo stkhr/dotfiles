@@ -62,6 +62,7 @@ cask "slack"
 cask "figma"
 cask "drawio"
 cask "chatgpt"
+cask "codex" # OpenAI coding agent(Claude Code の予備)
 cask "atok"
 cask "claude"
 cask "claude-code@latest"
