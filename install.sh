@@ -164,10 +164,8 @@ if command -v claude &> /dev/null; then
     claude plugin install security-guidance@claude-plugins-official
     claude plugin install gopls-lsp@claude-plugins-official
 
-    # HashiCorp Terraform plugins
-    claude plugin install terraform-code-generation@hashicorp
-    claude plugin install terraform-module-generation@hashicorp
-    claude plugin install terraform-provider-development@hashicorp
+    # HashiCorp Terraform plugin
+    claude plugin install terraform@hashicorp
 
     # crit review plugin
     claude plugin install crit@crit
