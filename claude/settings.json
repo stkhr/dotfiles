@@ -111,6 +111,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus",
   "fallbackModel": [
     "sonnet[1m]"
   ],
@@ -274,9 +275,8 @@
   "tui": "fullscreen",
   "showThinkingSummaries": true,
   "theme": "dark",
+  "switchModelsOnFlag": true,
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "switchModelsOnFlag": true,
-  "model": "opus"
+  "skipAutoPermissionPrompt": true
 }
