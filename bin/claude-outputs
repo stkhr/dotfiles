@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 並行して動かしている Claude セッションが「まだ開くべき成果物」として残しているものを
-# 1画面に集める。対象は PR / 生きている crit レビュー / artifact の3種。
+# 1画面に集める。
 #
 # Why not 記録用の Stop hook: 3種すべて実行時のスキャンで実値が取れる。hook で記録層を
 # 持つと merge 済みの PR や終了した crit を生きているものと区別できず、hook 導入前の
@@ -10,10 +10,41 @@
 
 set -uo pipefail
 
+usage() {
+    cat <<'USAGE'
+claude-outputs — 並行する Claude セッションの「まだ開くべき成果物」を一覧する
+
+  PR    transcript に出た PR URL のうち、自分が作った open なもの
+  crit  デーモンが生きている crit レビュー
+  art   セッションが publish した artifact
+
+環境変数:
+  CLAUDE_OUTPUTS_DAYS      transcript を遡る日数(既定 7)
+  CLAUDE_OUTPUTS_PR_LIMIT  gh search prs の取得上限(既定 100)
+  CLAUDE_PROJECTS_DIR      transcript の置き場(既定 ~/.claude/projects)
+  CRIT_SESSIONS_DIR        crit セッションの置き場(既定 ~/.crit/sessions)
+
+依存:
+  jq   必須
+  gh   無いと PR が出ない
+  fzf  無いとプレーン出力になる
+  nc   無い場合は bash の /dev/tcp で crit の生存を確認する
+
+herdr のペイン内で実行すると、セッションの状態(◐ 実行中 / ✓ 完了 / ! 確認待ち)が
+付き、fzf 上で ctrl-o を押すとそのペインへ移動する。
+USAGE
+}
+
+case "${1:-}" in
+    -h|--help) usage; exit 0 ;;
+    "") ;;
+    *) printf 'claude-outputs: 不明な引数: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
+esac
+
 DAYS="${CLAUDE_OUTPUTS_DAYS:-7}"
 PR_LIMIT="${CLAUDE_OUTPUTS_PR_LIMIT:-100}"
-PROJECTS_DIR="$HOME/.claude/projects"
-CRIT_SESSIONS_DIR="$HOME/.crit/sessions"
+PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
+CRIT_SESSIONS_DIR="${CRIT_SESSIONS_DIR:-$HOME/.crit/sessions}"
 
 # Why not タブ区切り: IFS のタブは空白類なので `read` が連続タブを1つに潰し、空欄の
 # あるレコードで列がずれる。空欄を空欄として運ぶため US(0x1f)を区切りに使う。
@@ -23,14 +54,37 @@ die() { printf 'claude-outputs: %s\n' "$*" >&2; exit 1; }
 
 command -v jq >/dev/null 2>&1 || die "jq が必要です"
 
+case "$DAYS" in
+    ''|*[!0-9]*) die "CLAUDE_OUTPUTS_DAYS には日数を指定してください: $DAYS" ;;
+esac
+case "$PR_LIMIT" in
+    ''|*[!0-9]*) die "CLAUDE_OUTPUTS_PR_LIMIT には件数を指定してください: $PR_LIMIT" ;;
+esac
+
 T=$(mktemp -d) || die "一時ディレクトリを作れません"
-trap 'rm -rf "$T"' EXIT
+trap 'rm -rf "$T"' EXIT INT TERM
 
 repo_of_path() {
     local p="${1%/}"
     p="${p%%/.claude/worktrees/*}"
     printf '%s' "${p##*/}"
 }
+
+# ---- PR の問い合わせを先に投げる ------------------------------------------
+# transcript の走査と独立しているので、待ち時間を重ねる。
+# Why not gh pr list: -R owner/repo が必須で org 横断ができない。
+PR_NOTE=""
+GH_BG=""
+if command -v gh >/dev/null 2>&1; then
+    {
+        gh search prs --author=@me --state=open --limit "$PR_LIMIT" \
+            --json url,isDraft,title,repository > "$T/gh.json" 2>"$T/gh.err"
+        printf '%s' "$?" > "$T/gh.rc"
+    } &
+    GH_BG=$!
+else
+    PR_NOTE="gh が無いため PR を取得できません"
+fi
 
 # ---- セッションのメタ情報 -------------------------------------------------
 # session_id -> status / title / pane_id
@@ -51,14 +105,13 @@ fi
 
 # ---- transcript から URL を抽出 -------------------------------------------
 # grep は1プロセスにまとめる(-H でファイル名を残し、そこから session_id を得る)。
-# transcript のファイル名が session_id そのものなので、どのセッション由来かが確定する。
 : > "$T/urls"
 if [ -d "$PROJECTS_DIR" ]; then
     find "$PROJECTS_DIR" -name '*.jsonl' -mtime -"$DAYS" -exec grep -oHE \
         'https://github\.com/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+/pull/[0-9]+|https://claude\.ai/code/artifact/[0-9a-fA-F-]+' \
         {} + 2>/dev/null \
         | awk -v sep="$SEP" '
-            # "<path>/<session_id>.jsonl:<url>" を session_id と url に割る。
+            # "<path>/<session_id>.jsonl:<url>" を session_id / url / path に割る。
             # URL 自身がコロンを含むので、切る位置は ".jsonl:" で探す。
             {
                 i = index($0, ".jsonl:")
@@ -66,30 +119,73 @@ if [ -d "$PROJECTS_DIR" ]; then
                 path = substr($0, 1, i - 1)
                 url  = substr($0, i + 7)
                 n = split(path, seg, "/")
-                print seg[n] sep url
+                # subagent の transcript は <session_id>/subagents/agent-<id>.jsonl に
+                # 置かれ、ファイル名は session_id ではない。親から辿る。
+                if (n >= 3 && seg[n - 1] == "subagents") sid = seg[n - 2]
+                else                                     sid = seg[n]
+                print sid sep url sep path ".jsonl"
             }
         ' | sort -u > "$T/urls"
 fi
 
-# ---- 生きている PR --------------------------------------------------------
-# Why not gh pr list: -R owner/repo が必須で org 横断ができない。
+# session_id -> transcript のパス(repo 名を引くときの入口)
+awk -F"$SEP" -v sep="$SEP" '!seen[$1]++ { print $1 sep $3 }' "$T/urls" > "$T/sid_paths"
+
+# ---- artifact の説明文を URL に紐付ける -----------------------------------
+# tool_use.id と tool_result.tool_use_id で対応させる。read や list で触っただけの
+# artifact は publish の tool_use を持たないので、ここで自然に外れる。
+awk -F"$SEP" '$2 ~ /claude\.ai\/code\/artifact\// { print $3 }' "$T/urls" \
+    | sort -u > "$T/art_files"
+
+: > "$T/art_titles"
+if [ -s "$T/art_files" ]; then
+    while IFS= read -r f; do
+        [ -f "$f" ] || continue
+        jq -r --arg sep "$SEP" '
+            select(.message.content != null)
+            | .message.content[]?
+            | if (.type == "tool_use" and .name == "Artifact"
+                  and ((.input.action // "publish") == "publish")) then
+                  "T\($sep)\(.id // "")\($sep)\(
+                      (.input.description // .input.title // .input.file_path // "")
+                      | tostring | gsub("\\s+"; " ")
+                  )"
+              elif (.type == "tool_result" and .tool_use_id != null) then
+                  "R\($sep)\(.tool_use_id)\($sep)\(.content | tostring | gsub("\\s+"; " "))"
+              else empty end
+        ' "$f" 2>/dev/null
+    done < "$T/art_files" \
+        | awk -F"$SEP" -v sep="$SEP" '
+            $1 == "T" { title[$2] = $3 }
+            $1 == "R" {
+                s = $3
+                while (match(s, /https:\/\/claude\.ai\/code\/artifact\/[0-9a-fA-F-]+/)) {
+                    u = substr(s, RSTART, RLENGTH)
+                    if ($2 in title) map[u] = title[$2]
+                    s = substr(s, RSTART + RLENGTH)
+                }
+            }
+            END { for (u in map) print u sep map[u] }
+        ' > "$T/art_titles"
+fi
+
+# ---- PR の結果を回収 ------------------------------------------------------
 : > "$T/live_prs"
-PR_NOTE=""
-if command -v gh >/dev/null 2>&1; then
-    if ! gh search prs --author=@me --state=open --limit "$PR_LIMIT" \
-            --json url,isDraft,title,repository 2>/dev/null \
-        | jq -r --arg sep "$SEP" '
+if [ -n "$GH_BG" ]; then
+    wait "$GH_BG"
+    gh_rc=$(< "$T/gh.rc") 2>/dev/null || gh_rc=1
+    if [ "${gh_rc:-1}" != 0 ]; then
+        PR_NOTE="PR の取得に失敗しました: $(head -1 "$T/gh.err" 2>/dev/null)"
+    elif ! jq -r --arg sep "$SEP" '
             .[]? | [ .url,
                      (if .isDraft then "Draft" else "Open" end),
                      .repository.nameWithOwner,
                      .title ] | join($sep)
-          ' > "$T/live_prs"
+          ' "$T/gh.json" > "$T/live_prs" 2>/dev/null
     then
-        PR_NOTE="PR の取得に失敗しました(gh の認証・ネットワークを確認してください)"
+        PR_NOTE="PR の一覧を解釈できませんでした"
         : > "$T/live_prs"
     fi
-else
-    PR_NOTE="gh が無いため PR を取得できません"
 fi
 
 # ---- 行の組み立て --------------------------------------------------------
@@ -102,28 +198,32 @@ fi
 # 落とすためにある。PR レビューを依頼したセッションの transcript にはレビュー対象
 # (他人作)の URL が必ず出てくるので、--author=@me との交差でそれを除く。
 awk -F"$SEP" -v sep="$SEP" '
-    NR == FNR { state[$1] = $2; repo[$1] = $3; title[$1] = $4; next }
+    FILENAME == ARGV[1] { state[$1] = $2; repo[$1] = $3; title[$1] = $4; next }
     ($2 in state) {
         if (seen[$2]++) next
         print "pr" sep state[$2] sep repo[$2] sep title[$2] sep $2 sep $1
     }
 ' "$T/live_prs" "$T/urls" >> "$T/rows"
 
-# artifact: 生死の概念が無いので、スキャン期間内のものをそのまま出す。
+# artifact: publish の説明文が引けたものだけを出す。
 awk -F"$SEP" -v sep="$SEP" '
+    FILENAME == ARGV[1] { title[$1] = $2; next }
     $2 ~ /claude\.ai\/code\/artifact\// {
+        if (!($2 in title)) next
         if (seen[$2]++) next
-        print "artifact" sep "" sep "" sep "" sep $2 sep $1
+        print "artifact" sep "" sep "" sep title[$2] sep $2 sep $1
     }
-' "$T/urls" >> "$T/rows"
+' "$T/art_titles" "$T/urls" >> "$T/rows"
 
 # crit: セッション JSON は終了後も残るので、生きているものだけに絞る。
 port_open() {
+    local host="$1" port="$2"
     if command -v nc >/dev/null 2>&1; then
-        nc -z 127.0.0.1 "$1" >/dev/null 2>&1
+        nc -z "$host" "$port" >/dev/null 2>&1
     else
-        # nc が無い環境では pid 生存で代用する(pid 再利用による偽陽性は残る)
-        return 0
+        # nc が無くても pid 生存には落とさない。pid は再利用されるので
+        # 「今開けるか」の判定には使えない。
+        (exec 3<>"/dev/tcp/$host/$port") >/dev/null 2>&1
     fi
 }
 
@@ -133,19 +233,23 @@ if [ -d "$CRIT_SESSIONS_DIR" ]; then
         meta=$(jq -r --arg sep "$SEP" '
             [ (.pid // "" | tostring),
               (.port // "" | tostring),
+              (.host // "127.0.0.1"),
               (.cwd // ""),
               ((.args // []) | map(sub("^.*/"; "")) | join(" ")),
               (.branch // "") ] | join($sep)
         ' "$f" 2>/dev/null) || continue
-        IFS="$SEP" read -r pid port cwd cargs branch <<< "$meta"
-        [ -n "$pid" ] && [ -n "$port" ] || continue
+        IFS="$SEP" read -r pid port host cwd cargs branch <<< "$meta"
+        # pid 0 はプロセスグループを指すので kill -0 が常に通る。値を先に弾く。
+        case "$pid" in ''|*[!0-9]*|0) continue ;; esac
+        case "$port" in ''|*[!0-9]*|0) continue ;; esac
+        [ -n "$host" ] || host="127.0.0.1"
         # pid の生存は安価な事前フィルタ。開けるかどうかの判定は port 到達性で行う。
         kill -0 "$pid" 2>/dev/null || continue
-        port_open "$port" || continue
+        port_open "$host" "$port" || continue
         label="${cargs:-review}"
         [ -n "$branch" ] && label="$label ($branch)"
-        printf 'crit%s%s%s%s%s%s%shttp://localhost:%s%s\n' \
-            "$SEP" "live" "$SEP" "$(repo_of_path "$cwd")" "$SEP" "$label" "$SEP" "$port" "$SEP" \
+        printf 'crit%slive%s%s%s%s%shttp://%s:%s%s\n' \
+            "$SEP" "$SEP" "$(repo_of_path "$cwd")" "$SEP" "$label" "$SEP" "$host" "$port" "$SEP" \
             >> "$T/rows"
     done
 fi
@@ -157,13 +261,15 @@ if [ ! -s "$T/rows" ]; then
 fi
 
 # ---- セッション情報を補って表示行にする ----------------------------------
-# transcript の cwd は herdr が無い環境での repo 名の供給元。
 cwd_of_session() {
     local sid="$1" f
     [ -n "$sid" ] || return 1
-    f=$(find "$PROJECTS_DIR" -name "$sid.jsonl" -print -quit 2>/dev/null)
-    [ -n "$f" ] || return 1
-    head -50 "$f" | jq -r 'select(.cwd != null) | .cwd' 2>/dev/null | head -1
+    f=$(awk -F"$SEP" -v s="$sid" '$1 == s { print $2; exit }' "$T/sid_paths")
+    [ -n "$f" ] && [ -f "$f" ] || return 1
+    # head で先に絞ってから jq に渡す(全文を読ませない)。最初の1件は awk 側で
+    # 全行読み切ってから選ぶ。途中で打ち切ると pipefail が SIGPIPE を拾う。
+    head -50 "$f" | jq -r 'select(.cwd != null) | .cwd' 2>/dev/null \
+        | awk 'NR == 1 { v = $0 } END { if (v != "") print v }'
 }
 
 : > "$T/display"
@@ -179,15 +285,12 @@ while IFS="$SEP" read -r kind state context label url sid; do
     if [ -z "$context" ] && [ -n "$sid" ]; then
         c=$(cwd_of_session "$sid") && context=$(repo_of_path "$c")
     fi
-    # label はセッションのタイトル。終了済みセッションの artifact は herdr から
-    # タイトルが引けないので、識別できる長さに切った ID で代替する
     if [ -z "$label" ]; then
-        if [ -n "$title" ]; then
-            label="$title"
-        else
-            short="${url##*/}"
-            label="(セッション終了済) ${short:0:8}"
-        fi
+        label="${title:-${url##*/}}"
+    fi
+    # 幅を超える repo 名は切る(printf は詰めるだけで切らないので URL 列がずれる)
+    if [ "${#context}" -gt 28 ]; then
+        context="${context:0:27}…"
     fi
 
     case "$kind" in
@@ -197,9 +300,11 @@ while IFS="$SEP" read -r kind state context label url sid; do
         *)        tag="?   " ;;
     esac
 
+    # herdr が無い環境では status が空になる。状態を偽らないよう印は付けない。
     mark=""
     case "$status" in
         working) mark="◐ " ;;
+        done)    mark="✓ " ;;
         blocked) mark="! " ;;
     esac
 
@@ -211,17 +316,17 @@ done < "$T/rows"
 [ -n "$PR_NOTE" ] && printf '%s\n' "$PR_NOTE" >&2
 
 # ---- 出力 ----------------------------------------------------------------
-# fzf があれば Enter でブラウザ、ctrl-o で該当ペインへ。
-# ペインへのジャンプは herdr 限定。tmux は Claude セッションとペインの対応を
+# ペインへのジャンプは herdr 限定。tmux は Claude のセッションとペインの対応を
 # 持たないため、session_id からペインを特定できない。
 if command -v fzf >/dev/null 2>&1 && [ -t 1 ]; then
     opener="open"
     command -v "$opener" >/dev/null 2>&1 || opener="xdg-open"
+    # ESC の 130 をそのまま返すとプロンプトが失敗扱いにするので飲む
     fzf --delimiter="$SEP" --with-nth=1 \
         --header='enter: ブラウザで開く / ctrl-o: セッションのペインへ / esc: 終了' \
         --bind "enter:execute-silent($opener {2})" \
         --bind "ctrl-o:execute-silent(herdr agent focus {3} >/dev/null 2>&1)" \
-        < "$T/display" >/dev/null
+        < "$T/display" >/dev/null || true
 else
     awk -F"$SEP" '{ printf "%s  %s\n", $1, $2 }' "$T/display"
 fi
