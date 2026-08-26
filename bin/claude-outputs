@@ -197,6 +197,10 @@ fi
 # Why not per-URL の gh pr view: この交差は鮮度や重複排除のためではなく、他人の PR を
 # 落とすためにある。PR レビューを依頼したセッションの transcript にはレビュー対象
 # (他人作)の URL が必ず出てくるので、--author=@me との交差でそれを除く。
+#
+# 既知の限界: GitHub の検索インデックスは非同期なので、作られた直後の PR は
+# gh search prs に現れず、この交差から落ちる。塞ぐなら交差を置き換えるのではなく、
+# 漏れた URL だけを gh pr view で author 照合して足す。
 awk -F"$SEP" -v sep="$SEP" '
     FILENAME == ARGV[1] { state[$1] = $2; repo[$1] = $3; title[$1] = $4; next }
     ($2 in state) {
