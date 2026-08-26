@@ -32,6 +32,18 @@ if ! grep -q "Include conf.d/\*.conf" "$HOME/.ssh/config" 2>/dev/null; then
     chmod 600 "$HOME/.ssh/config"
 fi
 
+# user-local binaries(.zshrc が PATH に入れている ~/.local/bin へ)
+mkdir -p "$HOME"/.local/bin
+if [ -d "$DIR"/bin ]; then
+    for bin_file in "$DIR"/bin/*; do
+        if [ -f "$bin_file" ]; then
+            bin_name=$(basename "$bin_file")
+            ln -snfv "$bin_file" "$HOME/.local/bin/$bin_name"
+            chmod +x "$HOME/.local/bin/$bin_name"
+        fi
+    done
+fi
+
 # starship
 mkdir -p "$HOME"/.config/sheldon
 ln -snfv "$DIR"/config/starship.toml "$HOME"/.config/starship.toml

@@ -15,6 +15,7 @@ After making changes to this repository, always check:
    - `claude/agents/` 配下: agents ループで自動処理されるか確認
    - `codex/` 配下: codex セクションの更新
    - `config/` 配下: 個別の ln コマンド追加が必要
+   - `bin/` 配下: bin ループで自動処理されるか確認(`~/.local/bin` へリンク)
 
 3. **共通ガイドラインの同期**
    - `claude/CLAUDE.md` を変更したら `codex/AGENTS.md` にも反映する(方針が食い違うと Codex が予備として機能しない)
@@ -24,6 +25,7 @@ After making changes to this repository, always check:
 ```
 dotfiles/
 ├── .??*              # ホームディレクトリ直下にシンボリックリンク
+├── bin/              # ~/.local/bin 配下に配置(自作コマンド)
 ├── config/           # ~/.config/ 配下に配置
 ├── claude/           # ~/.claude/ 配下に配置
 │   ├── skills/       # カスタムスキル

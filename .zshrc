@@ -89,6 +89,9 @@ herdrg() {
   [[ -n "$p3" ]] || { echo "herdrg: 分割に失敗しました" >&2; return 1; }
   herdr pane split --pane "$p3" --direction down --ratio 0.5 --cwd "$PWD" --no-focus >/dev/null
 }
+## claude
+# claude-outputs は claude と前方一致するので補完で選びにくい。短い別名から呼ぶ
+alias co='claude-outputs'
 ## pipe
 alias -g L='| less'
 alias -g H='| head'

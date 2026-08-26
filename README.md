@@ -21,6 +21,7 @@ install.sh は再実行可能（リンクは `ln -snf` で張り直されるた�
 | パス | 配置先 | 内容 |
 |---|---|---|
 | `.zshrc` / `.tmux.conf` / `.tmux.session.conf` / `.vimrc` | `~/` | シェル・tmux・vim |
+| `bin/` | `~/.local/bin/` | 自作コマンド（`claude-outputs`: 並行セッションの成果物一覧） |
 | `config/starship.toml` | `~/.config/` | プロンプト（starship） |
 | `config/sheldon/plugins.toml` | `~/.config/sheldon/` | zsh プラグイン管理（sheldon） |
 | `config/herdr/config.toml` | `~/.config/herdr/` | エージェントマルチプレクサ（herdr） |
