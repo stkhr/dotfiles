@@ -15,7 +15,7 @@ usage() {
 claude-outputs — 並行する Claude セッションの「まだ開くべき成果物」を一覧する
 
   PR    transcript に出た PR URL のうち、自分が作った open なもの
-  crit  デーモンが生きている crit レビュー
+  crit  デーモンが生きていて、対応済みになっていない crit レビュー
   art   セッションが publish した artifact
 
 環境変数:
@@ -240,9 +240,10 @@ if [ -d "$CRIT_SESSIONS_DIR" ]; then
               (.host // "127.0.0.1"),
               (.cwd // ""),
               ((.args // []) | map(sub("^.*/"; "")) | join(" ")),
-              (.branch // "") ] | join($sep)
+              (.branch // ""),
+              (.review_path // "") ] | join($sep)
         ' "$f" 2>/dev/null) || continue
-        IFS="$SEP" read -r pid port host cwd cargs branch <<< "$meta"
+        IFS="$SEP" read -r pid port host cwd cargs branch review_path <<< "$meta"
         # pid 0 はプロセスグループを指すので kill -0 が常に通る。値を先に弾く。
         case "$pid" in ''|*[!0-9]*|0) continue ;; esac
         case "$port" in ''|*[!0-9]*|0) continue ;; esac
@@ -250,6 +251,24 @@ if [ -d "$CRIT_SESSIONS_DIR" ]; then
         # pid の生存は安価な事前フィルタ。開けるかどうかの判定は port 到達性で行う。
         kill -0 "$pid" 2>/dev/null || continue
         port_open "$host" "$port" || continue
+        # 指摘が付いて全部 resolved になったレビューは用済みなので出さない。
+        # crit は Finish Review でコメントが付いていた場合デーモンを意図的に残すので、
+        # port の開閉では対応済みかどうかが分からない。approve 自体は review.json に
+        # 記録されないため、コメントの resolved で代替する。
+        #
+        # コメントが1件も無いものは残す — 「まだ見ていない」と「指摘なしで approve
+        # した」を区別する手がかりが無いため。
+        #
+        # 行単位のコメント(.files[].comments)とレビュー全体へのコメント
+        # (.review_comments)は別の配列に入る。crit 自身も両方を合算して件数を数える。
+        # review.json が無い・壊れている場合は jq -e が非ゼロを返し、出す側に倒れる。
+        if [ -n "$review_path" ] && jq -e '
+            [ .files[]?.comments[]?, .review_comments[]? ] as $c
+            | ($c | length) > 0
+              and ([ $c[] | select(.resolved != true) ] | length) == 0
+        ' "$review_path/review.json" >/dev/null 2>&1; then
+            continue
+        fi
         label="${cargs:-review}"
         [ -n "$branch" ] && label="$label ($branch)"
         printf 'crit%slive%s%s%s%s%shttp://%s:%s%s\n' \
