@@ -31,12 +31,14 @@ claude-outputs — 並行する Claude セッションの「まだ開くべき�
   nc   無い場合は bash の /dev/tcp で crit の生存を確認する
 
 herdr のペイン内で実行すると、セッションの状態(◐ 実行中 / ✓ 完了 / ! 確認待ち)が
-付き、fzf 上で ctrl-o を押すとそのペインへ移動する。
+付き、fzf 上で ctrl-o を押すとそのペインへ移動する。ペインを閉じるなどして
+終了したセッションは、新しい workspace を作って claude --resume で開き直す。
 USAGE
 }
 
 case "${1:-}" in
     -h|--help) usage; exit 0 ;;
+    --open-session) ;;  # 下の dispatch で処理する(fzf からの内部呼び出し)
     "") ;;
     *) printf 'claude-outputs: 不明な引数: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
 esac
@@ -45,6 +47,14 @@ DAYS="${CLAUDE_OUTPUTS_DAYS:-7}"
 PR_LIMIT="${CLAUDE_OUTPUTS_PR_LIMIT:-100}"
 PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
 CRIT_SESSIONS_DIR="${CRIT_SESSIONS_DIR:-$HOME/.crit/sessions}"
+
+# fzf の binding から自身を呼び戻すので、PATH 経由で起動された時も実行できる形にする。
+SELF=$0
+case "$SELF" in
+    /*)  ;;
+    */*) SELF="$PWD/$SELF" ;;
+    *)   SELF=$(command -v -- "$SELF") || SELF=$0 ;;
+esac
 
 # Why not タブ区切り: IFS のタブは空白類なので `read` が連続タブを1つに潰し、空欄の
 # あるレコードで列がずれる。空欄を空欄として運ぶため US(0x1f)を区切りに使う。
@@ -61,14 +71,91 @@ case "$PR_LIMIT" in
     ''|*[!0-9]*) die "CLAUDE_OUTPUTS_PR_LIMIT には件数を指定してください: $PR_LIMIT" ;;
 esac
 
-T=$(mktemp -d) || die "一時ディレクトリを作れません"
-trap 'rm -rf "$T"' EXIT INT TERM
-
 repo_of_path() {
     local p="${1%/}"
     p="${p%%/.claude/worktrees/*}"
     printf '%s' "${p##*/}"
 }
+
+# ---- ctrl-o の実体(fzf から自身を呼び戻す隠しサブコマンド) ---------------
+# エージェントが生きていればそのペインへ移動し、終了していれば workspace を作って
+# claude --resume で開き直す。
+# Why not fzf の binding に直書き: workspace 作成 → pane_id の取り出し → agent start
+# と多段になり、失敗理由も出せない。
+open_failed() {
+    printf 'claude-outputs: セッションを開けません: %s\n' "$*" >&2
+    # fzf の execute はコマンドが返ると即座に一覧へ戻るので、読ませるために待つ。
+    # 端末が無い時は /dev/tty が開けない。先に stderr を捨ててからリダイレクトする。
+    printf 'Enter で一覧に戻ります。' >&2
+    read -r _ 2>/dev/null </dev/tty || printf '\n' >&2
+    return 1
+}
+
+# Why not 一覧を作った時の pane_id: 一覧を開いたままセッションを閉じる/開き直すのは
+# 普通に起きる。押した時点で引き直せば、古い ID への移動失敗も二重に開き直すのも防げる。
+live_pane_of_session() {
+    herdr agent list 2>/dev/null | jq -r --arg s "$1" '
+        .result.agents[]? | select(.agent_session.value == $s) | .pane_id
+    ' 2>/dev/null | head -1
+}
+
+open_session() {
+    local sid="${1:-}" cwd="${2:-}" pane created ws new_pane out
+
+    if [ "${HERDR_ENV:-}" != 1 ] || ! command -v herdr >/dev/null 2>&1; then
+        open_failed "herdr のペイン内ではないので開けません"
+        return 1
+    fi
+    if [ -z "$sid" ]; then
+        open_failed "この行はセッションに紐付いていません"
+        return 1
+    fi
+
+    pane=$(live_pane_of_session "$sid")
+    if [ -n "$pane" ]; then
+        out=$(herdr agent focus "$pane" 2>&1) && return 0
+        open_failed "ペイン $pane に移動できませんでした: $out"
+        return 1
+    fi
+
+    # worktree ごと片付けられていることがある。無い場所には作らない。
+    if [ -z "$cwd" ] || [ ! -d "$cwd" ]; then
+        open_failed "作業ディレクトリがありません: ${cwd:-不明}"
+        return 1
+    fi
+
+    # Why not --focus: 作った直後にフォーカスを移すと、以降の失敗メッセージが
+    # ユーザーの見ていないペインに出る。claude が立ち上がってから移す。
+    printf '%s で claude --resume %s を開いています…\n' "$cwd" "$sid" >&2
+    created=$(herdr workspace create --cwd "$cwd" --label "$(repo_of_path "$cwd")" --no-focus 2>&1) \
+        || { open_failed "workspace を作れませんでした: $created"; return 1; }
+    ws=$(printf '%s' "$created" | jq -r '.result.workspace.workspace_id // empty' 2>/dev/null)
+    new_pane=$(printf '%s' "$created" | jq -r '.result.root_pane.pane_id // empty' 2>/dev/null)
+    if [ -z "$ws" ] || [ -z "$new_pane" ]; then
+        open_failed "新しい workspace の ID を取れませんでした: $created"
+        return 1
+    fi
+
+    # agent start はシェルが対話可能になるまで待って返るので、間に sleep は要らない。
+    # agent_not_ready は起動途中でブロックされただけで claude 自体は動いているので、
+    # 失敗にせず workspace へ送る。作った workspace は失敗時も畳まず理由に添える。
+    if ! out=$(herdr agent start "resume-${sid%%-*}" --kind claude --pane "$new_pane" \
+                   -- --resume "$sid" 2>&1) \
+       && ! printf '%s' "$out" | grep -q 'agent_not_ready'; then
+        open_failed "claude --resume $sid を開始できませんでした($ws は残しています): $out"
+        return 1
+    fi
+    herdr workspace focus "$ws" >/dev/null 2>&1
+}
+
+if [ "${1:-}" = --open-session ]; then
+    shift
+    open_session "$@"
+    exit $?
+fi
+
+T=$(mktemp -d) || die "一時ディレクトリを作れません"
+trap 'rm -rf "$T"' EXIT INT TERM
 
 # ---- PR の問い合わせを先に投げる ------------------------------------------
 # transcript の走査と独立しているので、待ち時間を重ねる。
@@ -97,8 +184,7 @@ if [ "${HERDR_ENV:-}" = 1 ] && command -v herdr >/dev/null 2>&1; then
         .result.agents[]?
         | [ .agent_session.value // "",
             .agent_status // "",
-            .terminal_title_stripped // "",
-            .pane_id // "" ]
+            .terminal_title_stripped // "" ]
         | join($sep)
     ' > "$T/sessions" 2>/dev/null || : > "$T/sessions"
 fi
@@ -297,16 +383,20 @@ cwd_of_session() {
 
 : > "$T/display"
 while IFS="$SEP" read -r kind state context label url sid; do
-    status="" ; title="" ; pane=""
+    status="" ; title="" ; sess_cwd=""
     if [ -n "$sid" ] && [ -s "$T/sessions" ]; then
         meta=$(awk -F"$SEP" -v s="$sid" -v sep="$SEP" \
-            '$1 == s { print $2 sep $3 sep $4; exit }' "$T/sessions")
-        IFS="$SEP" read -r status title pane <<< "$meta"
+            '$1 == s { print $2 sep $3; exit }' "$T/sessions")
+        IFS="$SEP" read -r status title <<< "$meta"
     fi
 
-    # context(リポジトリ名)が空の行は transcript の cwd から埋める
-    if [ -z "$context" ] && [ -n "$sid" ]; then
-        c=$(cwd_of_session "$sid") && context=$(repo_of_path "$c")
+    # transcript の cwd は、context(リポジトリ名)が空の行を埋める時と、終了した
+    # セッションを開き直す時に要る。生きている行も後で終了しうるので常に引く。
+    if [ -n "$sid" ]; then
+        sess_cwd=$(cwd_of_session "$sid") || sess_cwd=""
+    fi
+    if [ -z "$context" ] && [ -n "$sess_cwd" ]; then
+        context=$(repo_of_path "$sess_cwd")
     fi
     if [ -z "$label" ]; then
         label="${title:-${url##*/}}"
@@ -331,8 +421,9 @@ while IFS="$SEP" read -r kind state context label url sid; do
         blocked) mark="! " ;;
     esac
 
-    printf '%s %-5s %-28s %s%s%s%s%s%s\n' \
-        "$tag" "$state" "$context" "$mark" "$label" "$SEP" "$url" "$SEP" "$pane" \
+    printf '%s %-5s %-28s %s%s%s%s%s%s%s%s\n' \
+        "$tag" "$state" "$context" "$mark" "$label" \
+        "$SEP" "$url" "$SEP" "$sid" "$SEP" "$sess_cwd" \
         >> "$T/display"
 done < "$T/rows"
 
@@ -345,10 +436,13 @@ if command -v fzf >/dev/null 2>&1 && [ -t 1 ]; then
     opener="open"
     command -v "$opener" >/dev/null 2>&1 || opener="xdg-open"
     # ESC の 130 をそのまま返すとプロンプトが失敗扱いにするので飲む
+    #
+    # Why not execute-silent: 開き直しに失敗した時に理由を出せない。成功時は herdr が
+    # フォーカスを移すので、fzf の再描画はユーザーの目には入らない。
     fzf --delimiter="$SEP" --with-nth=1 \
-        --header='enter: ブラウザで開く / ctrl-o: セッションのペインへ / esc: 終了' \
+        --header='enter: ブラウザで開く / ctrl-o: セッションへ(終了済みなら開き直す) / esc: 終了' \
         --bind "enter:execute-silent($opener {2})" \
-        --bind "ctrl-o:execute-silent(herdr agent focus {3} >/dev/null 2>&1)" \
+        --bind "ctrl-o:execute:'$SELF' --open-session {3} {4}" \
         < "$T/display" >/dev/null || true
 else
     awk -F"$SEP" '{ printf "%s  %s\n", $1, $2 }' "$T/display"
