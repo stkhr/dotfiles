@@ -72,9 +72,11 @@ gwta() {
   fi
 }
 ## tmux
-alias tmuxg='tmux new-session \; source-file ~/.tmux.session.conf'
+# iTerm2 の分割ペインで起動する常用シェル。-A で既存の main に再アタッチし、
+# ウィンドウを開き直すたびに無名セッションが積み上がるのを防ぐ
+alias tmuxg='tmux new-session -A -s main'
 ## herdr
-# herdr のペイン内で実行すると、現在のタブを tmuxg と同じ4ペインレイアウトにする
+# herdr のペイン内で実行すると、現在のタブを4ペインレイアウトにする
 # (上60%メイン、下段は左1 + 右上下2)。分割ペインは実行ペインの cwd を継承する
 herdrg() {
   local main p2 p3
