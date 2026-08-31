@@ -227,8 +227,8 @@ awk -F"$SEP" -v sep="$SEP" '!seen[$1]++ { print $1 sep $3 }' "$T/urls" > "$T/sid
 # セッションの transcript にも URL は残る。言及だけで決めると sort 順の都合で
 # session_id の小さい無関係なセッションが行を攫っていく。
 #
-# Why not 全ファイルに jq: transcript は1本で数MBある。作成の痕跡が無いファイルは
-# grep で先に落とす(46本 → 25本)。
+# Why not URL を含む全ファイルに jq: transcript は1本で数MBある。作成の痕跡が無い
+# ファイルを grep で先に落とすと、走査対象がおおむね半分になる。
 awk -F"$SEP" -v sep="$SEP" '!seen[$1 sep $3]++ { print $1 sep $3 }' "$T/urls" \
     > "$T/scan_pairs"
 
@@ -236,7 +236,9 @@ awk -F"$SEP" -v sep="$SEP" '!seen[$1 sep $3]++ { print $1 sep $3 }' "$T/urls" \
 : > "$T/art_titles"  # url / 説明文
 while IFS="$SEP" read -r sid f; do
     [ -f "$f" ] || continue
-    grep -q -e 'gh pr create' -e '"name":"Artifact"' "$f" 2>/dev/null || continue
+    # Why not "name":"Artifact": JSON の空白の入り方に依存する。絞り込みが目的なので
+    # ツール名だけで足りる(外れても jq 側の条件で落ちる)。
+    grep -q -e 'gh pr create' -e '"Artifact"' "$f" 2>/dev/null || continue
     # Why not gsub で content 全体を整形: tool_result は巨大になりうる。URL だけ
     # scan で抜けば、同じ走査が桁で速くなる。
     jq -r --arg sep "$SEP" --arg sid "$sid" '
@@ -264,7 +266,8 @@ while IFS="$SEP" read -r sid f; do
 done < "$T/scan_pairs" \
     | awk -F"$SEP" -v sep="$SEP" -v ownerfile="$T/owners" -v titlefile="$T/art_titles" '
         $1 == "T" { kind[$2] = $3; label[$2] = $4 }
-        # artifact は publish のたびに説明文が変わるので、最後に見たものを採る。
+        # artifact は publish のたびに説明文が変わるので、後に来たもので上書きする。
+        # 1セッション内では publish 順に並ぶので、これが最新の説明文になる。
         $1 == "R" && ($2 in kind) {
             n = split($4, us, " ")
             for (i = 1; i <= n; i++) {
