@@ -75,8 +75,9 @@ gwta() {
 # iTerm2 の起動時に走る。main があれば attach のみ、無ければ作ってレイアウトを流す。
 # new-session -A だと再アタッチのたびに source-file が走ってペインが増える
 tmuxg() {
-  if tmux has-session -t =main 2>/dev/null; then
-    tmux attach -t =main
+  # '=main' は完全一致指定。クォートしないと zsh の = 展開に食われる
+  if tmux has-session -t '=main' 2>/dev/null; then
+    tmux attach -t '=main'
   else
     tmux new-session -s main \; source-file ~/.tmux.session.conf
   fi
