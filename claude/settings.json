@@ -75,7 +75,6 @@
       "Bash(crit unpublish:*)",
       "Bash(crit auth:*)",
       "Bash(wget:*)",
-      "Bash(cat:*)",
       "Bash(rm -rf:*)",
       "Bash(chmod:*)",
       "Bash(chown:*)",
