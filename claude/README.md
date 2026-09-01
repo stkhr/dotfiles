@@ -48,9 +48,7 @@ claude/
 | serena | コード解析・シンボル検索 | docker（`~/ghq` をマウント） |
 | chrome-devtools | ブラウザ操作・DevTools連携 | npx（バージョンピン留め） |
 | context7 | ライブラリドキュメント検索 | npx（バージョンピン留め） |
-| playwright | E2E・ブラウザ自動化 | npx（バージョンピン留め） |
 | drawio | 図の生成・編集 | npx（バージョンピン留め） |
-| notion | Notion連携 | HTTP（`https://mcp.notion.com/mcp`） |
 | aws | AWS API操作（SigV4認証） | uvx `mcp-proxy-for-aws`（要 `brew install uv`） |
 
 - user スコープで登録したサーバーは登録した時点で有効になる
@@ -102,7 +100,7 @@ Notification / Stop 通知）を設定している。
 install.sh が marketplace を登録し、以下をインストールする
 （`settings.json` の `enabledPlugins` / `extraKnownMarketplaces` と対応）:
 
-- `superpowers` / `frontend-design` / `context7` / `security-guidance` / `gopls-lsp`（anthropics/claude-plugins-official）
+- `superpowers` / `frontend-design` / `security-guidance` / `gopls-lsp`（anthropics/claude-plugins-official）
 - `terraform`（hashicorp/agent-skills）
 - `crit`（tomasz-tomczyk/crit）
 

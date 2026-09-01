@@ -56,7 +56,6 @@
       "mcp__chrome-devtools__*",
       "mcp__serena__*",
       "mcp__context7__*",
-      "mcp__playwright__*",
       "mcp__aws__*",
       "WebSearch",
       "WebFetch",
@@ -246,7 +245,6 @@
     "superpowers@claude-plugins-official": true,
     "terraform@hashicorp": true,
     "frontend-design@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
     "crit@crit": true,
     "gopls-lsp@claude-plugins-official": true
@@ -272,7 +270,7 @@
     }
   },
   "language": "japanese",
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "advisorModel": "fable",
   "showClearContextOnPlanAccept": true,
   "autoUpdatesChannel": "stable",
