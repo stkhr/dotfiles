@@ -72,11 +72,16 @@ gwta() {
   fi
 }
 ## tmux
-# iTerm2 の起動時に走る。main があれば attach のみ、無ければ作ってレイアウトを流す。
-# new-session -A だと再アタッチのたびに source-file が走ってペインが増える
+# iTerm2 の起動時に走る。main が無ければ作り、あればレイアウトの欠けを埋めて attach する。
 tmuxg() {
   # '=main' は完全一致指定。クォートしないと zsh の = 展開に食われる
   if tmux has-session -t '=main' 2>/dev/null; then
+    # iTerm2 を終了すると herdr クライアントも終了し、herdr を直接のコマンドに
+    # しているペインごと消える。main は tmux サーバごと生き残るので attach だけでは
+    # 戻らない。source-file を無条件に流すと再アタッチのたびにペインが増えるため、
+    # herdr ペインが不在の時だけ流す
+    tmux list-panes -t '=main:' -F '#{pane_start_command}' | grep -qx herdr \
+      || tmux source-file ~/.tmux.session.conf
     tmux attach -t '=main'
   else
     tmux new-session -s main \; source-file ~/.tmux.session.conf
