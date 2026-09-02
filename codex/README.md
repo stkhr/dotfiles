@@ -91,7 +91,7 @@ hooks = true
 js_repl = false
 ```
 
-MCP サーバー(serena / context7 / playwright など)は Claude Code 側にのみ登録して
+MCP サーバー(serena / context7 / chrome-devtools など)は Claude Code 側にのみ登録して
 いる。Codex でも必要になったら `codex mcp add` で登録する。
 
 ## rules

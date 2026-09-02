@@ -18,9 +18,6 @@ claude mcp add chrome-devtools --scope user \
 claude mcp add context7 --scope user \
     -- npx -y @upstash/context7-mcp@3.2.0
 
-claude mcp add playwright --scope user \
-    -- npx -y @executeautomation/playwright-mcp-server@1.0.12
-
 claude mcp add drawio --scope user \
     -- npx -y @drawio/mcp@1.2.7
 
