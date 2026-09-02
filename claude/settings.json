@@ -270,7 +270,7 @@
     }
   },
   "language": "japanese",
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "advisorModel": "fable",
   "showClearContextOnPlanAccept": true,
   "autoUpdatesChannel": "stable",
