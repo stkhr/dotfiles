@@ -21,6 +21,9 @@ claude mcp add context7 --scope user \
 claude mcp add drawio --scope user \
     -- npx -y @drawio/mcp@1.2.7
 
+claude mcp add notion --transport http --scope user \
+    https://mcp.notion.com/mcp
+
 # AWS MCP Server (GA: https://aws.amazon.com/jp/blogs/aws/the-aws-mcp-server-is-now-generally-available/)
 # Proxy: https://github.com/aws/mcp-proxy-for-aws (official, Apache-2.0)
 # Requires: uv (https://astral.sh/uv) and configured AWS credentials (IAM SigV4 auth)

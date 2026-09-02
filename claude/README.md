@@ -49,6 +49,7 @@ claude/
 | chrome-devtools | ブラウザ操作・DevTools連携 | npx（バージョンピン留め） |
 | context7 | ライブラリドキュメント検索 | npx（バージョンピン留め） |
 | drawio | 図の生成・編集 | npx（バージョンピン留め） |
+| notion | Notion連携 | HTTP（`https://mcp.notion.com/mcp`） |
 | aws | AWS API操作（SigV4認証） | uvx `mcp-proxy-for-aws`（要 `brew install uv`） |
 
 - user スコープで登録したサーバーは登録した時点で有効になる
