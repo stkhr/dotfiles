@@ -25,6 +25,7 @@ brew "tree"
 brew "trivy"
 brew "actionlint"
 brew "zizmor" # GitHub Actions security scanner
+brew "gitleaks" # secret scanner
 brew "mycli"
 brew "pgcli"
 brew "pinact"
