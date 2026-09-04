@@ -1,0 +1,230 @@
+#!/usr/bin/env bash
+# 日ごとの作業ログから要点を抽出し、~/.claude/weekly-feedback/<ISO週>.md に貯める。
+#
+# Why not 当日分だけを処理: 実行できなかった日を取りこぼす。処理済みの日をマーカーに
+# 持って未処理日を追いかけるので、スケジューラの復帰挙動に依存しない。
+#
+# Why not ツールを有効にする: 入力は外部由来のテキストを含み、無人で走る。
+# --permission-prompts none は設定で許可済みのツールを素通りさせるため、--restricted と
+# --tools "" で落とす。抽出は stdin だけで完結するのでツールは要らない。
+#
+# 既知の制約: メモリの収集は mtime 基準なので、書かれた日と更新された日が異なるファイルは
+# 更新日の側にだけ現れる。窓を広げると同じ項目が複数日に重複するので広げない。
+
+set -uo pipefail
+
+# launchd から起動されると PATH が最小構成になるので補う
+PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$PATH"
+export PATH
+
+VAULT="${OBSIDIAN_VAULT:-$HOME/Documents/Obsidian Vault}"
+PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
+WF_DIR="${WEEKLY_FEEDBACK_DIR:-$HOME/.claude/weekly-feedback}"
+MODEL="${WEEKLY_FEEDBACK_MODEL:-sonnet[1m]}"
+MAX_BYTES="${WEEKLY_FEEDBACK_MAX_BYTES:-800000}"
+CLAUDE_BIN="${WEEKLY_FEEDBACK_CLAUDE_BIN:-claude}"
+LOG_DIR_NAME="03_Claude"
+
+DRY_RUN=0
+SINCE=""
+
+usage() {
+    cat <<'USAGE'
+weekly-feedback-extract — その日の学びを抽出して週次ふりかえり用の解答集に貯める
+
+  未処理の日付を古い順に処理し、日ごとに次を入力として claude に渡す:
+    - Obsidian Vault の 03_Claude/<日付>/*.md(セッションのやり取り)
+    - その日に更新された ~/.claude/projects/*/memory/*.md
+
+  出力は ~/.claude/weekly-feedback/<YYYY>-W<NN>.md へ追記する。
+
+オプション:
+  --since YYYY-MM-DD  この日以降を処理する(マーカーを無視。遡り取り込み用)
+  --dry-run           対象日と入力ファイルを表示するだけで claude を呼ばない
+  -h, --help          このヘルプ
+
+環境変数:
+  OBSIDIAN_VAULT             Vault の場所(既定 ~/Documents/Obsidian Vault)
+  CLAUDE_PROJECTS_DIR        メモリの置き場(既定 ~/.claude/projects)
+  WEEKLY_FEEDBACK_DIR        出力先(既定 ~/.claude/weekly-feedback)
+  WEEKLY_FEEDBACK_MODEL      抽出に使うモデル(既定 sonnet[1m])
+  WEEKLY_FEEDBACK_MAX_BYTES  1日あたりの入力上限(既定 800000)
+  WEEKLY_FEEDBACK_CLAUDE_BIN claude の実体(既定 claude。テストで差し替える)
+
+初回はマーカーが無いので当日だけを処理する。過去に遡るときは --since を明示する。
+USAGE
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --since) SINCE="${2:-}"; shift 2 ;;
+        --dry-run) DRY_RUN=1; shift ;;
+        -h|--help) usage; exit 0 ;;
+        *) printf 'weekly-feedback-extract: 不明な引数: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
+    esac
+done
+
+warn() { printf '[weekly-feedback] %s\n' "$*" >&2; }
+
+LOG_DIR="$VAULT/$LOG_DIR_NAME"
+if [ ! -d "$LOG_DIR" ]; then
+    warn "not found: $LOG_DIR"
+    exit 0
+fi
+if ! command -v "$CLAUDE_BIN" >/dev/null 2>&1; then
+    warn "claude not found in PATH: $CLAUDE_BIN"
+    exit 0
+fi
+
+mkdir -p "$WF_DIR" || { warn "cannot create $WF_DIR"; exit 0; }
+MARKER="$WF_DIR/.last-extracted"
+
+# 多重起動すると同じ日を二重に追記するので、ディレクトリ作成の原子性で排他する。
+# kill -9 や電源断で trap が走らないとロックが残り、以後 launchd から無言でスキップされ
+# 続ける。持ち主が生きているかを pid で確かめ、死んでいれば奪う。
+LOCK="$WF_DIR/.lock"
+if ! mkdir "$LOCK" 2>/dev/null; then
+    owner=$(cat "$LOCK/pid" 2>/dev/null)
+    if [ -n "$owner" ] && kill -0 "$owner" 2>/dev/null; then
+        warn "another run is in progress (pid $owner)"
+        exit 0
+    fi
+    warn "stale lock (pid ${owner:-unknown}) を回収する"
+    rm -f "$LOCK/pid"
+    if ! rmdir "$LOCK" 2>/dev/null || ! mkdir "$LOCK" 2>/dev/null; then
+        warn "ロックの回収に失敗した: $LOCK"
+        exit 0
+    fi
+fi
+printf '%s\n' "$$" > "$LOCK/pid"
+trap 'rm -f "$LOCK/pid"; rmdir "$LOCK" 2>/dev/null' EXIT
+
+TODAY=$(date +%Y-%m-%d)
+
+# 日付の比較は文字列比較(YYYY-MM-DD は辞書順=時系列順)。FROM は排他の下限。
+if [ -n "$SINCE" ]; then
+    if ! date -j -f '%Y-%m-%d' "$SINCE" '+%Y-%m-%d' >/dev/null 2>&1; then
+        warn "--since の日付が不正: $SINCE"
+        exit 2
+    fi
+    FROM=$(date -j -v-1d -f '%Y-%m-%d' "$SINCE" '+%Y-%m-%d')
+elif [ -f "$MARKER" ]; then
+    FROM=$(head -n 1 "$MARKER" | tr -d '[:space:]')
+else
+    # 初回。過去 500 日分を勝手に遡ると大量に API を叩くので当日だけにする
+    FROM=$(date -j -v-1d -f '%Y-%m-%d' "$TODAY" '+%Y-%m-%d')
+    warn "マーカーが無いので当日($TODAY)のみ処理する。遡るには --since を使う"
+fi
+
+DATES=$(find "$LOG_DIR" -maxdepth 1 -type d -name '20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]' \
+    -exec basename {} \; 2>/dev/null | sort)
+
+PROMPT=$(cat <<'PROMPT_EOF'
+ある1日の作業ログから、人間が覚えておくべき学びだけを抽出する。
+出力は週次ふりかえりの答え合わせに使う解答集であって、要約レポートではない。
+
+入力は2種類:
+- SESSION: その日の Claude Code セッションの発言(ツールの出力は含まれない)
+- MEMORY: その日に更新されたエージェント向けメモリ
+
+次の3見出しを必ずこの順に出し、各見出しの下は箇条書きだけを書く。
+
+### 決定・判断
+その日に決めたこと。何を採用し、何を採らなかったか。
+
+### 非自明な制約・前提
+一次情報で判明した制約、思い込みが覆った事実、ハマりどころ。
+「忘れると次に判断を間違えるもの」だけを書く。
+
+### 未決着
+その日に決まらなかった判断。次に誰かが決める必要があるものだけを書く。
+タスクの未着手・持ち越しは進捗であって判断ではないので書かない。
+
+規則:
+- 1項目は1文で言い切る。末尾に `(出典: <入力に現れたファイル名>)` を付ける。
+- 該当が無い見出しには `- なし` とだけ書く。
+- 手順・コマンド・ツールの使い方は書かない(エージェントが毎回やり直せるため)。
+- 作業の経過や進捗報告は書かない。「何をしたか」ではなく「何が分かったか / 何を決めたか」。
+- 入力に書かれていないことを推測で補わない。
+- 前置き・後書き・全体の要約を出力しない。見出しと箇条書きのみ。
+PROMPT_EOF
+)
+
+processed=0
+for d in $DATES; do
+    [ "$d" \> "$FROM" ] || continue
+    [ "$d" \> "$TODAY" ] && continue
+
+    next=$(date -j -v+1d -f '%Y-%m-%d' "$d" '+%Y-%m-%d' 2>/dev/null) || continue
+
+    session_files=$(find "$LOG_DIR/$d" -maxdepth 1 -type f -name '*.md' 2>/dev/null | sort)
+    memory_files=$(find "$PROJECTS_DIR" -path '*/memory/*.md' ! -name 'MEMORY.md' \
+        -newermt "$d 00:00:00" ! -newermt "$next 00:00:00" 2>/dev/null | sort)
+
+    if [ -z "$session_files" ] && [ -z "$memory_files" ]; then
+        printf '%s\n' "$d" > "$MARKER"
+        continue
+    fi
+
+    if [ "$DRY_RUN" -eq 1 ]; then
+        printf '%s\n' "$d"
+        printf '%s\n' "$session_files" "$memory_files" | sed '/^$/d;s/^/  /'
+        continue
+    fi
+
+    PAYLOAD_FILE=$(mktemp) || { warn "mktemp failed"; break; }
+    {
+        for f in $session_files; do
+            printf '\n===== SESSION: %s =====\n' "$(basename "$f")"
+            cat "$f"
+        done
+        for f in $memory_files; do
+            printf '\n===== MEMORY: %s =====\n' "$(basename "$f")"
+            cat "$f"
+        done
+    } > "$PAYLOAD_FILE" 2>/dev/null
+
+    size=$(wc -c < "$PAYLOAD_FILE" | tr -d ' ')
+    if [ "$size" -gt "$MAX_BYTES" ]; then
+        warn "$d: 入力が ${size}B なので先頭 ${MAX_BYTES}B に切り詰める"
+        TRUNC=$(mktemp)
+        head -c "$MAX_BYTES" "$PAYLOAD_FILE" > "$TRUNC"
+        printf '\n\n(以降は入力上限のため省略)\n' >> "$TRUNC"
+        mv -f "$TRUNC" "$PAYLOAD_FILE"
+    fi
+
+    OUT=$("$CLAUDE_BIN" -p "$PROMPT" --model "$MODEL" \
+        --restricted --tools "" --strict-mcp-config --permission-prompts none \
+        < "$PAYLOAD_FILE" 2>&1)
+    status=$?
+    rm -f "$PAYLOAD_FILE"
+
+    if [ $status -ne 0 ] || [ -z "$OUT" ]; then
+        # マーカーを進めない。次回の実行がこの日から再開する
+        warn "$d: 抽出に失敗した(exit=$status)。マーカーは進めない"
+        printf '%s\n' "$OUT" | head -n 5 >&2
+        break
+    fi
+
+    week=$(date -j -f '%Y-%m-%d' "$d" '+%G-W%V')
+    WEEK_FILE="$WF_DIR/$week.md"
+    if [ ! -f "$WEEK_FILE" ]; then
+        {
+            printf '# %s の解答集\n\n' "$week"
+            printf '> weekly-feedback の Step 2 を書き終えるまで開かないこと。\n'
+        } > "$WEEK_FILE"
+    fi
+    {
+        printf '\n## %s\n\n' "$d"
+        printf '%s\n' "$OUT"
+    } >> "$WEEK_FILE"
+
+    printf '%s\n' "$d" > "$MARKER"
+    processed=$((processed + 1))
+    printf '[weekly-feedback] %s -> %s\n' "$d" "$WEEK_FILE"
+done
+
+if [ "$processed" -eq 0 ] && [ "$DRY_RUN" -eq 0 ]; then
+    warn "処理対象なし(FROM=$FROM)"
+fi
+exit 0
