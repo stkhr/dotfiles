@@ -6,8 +6,11 @@
 # Changed = listed by `git status` and not older than the previous run's
 # stamp. The first run only writes the stamp, so changes made before the
 # session are left alone. A file formatted in one run is handed back once
-# more in the next (its mtime equals the stamp); formatters skip unchanged
-# files, so this converges. At most MAX_FILES files per run.
+# more in the next (its mtime equals the stamp), so its lint result is
+# reported twice; formatters skip unchanged files, so this converges.
+# At most MAX_FILES files per run. The stamp is advanced before any work,
+# so a run killed by the hook timeout drops the rest of that batch instead
+# of redoing it on every later Bash call.
 
 set -uo pipefail
 
@@ -28,8 +31,6 @@ if [ ! -f "$STAMP" ]; then
   touch "$STAMP"
   exit 0
 fi
-# Advance the stamp before doing any work: a run killed by the hook timeout
-# must not leave the same files "changed" for every later Bash call.
 if ! mv -f "$STAMP" "$PREV" || ! touch "$STAMP"; then
   exit 0
 fi
@@ -38,14 +39,16 @@ HOOK_DIR=$(cd "$(dirname "$0")" && pwd)
 CONTEXT=""
 COUNT=0
 SKIPPED=0
+SKIPPED_FILES=""
 RS_LINTED=""
+LINTED_DIRS=""
 
 # Generated or tool-config files that the formatters must not rewrite.
 # Mirrors the Edit deny rules in settings.json, which this path bypasses.
 skip_file() {
   case "$(basename "$1")" in
-    package-lock.json|pnpm-lock.yaml|yarn.lock|bun.lockb|bun.lock) return 0 ;;
-    biome.json|.eslintrc|.eslintrc.*|.oxlintrc*) return 0 ;;
+    package-lock.json|npm-shrinkwrap.json|pnpm-lock.yaml|yarn.lock|bun.lockb|bun.lock) return 0 ;;
+    biome.json|.eslintrc|.eslintrc.*|eslint.config.*|.oxlintrc*) return 0 ;;
     ruff.toml|.ruff.toml|.golangci.yml|.golangci.yaml|clippy.toml|.tflint.hcl) return 0 ;;
   esac
   return 1
@@ -73,17 +76,27 @@ while IFS= read -r -d '' ENTRY; do
   COUNT=$((COUNT + 1))
   if [ "$COUNT" -gt "$MAX_FILES" ]; then
     SKIPPED=$((SKIPPED + 1))
+    [ "$SKIPPED" -le 10 ] && SKIPPED_FILES="${SKIPPED_FILES:+$SKIPPED_FILES
+}$REL"
     continue
   fi
 
   PAYLOAD=$(jq -n --arg f "$FILE" --arg d "$CWD" '{tool_input: {file_path: $f}, cwd: $d}')
   printf '%s' "$PAYLOAD" | bash "$HOOK_DIR/format-on-edit.sh" >/dev/null 2>&1
 
-  # cargo clippy is workspace-wide; one run per hook invocation is enough.
+  # Linters that cover more than one file run once per hook invocation:
+  # cargo clippy is workspace-wide, tflint is directory-wide.
   case "$FILE" in
     *.rs)
       [ -n "$RS_LINTED" ] && continue
       RS_LINTED=1
+      ;;
+    *.tf|*.tfvars)
+      DIR=$(dirname "$FILE")
+      case "$LINTED_DIRS" in
+        *"|$DIR|"*) continue ;;
+      esac
+      LINTED_DIRS="$LINTED_DIRS|$DIR|"
       ;;
   esac
   DIAG=$(printf '%s' "$PAYLOAD" | bash "$HOOK_DIR/lint-feedback.sh" 2>/dev/null \
@@ -92,7 +105,11 @@ while IFS= read -r -d '' ENTRY; do
 done < <(git -C "$ROOT" status --porcelain=v1 --untracked-files=all -z 2>/dev/null)
 
 if [ "$SKIPPED" -gt 0 ]; then
-  add_context "$SKIPPED more changed files were not formatted or linted (limit $MAX_FILES per command); run the formatter and linter on them yourself."
+  NOTE="$SKIPPED more changed files were not formatted or linted (limit $MAX_FILES per command); run the formatter and linter on them yourself:
+$SKIPPED_FILES"
+  [ "$SKIPPED" -gt 10 ] && NOTE="$NOTE
+..."
+  add_context "$NOTE"
 fi
 
 [ -z "$CONTEXT" ] && exit 0

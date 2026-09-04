@@ -95,6 +95,8 @@
       "Edit(**/biome.json)",
       "Edit(**/.eslintrc)",
       "Edit(**/.eslintrc.*)",
+      "Edit(**/eslint.config.*)",
+      "Edit(**/npm-shrinkwrap.json)",
       "Edit(**/ruff.toml)",
       "Edit(**/.ruff.toml)",
       "Edit(**/.golangci.yml)",
