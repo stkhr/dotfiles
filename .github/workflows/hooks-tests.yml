@@ -24,6 +24,7 @@ jobs:
   test:
     # macOS ships bash 3.2, which the hooks must keep supporting
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
@@ -34,10 +35,12 @@ jobs:
       - name: settings.json is valid JSON
         run: jq -e . claude/settings.json > /dev/null
       - name: shellcheck
+        # the macOS runner image does not ship shellcheck
         if: runner.os == 'Linux'
         run: shellcheck -S warning claude/hooks/*.sh claude/hooks/tests/*.sh claude/statusline.sh bin/*
       - name: hook tests
         run: |
+          bash --version | head -1
           status=0
           for t in claude/hooks/tests/*.sh; do
             echo "## $t"
