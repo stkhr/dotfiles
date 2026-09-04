@@ -73,6 +73,7 @@ GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP
 | `lint-feedback.sh` | PostToolUse (Edit\|Write) | 編集ファイルを lint し、エラーをモデルにフィードバック |
 | `format-on-edit.sh` | PostToolUse (Edit\|Write) | prettier / black / gofmt / terraform fmt による自動整形 |
 | `notify-pr-created.sh` | PostToolUse (Bash) | `gh pr create` 実行時に PR URL を通知 |
+| `format-lint-after-bash.sh` | PostToolUse (Bash) | Bash で変更されたファイルを format-on-edit / lint-feedback に渡す(auto mode 用) |
 | `precompact-context.sh` | PreCompact | git の作業状態を compaction サマリに注入 |
 | `verify-completion-claims.sh` | Stop | 完了報告と実際の作業状態の突き合わせ |
 | `verify-tests.sh` | Stop | 応答完了時のテスト検証 |
