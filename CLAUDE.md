@@ -15,7 +15,6 @@ After making changes to this repository, always check:
    - `claude/agents/` 配下: agents ループで自動処理されるか確認
    - `codex/` 配下: codex セクションの更新
    - `config/` 配下: 個別の ln コマンド追加が必要
-   - `config/launchd/` 配下: ln ではなく sed 置換でコピーし、`launchctl bootout` → `bootstrap` する
    - `bin/` 配下: bin ループで自動処理されるか確認(`~/.local/bin` へリンク)
 
 3. **共通ガイドラインの同期**
@@ -28,7 +27,6 @@ dotfiles/
 ├── .??*              # ホームディレクトリ直下にシンボリックリンク
 ├── bin/              # ~/.local/bin 配下に配置(自作コマンド)
 ├── config/           # ~/.config/ 配下に配置
-│   └── launchd/      # ~/Library/LaunchAgents/ 配下に配置(定期ジョブ)
 ├── claude/           # ~/.claude/ 配下に配置
 │   ├── skills/       # カスタムスキル
 │   └── agents/       # カスタムエージェント

@@ -102,16 +102,6 @@ if [ -d "$DIR"/claude/agents ]; then
     done
 fi
 
-# launchd(週次ふりかえり用の日次抽出)
-# Why not シンボリックリンク: LaunchAgents 配下のリンクは launchd が確実に辿らない。
-# 実体を置き、ホームディレクトリのプレースホルダをここで埋める
-mkdir -p "$HOME"/Library/LaunchAgents "$HOME"/.claude/weekly-feedback
-wf_label="com.stkhr.weekly-feedback-extract"
-wf_plist="$HOME/Library/LaunchAgents/$wf_label.plist"
-sed "s|__HOME__|$HOME|g" "$DIR"/config/launchd/"$wf_label".plist > "$wf_plist"
-launchctl bootout "gui/$(id -u)/$wf_label" 2>/dev/null
-launchctl bootstrap "gui/$(id -u)" "$wf_plist" || echo "[install] launchctl bootstrap failed: $wf_label" >&2
-
 # codex
 # ~/.codex は Codex が auth.json・履歴・sqlite を書き込むため、~/.claude と同じく
 # ディレクトリ丸ごとではなくファイル単位でリンクする。config.toml は ChatGPT.app が
