@@ -7,6 +7,9 @@ set -uo pipefail
 
 INPUT=$(cat)
 FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+# cwd from the hook input follows EnterWorktree; CLAUDE_PROJECT_DIR stays at the launch root.
+CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
+CWD="${CWD:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 
 # Exit early if no file or file doesn't exist
 [ -z "$FILE" ] || [ ! -f "$FILE" ] && exit 0
@@ -14,7 +17,7 @@ FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
 # Find linter: check project-local (node_modules/.bin) before global
 find_linter() {
   local name="$1"
-  local cwd="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+  local cwd="$CWD"
   if [ -x "$cwd/node_modules/.bin/$name" ]; then
     echo "$cwd/node_modules/.bin/$name"
   elif command -v "$name" &>/dev/null; then
@@ -45,8 +48,8 @@ case "$FILE" in
     ;;
   *.rs)
     if command -v cargo &>/dev/null; then
-      # cargo clippy runs project-wide; find the workspace root from CLAUDE_PROJECT_DIR
-      CARGO_ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+      # cargo clippy runs project-wide; the workspace root is the hook cwd
+      CARGO_ROOT="$CWD"
       DIAG=$(cargo clippy --manifest-path "$CARGO_ROOT/Cargo.toml" 2>&1 | grep -E '^error|^warning' | head -30) || true
     fi
     ;;
