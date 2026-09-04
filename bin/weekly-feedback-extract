@@ -173,18 +173,28 @@ for d in $DATES; do
     fi
 
     PAYLOAD_FILE=$(mktemp) || { warn "mktemp failed"; break; }
+    # Why not for f in $files: Vault のパスは空白を含む(Obsidian Vault)ので単語分割で
+    # パスが割れる。read なら行単位で読むので割れない。
     {
-        for f in $session_files; do
+        printf '%s\n' "$session_files" | while IFS= read -r f; do
+            [ -n "$f" ] || continue
             printf '\n===== SESSION: %s =====\n' "$(basename "$f")"
             cat "$f"
         done
-        for f in $memory_files; do
+        printf '%s\n' "$memory_files" | while IFS= read -r f; do
+            [ -n "$f" ] || continue
             printf '\n===== MEMORY: %s =====\n' "$(basename "$f")"
             cat "$f"
         done
-    } > "$PAYLOAD_FILE" 2>/dev/null
+    } > "$PAYLOAD_FILE"
 
     size=$(wc -c < "$PAYLOAD_FILE" | tr -d ' ')
+    # 読めたバイト数を見ないと、cat が全部失敗しても「空の入力で抽出成功」になる
+    if [ "$size" -eq 0 ]; then
+        warn "$d: 入力を1バイトも読めなかった。マーカーは進めない"
+        rm -f "$PAYLOAD_FILE"
+        break
+    fi
     if [ "$size" -gt "$MAX_BYTES" ]; then
         warn "$d: 入力が ${size}B なので先頭 ${MAX_BYTES}B に切り詰める"
         TRUNC=$(mktemp)
