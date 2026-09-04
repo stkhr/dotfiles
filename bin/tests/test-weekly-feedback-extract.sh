@@ -16,7 +16,8 @@ D1=$(date -j -v-3d -f '%Y-%m-%d' "$TODAY" '+%Y-%m-%d')
 D2=$(date -j -v-2d -f '%Y-%m-%d' "$TODAY" '+%Y-%m-%d')
 D3=$(date -j -v-1d -f '%Y-%m-%d' "$TODAY" '+%Y-%m-%d')
 
-VAULT="$WORK/vault"
+# 実運用の Vault パスは空白を含む(Obsidian Vault)。単語分割の回帰を踏むためここも空白入りにする
+VAULT="$WORK/Obsidian Vault"
 for d in "$D1" "$D2" "$D3"; do
     mkdir -p "$VAULT/03_Claude/$d"
     printf 'session log for %s\n' "$d" > "$VAULT/03_Claude/$d/proj.md"
@@ -26,10 +27,12 @@ done
 export CLAUDE_PROJECTS_DIR="$WORK/no-projects"
 export OBSIDIAN_VAULT="$VAULT"
 
+# stub は受け取った stdin を残す。空入力でも「抽出成功」に見えてしまう事故を検知する
+export STUB_STDIN="$WORK/stub-stdin"
 STUB="$WORK/stub-claude"
 cat > "$STUB" <<'STUBEOF'
 #!/bin/bash
-cat > /dev/null
+cat >> "$STUB_STDIN"
 if [ -n "${STUB_FAIL:-}" ]; then
     echo "stub failure" >&2
     exit 1
@@ -67,6 +70,12 @@ check "処理した日の見出しが3つある" "3" "$(grep -c '^## 20' "$OUT2"
 
 WEEK_D1=$(date -j -f '%Y-%m-%d' "$D1" '+%G-W%V')
 check "ISO週でファイル名が決まる" "0" "$(test -f "$OUT2/$WEEK_D1.md" && echo 0 || echo 1)"
+
+# 空白入りパスのセッションログが実際に claude へ渡っているか(単語分割の回帰)
+check "空白を含むパスのセッションログが入力に載る" "3" \
+    "$(grep -c '^===== SESSION: proj.md =====$' "$STUB_STDIN" 2>/dev/null || echo 0)"
+check "セッションログの中身が入力に載る" "3" \
+    "$(grep -c '^session log for 20' "$STUB_STDIN" 2>/dev/null || echo 0)"
 
 # --- マーカーがあれば処理済みの日を二重に追記しない ---
 BEFORE=$(cat "$OUT2"/*.md | wc -c | tr -d ' ')
