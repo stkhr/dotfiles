@@ -23,6 +23,7 @@
 | `terraform-style` | Terraform のスタイル規範 |
 
 各スキルの詳細・起動条件は各ディレクトリの `SKILL.md` frontmatter(`description`)を参照。
+セキュリティ関連は `security-guidance` plugin(自動検出)と `security-hardening` skill(能動的強化)でカバーする。
 
 ---
 
@@ -188,8 +189,6 @@ allowed-tools: Read, Grep, Glob
 git commit -m "feat: add security checklist to code-review"
 git commit -m "fix: improve code-review performance analysis"
 ```
-
-※ セキュリティ関連は `security-guidance` plugin（自動検出）と `security-hardening` skill（能動的強化）でカバー済み
 
 ## 参考資料
 
