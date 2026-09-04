@@ -1,0 +1,37 @@
+name: hooks-tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "claude/hooks/**"
+      - "claude/statusline.sh"
+      - "bin/**"
+      - ".github/workflows/hooks-tests.yml"
+  pull_request:
+    paths:
+      - "claude/hooks/**"
+      - "claude/statusline.sh"
+      - "bin/**"
+      - ".github/workflows/hooks-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - name: shellcheck
+        run: shellcheck -S warning claude/hooks/*.sh claude/hooks/tests/*.sh claude/statusline.sh bin/*
+      - name: hook tests
+        run: |
+          status=0
+          for t in claude/hooks/tests/*.sh; do
+            echo "## $t"
+            bash "$t" || status=1
+          done
+          exit "$status"
