@@ -53,9 +53,8 @@ claude/
 | aws | AWS API操作（SigV4認証） | uvx `mcp-proxy-for-aws`（要 `brew install uv`） |
 
 - user スコープで登録したサーバーは登録した時点で有効になる
-- バージョンを上げる場合は `mcp-setup.sh` のピン留めを更新し、
-  `claude mcp remove <name>` してから再実行する（`claude mcp add` は同名サーバーが
-  あるとエラーになる）
+- バージョンを上げる場合は `mcp-setup.sh` のピン留めを更新して再実行する。登録済みと
+  コマンドが違うサーバーだけ remove → add される(同一なら skip)
 - 確認: `claude mcp list` または Claude Code 内で `/mcp`
 
 GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP サーバーは登録しない
