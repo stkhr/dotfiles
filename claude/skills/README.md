@@ -2,7 +2,7 @@
 
 このディレクトリは、Claude Codeで使用するPersonal Skillsを管理します。
 
-## 📋 利用可能なSkills
+## 利用可能な Skills
 
 | Skill | 用途 |
 |---|---|
@@ -26,7 +26,7 @@
 
 ---
 
-## 🚀 Skillsの使い方
+## Skills の使い方
 
 ### 自動起動
 Claude Codeは、ユーザーのリクエストと各Skillの`description`を自動的にマッチングし、関連するSkillを提案します。
@@ -37,7 +37,7 @@ Claude Codeは、ユーザーのリクエストと各Skillの`description`を自
 code-reviewスキルを使ってこのファイルをレビューして
 ```
 
-## 📝 新しいSkillの作成
+## 新しい Skill の作成
 
 ### 1. ディレクトリ構造の作成
 
@@ -96,7 +96,7 @@ my-skill/
 
 変更を反映するため、Claude Codeを再起動してください。
 
-## 🔧 Skillsの管理
+## Skills の管理
 
 ### 更新
 
@@ -131,7 +131,7 @@ git pull origin main
 # Claude Codeを再起動
 ```
 
-## 📚 命名規則
+## 命名規則
 
 ### Skill名
 - 小文字、数字、ハイフン(-)のみ使用
@@ -143,7 +143,7 @@ git pull origin main
 - `reference.md`, `examples.md` (推奨)
 - その他のサポートファイルは小文字
 
-## 💡 ベストプラクティス
+## ベストプラクティス
 
 ### 1. descriptionを具体的に
 
@@ -189,23 +189,15 @@ git commit -m "feat: add security checklist to code-review"
 git commit -m "fix: improve code-review performance analysis"
 ```
 
-## 🎯 推奨Skillsのアイデア
-
-- `commit-helper` - コンベンショナルコミット形式の支援
-- `refactor-guide` - リファクタリング手順
-- `test-strategy` - テスト戦略の立案
-- `api-design` - REST/GraphQL APIの設計支援
-- `performance-audit` - パフォーマンス監査
-
 ※ セキュリティ関連は `security-guidance` plugin（自動検出）と `security-hardening` skill（能動的強化）でカバー済み
 
-## 📖 参考資料
+## 参考資料
 
-- [Claude Code公式ドキュメント](https://github.com/anthropics/claude-code)
-- [Personal Skills Guide](https://docs.anthropic.com/claude/docs/skills)
+- [Claude Code の Skills ドキュメント](https://code.claude.com/docs/en/skills)
+- [skills-dir plugin(`~/.claude/skills/` にプラグインを置く)](https://code.claude.com/docs/en/create-plugins)
 - [CLAUDE.md](../CLAUDE.md) - 開発ガイドライン
 
-## 🐛 トラブルシューティング
+## トラブルシューティング
 
 ### Skillが認識されない
 
@@ -228,7 +220,3 @@ git commit -m "fix: improve code-review performance analysis"
 1. Claude Codeを完全に再起動
 2. キャッシュのクリア(環境による)
 3. `./install.sh`を再実行
-
-## 📞 フィードバック
-
-Skillsに関する改善提案や問題は、このリポジトリのIssueで報告してください。
