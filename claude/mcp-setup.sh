@@ -26,7 +26,10 @@ ensure_stdio() {
         return
     fi
     if [[ -n "$current" ]]; then
-        claude mcp remove "$name" --scope user || return
+        if ! claude mcp remove "$name" --scope user; then
+            echo "[mcp-setup] $name: remove failed, not re-added" >&2
+            return 1
+        fi
     fi
     claude mcp add "$name" --scope user -- "$@"
 }
@@ -40,7 +43,10 @@ ensure_http() {
         return
     fi
     if [[ -n "$current" ]]; then
-        claude mcp remove "$name" --scope user || return
+        if ! claude mcp remove "$name" --scope user; then
+            echo "[mcp-setup] $name: remove failed, not re-added" >&2
+            return 1
+        fi
     fi
     claude mcp add "$name" --transport http --scope user "$url"
 }
