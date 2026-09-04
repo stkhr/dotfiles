@@ -25,7 +25,9 @@ ensure_stdio() {
         echo "[mcp-setup] $name: up to date"
         return
     fi
-    [[ -n "$current" ]] && claude mcp remove "$name" --scope user
+    if [[ -n "$current" ]]; then
+        claude mcp remove "$name" --scope user || return
+    fi
     claude mcp add "$name" --scope user -- "$@"
 }
 
@@ -37,7 +39,9 @@ ensure_http() {
         echo "[mcp-setup] $name: up to date"
         return
     fi
-    [[ -n "$current" ]] && claude mcp remove "$name" --scope user
+    if [[ -n "$current" ]]; then
+        claude mcp remove "$name" --scope user || return
+    fi
     claude mcp add "$name" --transport http --scope user "$url"
 }
 
