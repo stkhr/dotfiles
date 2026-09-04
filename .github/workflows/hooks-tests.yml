@@ -5,12 +5,14 @@ on:
     branches: [main]
     paths:
       - "claude/hooks/**"
+      - "claude/settings.json"
       - "claude/statusline.sh"
       - "bin/**"
       - ".github/workflows/hooks-tests.yml"
   pull_request:
     paths:
       - "claude/hooks/**"
+      - "claude/settings.json"
       - "claude/statusline.sh"
       - "bin/**"
       - ".github/workflows/hooks-tests.yml"
@@ -20,12 +22,19 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # macOS ships bash 3.2, which the hooks must keep supporting
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
+      - name: settings.json is valid JSON
+        run: jq -e . claude/settings.json > /dev/null
       - name: shellcheck
+        if: runner.os == 'Linux'
         run: shellcheck -S warning claude/hooks/*.sh claude/hooks/tests/*.sh claude/statusline.sh bin/*
       - name: hook tests
         run: |
