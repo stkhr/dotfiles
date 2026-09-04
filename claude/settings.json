@@ -2,7 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "BASH_DEFAULT_TIMEOUT_MS": "300000"
+    "BASH_DEFAULT_TIMEOUT_MS": "300000",
+    "CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE": "1"
   },
   "attribution": {
     "commit": "",
@@ -40,14 +41,9 @@
       "Bash(crit:*)",
       "Bash(make:*)",
       "Bash(docker:*)",
-      "Bash(python:*)",
-      "Bash(python3:*)",
-      "Bash(pip:*)",
-      "Bash(pip3:*)",
       "Bash(terraform:*)",
       "Bash(rm .tmp/**)",
       "Bash(ls:*)",
-      "Bash(osascript -e:*)",
       "Bash(shellcheck:*)",
       "Bash(actionlint:*)",
       "Bash(tflint:*)",
@@ -99,6 +95,8 @@
       "Edit(**/biome.json)",
       "Edit(**/.eslintrc)",
       "Edit(**/.eslintrc.*)",
+      "Edit(**/eslint.config.*)",
+      "Edit(**/npm-shrinkwrap.json)",
       "Edit(**/ruff.toml)",
       "Edit(**/.ruff.toml)",
       "Edit(**/.golangci.yml)",
@@ -109,7 +107,13 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "autoMode": {
+    "hard_deny": [
+      "$defaults",
+      "Secret file contents: never read, print, copy, encode, or transmit the contents of secret files by any means, including interpreters (python -c, node -e, perl -e, ruby -e), shell redirection, or subshells. Secret files are .env and .env.* (except .env.example and .env.sample), anything under ~/.ssh, ~/.aws, or ~/.kube, the files ~/.netrc and ~/.pgpass, and files matching *.pem, *.key, secrets*, credentials*. Listing filenames or checking existence is fine."
+    ]
+  },
+  "model": "opus[1m]",
   "fallbackModel": [
     "sonnet[1m]"
   ],
@@ -140,6 +144,12 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/notify-pr-created.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/format-lint-after-bash.sh",
+            "timeout": 60,
+            "statusMessage": "Formatting/linting changed files..."
           }
         ]
       },
@@ -160,7 +170,7 @@
     ],
     "Notification": [
       {
-        "matcher": "",
+        "matcher": "permission_prompt|idle_prompt|agent_needs_input|elicitation_dialog",
         "hooks": [
           {
             "type": "command",
@@ -273,12 +283,12 @@
   "effortLevel": "xhigh",
   "advisorModel": "fable",
   "showClearContextOnPlanAccept": true,
-  "autoUpdatesChannel": "stable",
   "tui": "fullscreen",
   "showThinkingSummaries": true,
   "theme": "dark",
   "switchModelsOnFlag": true,
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "includeGitInstructions": false
 }

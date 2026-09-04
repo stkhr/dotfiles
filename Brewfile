@@ -32,7 +32,6 @@ brew "pinact"
 brew "duckdb"
 brew "uv"
 brew "tflint"
-brew "packer"
 brew "graphviz"
 brew "azure-cli"
 brew "cloudflare-wrangler"
@@ -42,9 +41,6 @@ brew "eza"     # ls代替
 brew "fd"      # find代替
 brew "ripgrep" # grep代替
 brew "zoxide"  # smart cd
-
-# tap
-tap "hashicorp/tap" # hashicorp
 
 # cask
 cask "alfred"

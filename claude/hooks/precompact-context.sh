@@ -4,7 +4,10 @@
 
 set -uo pipefail
 
-CWD="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+INPUT=$(cat)
+# cwd from the hook input follows EnterWorktree; CLAUDE_PROJECT_DIR stays at the launch root.
+CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
+CWD="${CWD:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 
 # Gather state
 BRANCH=$(git -C "$CWD" branch --show-current 2>/dev/null || echo "unknown")

@@ -2,11 +2,21 @@
 # Stop Completion Gate: Verify tests pass before the agent declares completion.
 # Only runs if there are uncommitted file changes (agent wrote code this session).
 # Blocks completion (exit 2) if tests fail.
+# Honors stop_hook_active and takes cwd from the hook input (worktree-aware).
 # Supports: Node.js (npm test), Go (go test), Python (pytest), Rust (cargo test), Terraform (terraform validate/test)
 
 set -uo pipefail
 
-CWD="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+INPUT=$(cat)
+
+# Loop guard: never re-block within a stop-hook-triggered continuation.
+# Claude Code caps consecutive blocks at 8, but each one would rerun the suite.
+STOP_ACTIVE=$(echo "$INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null)
+[ "$STOP_ACTIVE" = "true" ] && exit 0
+
+# cwd from the hook input follows EnterWorktree; CLAUDE_PROJECT_DIR stays at the launch root.
+CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
+CWD="${CWD:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 
 # Only run if there are file changes (staged or modified)
 if ! git -C "$CWD" rev-parse HEAD &>/dev/null 2>&1; then
@@ -69,17 +79,9 @@ EXIT_CODE=$?
 
 [ "$EXIT_CODE" -eq 0 ] && exit 0
 
-# Tests failed - block completion and inject context
+# Tests failed: exit 2 blocks the stop and feeds stderr back to Claude.
+# Do NOT print JSON here: stdout is parsed even on exit 2, and a
+# "continue: false" would end the session instead of asking for a fix.
 echo "Tests failing ($TEST_TYPE) - fix before completing:" >&2
 echo "$OUTPUT" >&2
-
-jq -Rn --arg msg "$OUTPUT" --arg type "$TEST_TYPE" '{
-  continue: false,
-  stopReason: ("Tests failing (" + $type + ") - please fix before completing"),
-  hookSpecificOutput: {
-    hookEventName: "Stop",
-    additionalContext: ("Tests are failing. Fix these before declaring completion:\n" + $msg)
-  }
-}'
-
 exit 2

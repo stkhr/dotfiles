@@ -53,9 +53,8 @@ claude/
 | aws | AWS API操作（SigV4認証） | uvx `mcp-proxy-for-aws`（要 `brew install uv`） |
 
 - user スコープで登録したサーバーは登録した時点で有効になる
-- バージョンを上げる場合は `mcp-setup.sh` のピン留めを更新し、
-  `claude mcp remove <name>` してから再実行する（`claude mcp add` は同名サーバーが
-  あるとエラーになる）
+- バージョンを上げる場合は `mcp-setup.sh` のピン留めを更新して再実行する。登録済みと
+  コマンドが違うサーバーだけ remove → add される(同一なら skip)
 - 確認: `claude mcp list` または Claude Code 内で `/mcp`
 
 GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP サーバーは登録しない
@@ -73,9 +72,10 @@ GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP
 | `lint-feedback.sh` | PostToolUse (Edit\|Write) | 編集ファイルを lint し、エラーをモデルにフィードバック |
 | `format-on-edit.sh` | PostToolUse (Edit\|Write) | prettier / black / gofmt / terraform fmt による自動整形 |
 | `notify-pr-created.sh` | PostToolUse (Bash) | `gh pr create` 実行時に PR URL を通知 |
+| `format-lint-after-bash.sh` | PostToolUse (Bash) | Bash で変更されたファイルを format-on-edit / lint-feedback に渡す(auto mode の sed / heredoc 編集を拾う) |
 | `precompact-context.sh` | PreCompact | git の作業状態を compaction サマリに注入 |
 | `verify-completion-claims.sh` | Stop | 完了報告と実際の作業状態の突き合わせ |
-| `verify-tests.sh` | Stop | 応答完了時のテスト検証 |
+| `verify-tests.sh` | Stop | 未コミット変更があればテストを実行し、失敗時は停止をブロック(stop_hook_active で再帰を抑止) |
 | `session-sync.sh` | Stop | セッション状態の同期 |
 
 hook のテストは `hooks/tests/` 配下に置く。

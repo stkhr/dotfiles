@@ -7,6 +7,8 @@ do
     [[ "$f" == ".gitignore" ]] && continue
     [[ "$f" == ".DS_Store" ]] && continue
     [[ "$f" == ".agents" ]] && continue
+    # GitHub Actions の定義。ホームに置くものではない
+    [[ "$f" == ".github" ]] && continue
     # ~/.claude はディレクトリ丸ごとリンクすると Claude Code の実行時ファイルが
     # リポジトリ内に書き込まれてしまう。必要なファイルだけ後続セクションで個別にリンクする
     [[ "$f" == ".claude" ]] && continue

@@ -42,6 +42,13 @@ github = "zsh-users/zsh-autosuggestions"
 [plugins.zsh-history-substring-search]
 github = "zsh-users/zsh-history-substring-search"
 apply = ["defer"]
+# 上下矢印で入力中の文字列を含む履歴を辿る。bindkey は widget 定義前でも登録できる
+hooks.post = '''
+bindkey '^[[A' history-substring-search-up
+bindkey '^[OA' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+bindkey '^[OB' history-substring-search-down
+'''
 
 [plugins.starship]
 inline = 'eval "$(starship init zsh)"'

@@ -116,7 +116,7 @@ fi
 REASON=$(printf '完了報告の事実性チェックに失敗しました。直近の報告(%s)と実態が矛盾しています:\n%b実際に実行するか、報告を「未完了/未確認」に訂正してください。検証: git status -sb / gh pr view' "$CLAIM" "$PROBLEMS")
 
 # Exit 2 blocks the stop and feeds stderr back to Claude as the correction
-# instruction. Do NOT emit JSON here: stdout is only parsed on exit 0, and
+# instruction. Do NOT emit JSON here: stdout is parsed even on exit 2, and
 # "continue: false" would halt the session instead of forcing a correction.
 echo "$REASON" >&2
 exit 2

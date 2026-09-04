@@ -1,5 +1,5 @@
 # herdr configuration
-# schema: `herdr --default-config` (v0.7.1)
+# schema: `herdr --default-config` (v0.8.2)
 
 # 初回起動の通知設定ウィザードを抑止する。herdr が config.toml(dotfiles への
 # symlink)を書き換えて symlink が実体ファイルに置き換わる事故を避けるため、

@@ -75,7 +75,7 @@ third-party skills(`npx skills add`)は `~/.agents/skills/` に置かれ、イ�
 
 | ファイル | 所有者 | 理由 |
 |---|---|---|
-| `~/.codex/config.toml` | ChatGPT.app | marketplace のタイムスタンプ・plugin の有効フラグ・project の trust_level・`notify`・`mcp_servers`・`[shell_environment_policy.set]`・`[desktop]` などを自動で書き込む |
+| `~/.codex/config.toml` | ChatGPT.app / herdr | marketplace のタイムスタンプ・plugin の有効フラグ・project の trust_level・`notify`・`mcp_servers`・`[shell_environment_policy.set]`・`[desktop]` などを自動で書き込む。`herdr integration install codex` も hooks の有効化を書き込む |
 | `~/.codex/hooks.json` | herdr | `herdr integration install codex` が生成(install.sh が実行済み) |
 | `~/.codex/auth.json` | Codex | 認証情報 |
 
