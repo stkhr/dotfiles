@@ -13,6 +13,16 @@
 #
 # Why not Vault 内に出力: Obsidian の検索や最近のファイルに出ると、人間が週次ふりかえりの
 # Step 2(記憶だけで書く)より先に読んでしまう。読んだ時点で想起ではなく確認になる。
+#
+# セキュリティ: 入力のセッションログには Web ページ・PR 説明・チケット・Slack 由来の
+# テキストが混ざる。無人で毎晩走るので、プロンプトインジェクション1件でローカルコマンドが
+# 実行されうる。--permission-prompts none は「プロンプトが出るはずのものを拒否する」だけで
+# 設定上許可済みのツールは素通りするため(実測)、--restricted と --tools "" で
+# ツール自体を落とす。抽出は stdin だけで完結するのでツールは要らない。
+#
+# 既知の制約: メモリの収集は mtime 基準なので、ある日に書かれて翌日更新されたファイルは
+# 更新日の側にだけ現れる。解答集としては週内のどこかに載れば足りるので窓は広げない
+# (広げると同じ項目が複数日に重複する)。
 
 set -uo pipefail
 
@@ -25,6 +35,7 @@ PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
 WF_DIR="${WEEKLY_FEEDBACK_DIR:-$HOME/.claude/weekly-feedback}"
 MODEL="${WEEKLY_FEEDBACK_MODEL:-sonnet[1m]}"
 MAX_BYTES="${WEEKLY_FEEDBACK_MAX_BYTES:-800000}"
+CLAUDE_BIN="${WEEKLY_FEEDBACK_CLAUDE_BIN:-claude}"
 LOG_DIR_NAME="03_Claude"
 
 DRY_RUN=0
@@ -51,6 +62,7 @@ weekly-feedback-extract — その日の学びを抽出して週次ふりかえ�
   WEEKLY_FEEDBACK_DIR        出力先(既定 ~/.claude/weekly-feedback)
   WEEKLY_FEEDBACK_MODEL      抽出に使うモデル(既定 sonnet[1m])
   WEEKLY_FEEDBACK_MAX_BYTES  1日あたりの入力上限(既定 800000)
+  WEEKLY_FEEDBACK_CLAUDE_BIN claude の実体(既定 claude。テストで差し替える)
 
 初回はマーカーが無いので当日だけを処理する。過去に遡るときは --since を明示する。
 USAGE
@@ -72,21 +84,33 @@ if [ ! -d "$LOG_DIR" ]; then
     warn "not found: $LOG_DIR"
     exit 0
 fi
-if ! command -v claude >/dev/null 2>&1; then
-    warn "claude not found in PATH"
+if ! command -v "$CLAUDE_BIN" >/dev/null 2>&1; then
+    warn "claude not found in PATH: $CLAUDE_BIN"
     exit 0
 fi
 
 mkdir -p "$WF_DIR" || { warn "cannot create $WF_DIR"; exit 0; }
 MARKER="$WF_DIR/.last-extracted"
 
-# 多重起動すると同じ日を二重に追記するので、ディレクトリ作成の原子性で排他する
+# 多重起動すると同じ日を二重に追記するので、ディレクトリ作成の原子性で排他する。
+# kill -9 や電源断で trap が走らないとロックが残り、以後 launchd から無言でスキップされ
+# 続ける。持ち主が生きているかを pid で確かめ、死んでいれば奪う。
 LOCK="$WF_DIR/.lock"
 if ! mkdir "$LOCK" 2>/dev/null; then
-    warn "another run is in progress ($LOCK)"
-    exit 0
+    owner=$(cat "$LOCK/pid" 2>/dev/null)
+    if [ -n "$owner" ] && kill -0 "$owner" 2>/dev/null; then
+        warn "another run is in progress (pid $owner)"
+        exit 0
+    fi
+    warn "stale lock (pid ${owner:-unknown}) を回収する"
+    rm -f "$LOCK/pid"
+    if ! rmdir "$LOCK" 2>/dev/null || ! mkdir "$LOCK" 2>/dev/null; then
+        warn "ロックの回収に失敗した: $LOCK"
+        exit 0
+    fi
 fi
-trap 'rmdir "$LOCK" 2>/dev/null' EXIT
+printf '%s\n' "$$" > "$LOCK/pid"
+trap 'rm -f "$LOCK/pid"; rmdir "$LOCK" 2>/dev/null' EXIT
 
 TODAY=$(date +%Y-%m-%d)
 
@@ -182,7 +206,9 @@ for d in $DATES; do
         mv -f "$TRUNC" "$PAYLOAD_FILE"
     fi
 
-    OUT=$(claude -p "$PROMPT" --model "$MODEL" --permission-prompts none < "$PAYLOAD_FILE" 2>&1)
+    OUT=$("$CLAUDE_BIN" -p "$PROMPT" --model "$MODEL" \
+        --restricted --tools "" --strict-mcp-config --permission-prompts none \
+        < "$PAYLOAD_FILE" 2>&1)
     status=$?
     rm -f "$PAYLOAD_FILE"
 
