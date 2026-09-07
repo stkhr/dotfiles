@@ -37,7 +37,9 @@ jobs:
       - name: shellcheck
         # the macOS runner image does not ship shellcheck
         if: runner.os == 'Linux'
-        run: shellcheck -S warning claude/hooks/*.sh claude/hooks/tests/*.sh claude/statusline.sh bin/*
+        # bin/ holds extensionless commands next to a tests/ directory, and a
+        # directory handed to shellcheck fails the step
+        run: shellcheck -S warning claude/hooks/*.sh claude/hooks/tests/*.sh claude/statusline.sh $(find bin -maxdepth 1 -type f)
       - name: hook tests
         run: |
           bash --version | head -1
