@@ -83,6 +83,26 @@ WEEKLY_FEEDBACK_DIR="$OUT2" bash "$SCRIPT" >/dev/null 2>&1
 AFTER=$(cat "$OUT2"/*.md | wc -c | tr -d ' ')
 check "再実行しても追記されない" "$BEFORE" "$AFTER"
 
+# --- --since はマーカーを無視するので、処理済みの日を再度渡しても重複しない ---
+WEEKLY_FEEDBACK_DIR="$OUT2" bash "$SCRIPT" --since "$D1" >/dev/null 2>&1
+check "--since で再処理しても日の見出しは増えない" "3" \
+    "$(grep -c '^## 20' "$OUT2"/*.md 2>/dev/null | awk -F: '{s+=$NF} END {print s+0}')"
+check "--since で再処理しても内容は1日1回ぶん" "3" \
+    "$(grep -c '^- stub$' "$OUT2"/*.md 2>/dev/null | awk -F: '{s+=$NF} END {print s+0}')"
+
+# --- 進行中の当日はマーカーを進めない(あとで積まれるログを取りこぼさない) ---
+OUT5="$WORK/out5"
+mkdir -p "$VAULT/03_Claude/$TODAY"
+printf 'session log for %s\n' "$TODAY" > "$VAULT/03_Claude/$TODAY/proj.md"
+WEEKLY_FEEDBACK_DIR="$OUT5" bash "$SCRIPT" --since "$TODAY" >/dev/null 2>&1
+check "当日を処理してもマーカーは進めない" "<none>" "$(marker_of "$OUT5")"
+WEEK_TODAY=$(date -j -f '%Y-%m-%d' "$TODAY" '+%G-W%V')
+check "当日の抽出結果は書かれている" "1" \
+    "$(grep -c "^## $TODAY\$" "$OUT5/$WEEK_TODAY.md" 2>/dev/null || echo 0)"
+WEEKLY_FEEDBACK_DIR="$OUT5" bash "$SCRIPT" --since "$TODAY" >/dev/null 2>&1
+check "当日を再処理しても重複しない" "1" \
+    "$(grep -c "^## $TODAY\$" "$OUT5/$WEEK_TODAY.md" 2>/dev/null || echo 0)"
+
 # --- 抽出が失敗したらマーカーを進めない(次回その日から再開する) ---
 OUT3="$WORK/out3"
 STUB_FAIL=1 WEEKLY_FEEDBACK_DIR="$OUT3" bash "$SCRIPT" --since "$D1" >/dev/null 2>&1
