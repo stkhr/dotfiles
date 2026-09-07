@@ -37,6 +37,8 @@ run_case() {
 run_case block 'git worktree add ../x'
 run_case block "git worktree add $WORK/outside"
 run_case block 'git worktree add "../x with space"'
+run_case block 'git worktree add ~/outside'
+run_case block 'git worktree add --orphan ../x'
 
 # --- in-repo target, and subcommands other than add, pass ---
 run_case pass 'git worktree add .claude/worktrees/x'
@@ -50,6 +52,8 @@ run_case pass $'cat > docs/x.md <<\'EOF\'\ngit worktree add ../x\nEOF'
 run_case pass $'cat > docs/x.md <<"EOF"\ngit worktree add ../x\nEOF'
 run_case pass $'cat > docs/x.md <<\\EOF\ngit worktree add ../x\nEOF'
 run_case pass $'cat > docs/x.md <<-EOF\n\tgit worktree add ../x\n\tEOF'
+run_case pass $'cat > docs/x.md <<1EOF\ngit worktree add ../x\n1EOF'
+run_case pass $'cat > docs/x.md <<\'PY-DOC\'\ngit worktree add ../x\nPY-DOC'
 run_case pass $'cat <<A > a.md && cat <<B > b.md\ngit worktree add ../a\nA\ngit worktree add ../b\nB'
 
 # --- an invocation outside a heredoc body still blocks ---
@@ -57,6 +61,14 @@ run_case block $'cat > docs/x.md <<EOF\nhello\nEOF\ngit worktree add ../x'
 run_case block $'echo hi\ngit worktree add ../x'
 # a here-string is not a heredoc: it must not swallow the following lines
 run_case block $'cat <<< hello\ngit worktree add ../x'
+run_case block 'cat <<< hello && git worktree add ../x'
+# an unterminated "<<" is a shift operator or quoted text, not a heredoc opener
+run_case block $'echo "a << b"\ngit worktree add ../x'
+run_case block $'echo $((a << b))\ngit worktree add ../x'
+
+# --- every candidate line is judged, not only the first ---
+run_case block $'git worktree add .claude/worktrees/a\ngit worktree add ../x'
+run_case block $'echo "例: git worktree add .claude/worktrees/a"\ngit worktree add ../x'
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
