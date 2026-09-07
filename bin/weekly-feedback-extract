@@ -224,12 +224,29 @@ for d in $DATES; do
             printf '> weekly-feedback の Step 2 を書き終えるまで開かないこと。\n'
         } > "$WEEK_FILE"
     fi
+    # 同じ日を2度書かない。--since はマーカーを無視するし、当日は完了までに
+    # 何度も処理されるので、追記ではなくその日の節ごと差し替える
+    if grep -q "^## $d\$" "$WEEK_FILE"; then
+        REWRITE=$(mktemp)
+        awk -v target="## $d" '
+            $0 == target { skip = 1; next }
+            /^## 20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/ { skip = 0 }
+            !skip { print }
+        ' "$WEEK_FILE" > "$REWRITE"
+        if ! mv -f "$REWRITE" "$WEEK_FILE"; then
+            warn "$d: 既存の節を差し替えられなかった"
+            rm -f "$REWRITE"
+            break
+        fi
+    fi
     {
         printf '\n## %s\n\n' "$d"
         printf '%s\n' "$OUT"
     } >> "$WEEK_FILE"
 
-    printf '%s\n' "$d" > "$MARKER"
+    # 当日はまだ作業が続くのでマーカーを進めない。進めると、その後に積まれた
+    # ログが二度と抽出されない
+    [ "$d" \< "$TODAY" ] && printf '%s\n' "$d" > "$MARKER"
     processed=$((processed + 1))
     printf '[weekly-feedback] %s -> %s\n' "$d" "$WEEK_FILE"
 done
