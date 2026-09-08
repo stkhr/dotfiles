@@ -19,16 +19,21 @@ claude-outputs — 並行する Claude セッションの「まだ開くべき�
   crit  デーモンが生きていて、対応済みになっていない crit レビュー
   art   セッションが publish した artifact
 
+一覧は開いたままにしておける。ctrl-r で読み直すほか、
+CLAUDE_OUTPUTS_INTERVAL 秒ごとに自動で読み直す。走査に3秒前後かかり、その間は
+入力を受け付けない(esc で抜けられる)ので、頻繁に触るなら間隔を延ばす。
+
 環境変数:
   CLAUDE_OUTPUTS_DAYS      transcript を遡る日数(既定 7)
   CLAUDE_OUTPUTS_PR_LIMIT  gh search prs の取得上限(既定 100)
+  CLAUDE_OUTPUTS_INTERVAL  自動更新の間隔秒(既定 30、0 で自動更新しない)
   CLAUDE_PROJECTS_DIR      transcript の置き場(既定 ~/.claude/projects)
   CRIT_SESSIONS_DIR        crit セッションの置き場(既定 ~/.crit/sessions)
 
 依存:
   jq   必須
   gh   無いと PR が出ない
-  fzf  無いとプレーン出力になる
+  fzf  無いとプレーン出力になる。一覧の更新に使う every / --track は 0.73 以降
   nc   無い場合は bash の /dev/tcp で crit の生存を確認する
 
 herdr のペイン内で実行すると、セッションの状態(◐ 実行中 / ✓ 完了 / ! 確認待ち)が
@@ -40,12 +45,14 @@ USAGE
 case "${1:-}" in
     -h|--help) usage; exit 0 ;;
     --open-session) ;;  # 下の dispatch で処理する(fzf からの内部呼び出し)
+    --emit) ;;          # 表示行だけを出す(fzf の reload からの内部呼び出し)
     "") ;;
     *) printf 'claude-outputs: 不明な引数: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
 esac
 
 DAYS="${CLAUDE_OUTPUTS_DAYS:-7}"
 PR_LIMIT="${CLAUDE_OUTPUTS_PR_LIMIT:-100}"
+INTERVAL="${CLAUDE_OUTPUTS_INTERVAL:-30}"
 PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
 CRIT_SESSIONS_DIR="${CRIT_SESSIONS_DIR:-$HOME/.crit/sessions}"
 
@@ -70,6 +77,9 @@ case "$DAYS" in
 esac
 case "$PR_LIMIT" in
     ''|*[!0-9]*) die "CLAUDE_OUTPUTS_PR_LIMIT には件数を指定してください: $PR_LIMIT" ;;
+esac
+case "$INTERVAL" in
+    ''|*[!0-9]*) die "CLAUDE_OUTPUTS_INTERVAL には秒数を指定してください: $INTERVAL" ;;
 esac
 
 repo_of_path() {
@@ -153,6 +163,16 @@ if [ "${1:-}" = --open-session ]; then
     shift
     open_session "$@"
     exit $?
+fi
+
+# ---- 出力の形 -------------------------------------------------------------
+# 成果物が1件も無い時の振る舞いがモードで変わる(一覧は開いたまま待ち、他は即終了
+# する)ので、走査に入る前に決めておく。
+MODE=plain
+if [ "${1:-}" = --emit ]; then
+    MODE=emit
+elif command -v fzf >/dev/null 2>&1 && [ -t 1 ]; then
+    MODE=list
 fi
 
 T=$(mktemp -d) || die "一時ディレクトリを作れません"
@@ -423,9 +443,14 @@ if [ -d "$CRIT_SESSIONS_DIR" ]; then
 fi
 
 if [ ! -s "$T/rows" ]; then
-    printf '直近 %s 日ぶんに開くべき成果物はありません。\n' "$DAYS"
-    [ -n "$PR_NOTE" ] && printf '%s\n' "$PR_NOTE" >&2
-    exit 0
+    [ "$MODE" = emit ] && exit 0
+    # 自動更新が動く一覧は空でも開く。成果物が出てくるのを開いたまま待つのが目的で、
+    # ここで終わると更新の機会が無くなる。更新しないなら開いても待てないので閉じる。
+    if [ "$MODE" = plain ] || [ "$INTERVAL" -eq 0 ]; then
+        printf '直近 %s 日ぶんに開くべき成果物はありません。\n' "$DAYS"
+        [ -n "$PR_NOTE" ] && printf '%s\n' "$PR_NOTE" >&2
+        exit 0
+    fi
 fi
 
 # ---- セッション情報を補って表示行にする ----------------------------------
@@ -486,22 +511,53 @@ while IFS="$SEP" read -r kind state context label url sid; do
         >> "$T/display"
 done < "$T/rows"
 
+if [ "$MODE" = emit ]; then
+    # Why not PR_NOTE も出す: reload が起動した子プロセスの stderr は fzf が捨てる。
+    # 出しても読めないので、取得失敗は初回起動時の警告だけになる。
+    cat "$T/display"
+    exit 0
+fi
+
 [ -n "$PR_NOTE" ] && printf '%s\n' "$PR_NOTE" >&2
 
 # ---- 出力 ----------------------------------------------------------------
 # ペインへのジャンプは herdr 限定。tmux は Claude のセッションとペインの対応を
 # 持たないため、session_id からペインを特定できない。
-if command -v fzf >/dev/null 2>&1 && [ -t 1 ]; then
+if [ "$MODE" = list ]; then
     opener="open"
     command -v "$opener" >/dev/null 2>&1 || opener="xdg-open"
+
+    header='enter: ブラウザで開く / ctrl-o: セッションへ(終了済みなら開き直す) / ctrl-r: 更新 / esc: 終了'
+
+    # 自動更新は fzf のタイマーイベントに任せる。
+    # Why not 空配列をそのまま展開: bash 3.2 の set -u は "${arr[@]}" を unbound
+    # variable にする。更新しない時は bind を1つも足さないので + で守る。
+    # Why not every(0): 0.01 秒に丸められて走査が回り続ける。bind ごと外す。
+    fzf_args=()
+    if [ "$INTERVAL" -gt 0 ]; then
+        fzf_args+=(--bind "every($INTERVAL):reload-sync('$SELF' --emit)")
+        header="$header"$'\n'"$INTERVAL 秒ごとに自動更新"
+    fi
+    # PR_NOTE は起動直後の全画面描画に流されて読めないので、header に載せる
+    [ -n "$PR_NOTE" ] && header="$header"$'\n'"$PR_NOTE"
+
     # ESC の 130 をそのまま返すとプロンプトが失敗扱いにするので飲む
     #
     # Why not execute-silent: 開き直しに失敗した時に理由を出せない。成功時は herdr が
     # フォーカスを移すので、fzf の再描画はユーザーの目には入らない。
-    fzf --delimiter="$SEP" --with-nth=1 \
-        --header='enter: ブラウザで開く / ctrl-o: セッションへ(終了済みなら開き直す) / esc: 終了' \
+    #
+    # Why not reload: 走査に3秒前後かかる。その間リストが空になるので、更新のたびに
+    # 一覧が消える。reload-sync は新しい行が揃うまで古い表示を保つ。
+    # --track は更新をまたいでカーソルを同じ行に残す(行は session_id 順なので、
+    # 放っておくと新しい行がカーソルの上に入って enter の宛先が変わる)。
+    # 同一視の鍵は --id-nth で選ぶ。表示列には状態の印(◐ ✓ !)が入って変わるため
+    # URL の列を使う。照合の間 fzf は入力を止める(esc で抜けられる)。
+    fzf --delimiter="$SEP" --with-nth=1 --track --id-nth=2 \
+        --header="$header" \
         --bind "enter:execute-silent($opener {2})" \
         --bind "ctrl-o:execute:'$SELF' --open-session {3} {4}" \
+        --bind "ctrl-r:reload-sync('$SELF' --emit)" \
+        ${fzf_args[@]+"${fzf_args[@]}"} \
         < "$T/display" >/dev/null || true
 else
     awk -F"$SEP" '{ printf "%s  %s\n", $1, $2 }' "$T/display"
