@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# 所属している GitHub org を選んで herdr の space(workspace)を作る。
+#
+# Why not org 名をスクリプトに持たせる: dotfiles は public なので副業先名を置けない。
+
+set -uo pipefail
+
+usage() {
+    cat <<'USAGE'
+herdr-space — 所属 org の space を作って移動する
+
+  引数を省くと所属 org を fzf で選ぶ。space の cwd は $(ghq root)/github.com/<org>、
+  label は org 名。同じ label の space が既にあれば作らず移動する。
+
+使い方:
+  herdr-space [org]
+
+オプション:
+  -h, --help  このヘルプ
+USAGE
+}
+
+case "${1:-}" in
+    -h|--help)
+        usage
+        exit 0
+        ;;
+esac
+
+org="${1:-}"
+if [ -z "$org" ]; then
+    org=$(gh api user/orgs --paginate --jq '.[].login' | fzf --prompt 'org> ') || exit 1
+    [ -n "$org" ] || exit 1
+fi
+
+workspaces=$(herdr workspace list) || exit 1
+existing=$(printf '%s' "$workspaces" | jq -r --arg label "$org" \
+    '[.result.workspaces[] | select(.label == $label) | .workspace_id] | first // empty') || exit 1
+
+if [ -n "$existing" ]; then
+    herdr workspace focus "$existing" >/dev/null || exit 1
+    echo "$org: $existing へ移動"
+    exit 0
+fi
+
+# Why not 先に mkdir: 引数を打ち間違えた時に空ディレクトリだけが残る
+cwd="$(ghq root)/github.com/$org" || exit 1
+mkdir -p "$cwd" || exit 1
+
+created=$(herdr workspace create --cwd "$cwd" --label "$org" --focus) || exit 1
+printf '%s' "$created" | jq -r --arg org "$org" '"\($org): \(.result.workspace.workspace_id) を作成"'
