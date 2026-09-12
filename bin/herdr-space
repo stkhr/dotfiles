@@ -11,12 +11,19 @@ herdr-space — 所属 org の space を作って移動する
 
   引数を省くと所属 org を fzf で選ぶ。space の cwd は $(ghq root)/github.com/<org>、
   label は org 名。同じ label の space が既にあれば作らず移動する。
+  herdr のペイン内で実行する。
 
 使い方:
   herdr-space [org]
 
 オプション:
   -h, --help  このヘルプ
+
+依存:
+  gh    所属 org の取得。private な org は token に read:org が要る
+  fzf   org の選択
+  jq    herdr の応答の解釈
+  ghq   space の cwd の起点
 USAGE
 }
 
@@ -27,10 +34,24 @@ case "${1:-}" in
         ;;
 esac
 
+if [ "${HERDR_ENV:-}" != 1 ]; then
+    echo "herdr のペイン内で実行してください" >&2
+    exit 1
+fi
+
+orgs=$(gh api user/orgs --paginate --jq '.[].login') || exit 1
+if [ -z "$orgs" ]; then
+    echo "所属 org がありません" >&2
+    exit 1
+fi
+
 org="${1:-}"
 if [ -z "$org" ]; then
-    org=$(gh api user/orgs --paginate --jq '.[].login' | fzf --prompt 'org> ') || exit 1
+    org=$(printf '%s\n' "$orgs" | fzf --prompt 'org> ') || exit 1
     [ -n "$org" ] || exit 1
+elif ! printf '%s\n' "$orgs" | grep -qx -- "$org"; then
+    echo "所属していない org です: $org" >&2
+    exit 1
 fi
 
 workspaces=$(herdr workspace list) || exit 1
@@ -43,9 +64,9 @@ if [ -n "$existing" ]; then
     exit 0
 fi
 
-# Why not 先に mkdir: 引数を打ち間違えた時に空ディレクトリだけが残る
 cwd="$(ghq root)/github.com/$org" || exit 1
 mkdir -p "$cwd" || exit 1
 
 created=$(herdr workspace create --cwd "$cwd" --label "$org" --focus) || exit 1
-printf '%s' "$created" | jq -r --arg org "$org" '"\($org): \(.result.workspace.workspace_id) を作成"'
+workspace_id=$(printf '%s' "$created" | jq -er '.result.workspace.workspace_id // empty') || exit 1
+echo "$org: $workspace_id を作成"
