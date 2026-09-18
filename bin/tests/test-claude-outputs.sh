@@ -67,6 +67,15 @@ check "--emit の表示列に説明文が入る" 1 \
 plain=$("$SCRIPT" 2>/dev/null)
 check "既定出力は表示と URL を並べる" 1 "$(printf '%s' "$plain" | grep -c "  $URL\$")"
 
+# ---- 10 日前に触ったセッションの成果物も既定で出る ------------------------
+AGED="$WORK/aged-projects"
+make_projects "$AGED"
+touch -t "$(date -v-10d +%Y%m%d%H%M)" "$AGED/-Users-someone-proj/$SID.jsonl"
+export CLAUDE_PROJECTS_DIR="$AGED"
+aged=$("$SCRIPT" --emit 2>/dev/null)
+check "10 日前に触ったセッションの成果物は既定で出る" 1 \
+    "$(printf '%s\n' "$aged" | grep -c "$URL")"
+
 # ---- 成果物が無い時、--emit は何も出さずに 0 で返る ------------------------
 # fzf の reload が空のリストを受け取れないと、一覧を開いたまま待てない。
 export CLAUDE_PROJECTS_DIR="$WORK/no-projects"

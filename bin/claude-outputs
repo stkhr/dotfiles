@@ -24,7 +24,7 @@ CLAUDE_OUTPUTS_INTERVAL 秒ごとに自動で読み直す。走査に3秒前後�
 入力を受け付けない(esc で抜けられる)ので、頻繁に触るなら間隔を延ばす。
 
 環境変数:
-  CLAUDE_OUTPUTS_DAYS      transcript を遡る日数(既定 7)
+  CLAUDE_OUTPUTS_DAYS      transcript を遡る日数(既定 14)
   CLAUDE_OUTPUTS_PR_LIMIT  gh search prs の取得上限(既定 100)
   CLAUDE_OUTPUTS_INTERVAL  自動更新の間隔秒(既定 30、0 で自動更新しない)
   CLAUDE_PROJECTS_DIR      transcript の置き場(既定 ~/.claude/projects)
@@ -50,7 +50,7 @@ case "${1:-}" in
     *) printf 'claude-outputs: 不明な引数: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
 esac
 
-DAYS="${CLAUDE_OUTPUTS_DAYS:-7}"
+DAYS="${CLAUDE_OUTPUTS_DAYS:-14}"
 PR_LIMIT="${CLAUDE_OUTPUTS_PR_LIMIT:-100}"
 INTERVAL="${CLAUDE_OUTPUTS_INTERVAL:-30}"
 PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
