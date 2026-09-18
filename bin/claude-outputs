@@ -20,7 +20,7 @@ claude-outputs — 並行する Claude セッションの「まだ開くべき�
   art   セッションが publish した artifact
 
 一覧は開いたままにしておける。ctrl-r で読み直すほか、
-CLAUDE_OUTPUTS_INTERVAL 秒ごとに自動で読み直す。走査に3秒前後かかり、その間は
+CLAUDE_OUTPUTS_INTERVAL 秒ごとに自動で読み直す。走査に数秒かかり、その間は
 入力を受け付けない(esc で抜けられる)ので、頻繁に触るなら間隔を延ばす。
 
 環境変数:
@@ -546,7 +546,7 @@ if [ "$MODE" = list ]; then
     # Why not execute-silent: 開き直しに失敗した時に理由を出せない。成功時は herdr が
     # フォーカスを移すので、fzf の再描画はユーザーの目には入らない。
     #
-    # Why not reload: 走査に3秒前後かかる。その間リストが空になるので、更新のたびに
+    # Why not reload: 走査に数秒かかる。その間リストが空になるので、更新のたびに
     # 一覧が消える。reload-sync は新しい行が揃うまで古い表示を保つ。
     # --track は更新をまたいでカーソルを同じ行に残す(行は session_id 順なので、
     # 放っておくと新しい行がカーソルの上に入って enter の宛先が変わる)。
