@@ -1,6 +1,7 @@
 #!/bin/bash
-# Tests for claude-outputs の --emit(fzf の reload が呼ぶ行出力)。
-# gh は PATH のスタブに差し替え、crit と herdr は無い環境として走らせる。
+# Tests for claude-outputs の --emit(fzf の reload が呼ぶ行出力)と --open-session(ctrl-o)。
+# gh は PATH のスタブに差し替え、crit は無い環境として走らせる。herdr は --emit では
+# 無い環境、--open-session では呼び出しを記録するスタブにする。
 # Usage: bash bin/tests/test-claude-outputs.sh
 set -uo pipefail
 
@@ -98,6 +99,24 @@ check "間隔 0(自動更新なし)は受ける" 0 "$?"
 # ---- 不明な引数は使い方を出して 2 で返る ----------------------------------
 "$SCRIPT" --nope >/dev/null 2>&1
 check "不明な引数は 2 で返る" 2 "$?"
+
+# ---- 生きているセッションへの ctrl-o は workspace ごと画面を移す ------------
+HERDR_LOG="$WORK/herdr.log"
+cat > "$STUB_BIN/herdr" <<STUBEOF
+#!/bin/bash
+case "\$1 \$2" in
+    "agent list")
+        echo '{"result":{"agents":[{"agent_session":{"value":"$SID"},"pane_id":"w3A:p1","workspace_id":"w3A"}]}}' ;;
+    "workspace focus"|"agent focus")
+        echo "\$*" >> "$HERDR_LOG" ;;
+esac
+STUBEOF
+chmod +x "$STUB_BIN/herdr"
+: > "$HERDR_LOG"
+HERDR_ENV=1 "$SCRIPT" --open-session "$SID" /Users/someone/proj >/dev/null 2>&1 </dev/null
+check "生きているセッションを開くと 0 で返る" 0 "$?"
+check "生きているセッションは pane を focus してから workspace へ画面を移す" \
+    "$(printf 'agent focus w3A:p1\nworkspace focus w3A')" "$(cat "$HERDR_LOG")"
 
 printf '\n%d passed, %d failed\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]
