@@ -106,12 +106,13 @@ open_failed() {
 # 普通に起きる。押した時点で引き直せば、古い ID への移動失敗も二重に開き直すのも防げる。
 live_pane_of_session() {
     herdr agent list 2>/dev/null | jq -r --arg s "$1" '
-        .result.agents[]? | select(.agent_session.value == $s) | .pane_id
+        .result.agents[]? | select(.agent_session.value == $s)
+        | "\(.pane_id) \(.workspace_id)"
     ' 2>/dev/null | head -1
 }
 
 open_session() {
-    local sid="${1:-}" cwd="${2:-}" pane created ws new_pane out
+    local sid="${1:-}" cwd="${2:-}" pane live_ws created ws new_pane out
 
     if [ "${HERDR_ENV:-}" != 1 ] || ! command -v herdr >/dev/null 2>&1; then
         open_failed "herdr のペイン内ではないので開けません"
@@ -122,10 +123,13 @@ open_session() {
         return 1
     fi
 
-    pane=$(live_pane_of_session "$sid")
+    read -r pane live_ws <<< "$(live_pane_of_session "$sid")"
     if [ -n "$pane" ]; then
-        out=$(herdr agent focus "$pane" 2>&1) && return 0
-        open_failed "ペイン $pane に移動できませんでした: $out"
+        out=$(herdr agent focus "$pane" 2>&1) \
+            || { open_failed "ペイン $pane に移動できませんでした: $out"; return 1; }
+        # Why not agent focus だけ: 0.9.0 はサーバー側の focus しか変わらず、画面は元の workspace に残る。
+        out=$(herdr workspace focus "$live_ws" 2>&1) && return 0
+        open_failed "workspace $live_ws に移動できませんでした: $out"
         return 1
     fi
 
