@@ -59,11 +59,11 @@ ensure_stdio serena docker run --rm -i --network host \
     --context ide-assistant \
     --project /workspaces/projects
 
-ensure_stdio chrome-devtools npx -y chrome-devtools-mcp@1.8.0
+ensure_stdio chrome-devtools npx -y chrome-devtools-mcp@1.9.0
 
-ensure_stdio context7 npx -y @upstash/context7-mcp@4.0.4
+ensure_stdio context7 npx -y @upstash/context7-mcp@4.1.1
 
-ensure_stdio drawio npx -y @drawio/mcp@1.5.0
+ensure_stdio drawio npx -y @drawio/mcp@1.6.0
 
 ensure_http notion https://mcp.notion.com/mcp
 

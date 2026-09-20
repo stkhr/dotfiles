@@ -66,6 +66,7 @@ GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP
 
 | スクリプト | イベント | 役割 |
 |---|---|---|
+| `settings-drift.sh` | SessionStart | dotfiles 管理下の settings.json に未コミット差分があればセッション文脈に報告 |
 | `protect-main-branch.sh` | PreToolUse (Bash) | main/master への `git commit` をブロック |
 | `guard-worktree-path.sh` | PreToolUse (Bash) | worktree をリポジトリ外に作らせない |
 | `confirm-hard-gate.sh` | PreToolUse (Bash) | git/gh の破壊的操作に確認プロンプトを強制 |

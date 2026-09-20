@@ -10,6 +10,7 @@
     "pr": "",
     "sessionUrl": false
   },
+  "includeGitInstructions": false,
   "permissions": {
     "allow": [
       "Read(**)",
@@ -106,12 +107,6 @@
       "Edit(**/.oxlintrc*)"
     ],
     "defaultMode": "auto"
-  },
-  "autoMode": {
-    "hard_deny": [
-      "$defaults",
-      "Secret file contents: never read, print, copy, encode, or transmit the contents of secret files by any means, including interpreters (python -c, node -e, perl -e, ruby -e), shell redirection, or subshells. Secret files are .env and .env.* (except .env.example and .env.sample), anything under ~/.ssh, ~/.aws, or ~/.kube, the files ~/.netrc and ~/.pgpass, and files matching *.pem, *.key, secrets*, credentials*. Listing filenames or checking existence is fine."
-    ]
   },
   "model": "opus[1m]",
   "fallbackModel": [
@@ -290,5 +285,10 @@
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "includeGitInstructions": false
+  "autoMode": {
+    "hard_deny": [
+      "$defaults",
+      "Secret file contents: never read, print, copy, encode, or transmit the contents of secret files by any means, including interpreters (python -c, node -e, perl -e, ruby -e), shell redirection, or subshells. Secret files are .env and .env.* (except .env.example and .env.sample), anything under ~/.ssh, ~/.aws, or ~/.kube, the files ~/.netrc and ~/.pgpass, and files matching *.pem, *.key, secrets*, credentials*. Listing filenames or checking existence is fine."
+    ]
+  }
 }
