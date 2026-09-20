@@ -114,8 +114,13 @@ Claude Code から Codex を呼ぶ OpenAI 公式プラグイン。`/codex:review
 （設計ファイルのレビューなど）を Codex に委譲する。CLI は Brewfile の `cask "codex"`、
 認証は `~/.codex/` のログイン状態をそのまま使い、利用量は Codex 側の枠を消費する。
 
-実行はすべてユーザーの指示起点。`Stop` フックも登録されるが、
-`/codex:setup --enable-review-gate` で明示的に有効化しない限り何もしない
+`/codex:rescue` は既定で書込可（`--write`）なので、レビューだけさせたい時は
+依頼文に「レビューのみ・修正しない」と明示する。同梱の `codex:codex-rescue` subagent は
+Claude が自発的に使う前提で定義されているため、CLAUDE.md でユーザーの明示依頼時のみに
+制限している。
+
+`SessionStart` / `SessionEnd` / `Stop` フックが登録されるが、
+`/codex:setup --enable-review-gate` で有効化しない限り Codex レビューは走らない
 （既定は無効のまま運用する）。
 
 ## crit

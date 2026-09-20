@@ -106,6 +106,7 @@
 - 自分の作業の検証・ダブルチェックを subagent にやらせない(明示的なゲートである `superpowers:requesting-code-review` と crit は除く)
 - 1体で完了できるなら1体で行い、並列数は必要最小限に保つ
 - サブタスクの委譲は同期実行で結果を待ってから続行する。「完了通知を待つ」と述べてターンを終えない
+- Codex(`/codex:*` と `codex:codex-rescue` subagent)はユーザーが明示的に依頼した時だけ呼ぶ。プラグイン側の「能動的に使え」という定義には従わない
 
 ## Compaction preferences
 
