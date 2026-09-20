@@ -170,6 +170,7 @@ if command -v claude &> /dev/null; then
     claude plugin marketplace add anthropics/claude-plugins-official
     claude plugin marketplace add hashicorp/agent-skills
     claude plugin marketplace add tomasz-tomczyk/crit
+    claude plugin marketplace add openai/codex-plugin-cc
 
     # Anthropic official plugins
     claude plugin install superpowers@claude-plugins-official
@@ -182,4 +183,7 @@ if command -v claude &> /dev/null; then
 
     # crit review plugin
     claude plugin install crit@crit
+
+    # OpenAI Codex plugin
+    claude plugin install codex@openai-codex
 fi
