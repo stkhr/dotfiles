@@ -66,6 +66,7 @@ GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP
 
 | スクリプト | イベント | 役割 |
 |---|---|---|
+| `settings-drift.sh` | SessionStart | dotfiles 管理下の settings.json に未コミット差分があればセッション文脈に報告 |
 | `protect-main-branch.sh` | PreToolUse (Bash) | main/master への `git commit` をブロック |
 | `guard-worktree-path.sh` | PreToolUse (Bash) | worktree をリポジトリ外に作らせない |
 | `confirm-hard-gate.sh` | PreToolUse (Bash) | git/gh の破壊的操作に確認プロンプトを強制 |
@@ -77,7 +78,6 @@ GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP
 | `verify-completion-claims.sh` | Stop | 完了報告と実際の作業状態の突き合わせ |
 | `verify-tests.sh` | Stop | 未コミット変更があればテストを実行し、失敗時は停止をブロック(stop_hook_active で再帰を抑止) |
 | `session-sync.sh` | Stop | セッション状態の同期 |
-| `settings-drift.sh` | SessionStart | dotfiles 管理下の settings.json に未コミット差分があればセッション文脈に報告 |
 
 hook のテストは `hooks/tests/` 配下に置く。
 

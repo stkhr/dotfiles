@@ -75,7 +75,7 @@ third-party skills(`npx skills add`)は `~/.agents/skills/` に置かれ、イ�
 
 | ファイル | 所有者 | 理由 |
 |---|---|---|
-| `~/.codex/config.toml` | ChatGPT.app / herdr | marketplace のタイムスタンプ・plugin の有効フラグ・project の trust_level・`notify`・`mcp_servers`・`[shell_environment_policy.set]`・`[desktop]` などを自動で書き込む。`herdr integration install codex` も hooks の有効化を書き込む |
+| `~/.codex/config.toml` | ChatGPT.app / herdr | marketplace のタイムスタンプ・plugin の有効フラグ・project の trust_level・`notify`・`mcp_servers`・`[shell_environment_policy.set]`・`[desktop]` などを自動で書き込む。`herdr integration install codex` も hooks の有効化を書き込む(stable で既定 ON なので手では足さない) |
 | `~/.codex/hooks.json` | herdr | `herdr integration install codex` が生成(install.sh が実行済み) |
 | `~/.codex/auth.json` | Codex | 認証情報 |
 
@@ -86,9 +86,6 @@ model = "gpt-5.6-sol"
 personality = "pragmatic"
 model_reasoning_effort = "high"
 ```
-
-`[features] hooks = true` は `herdr integration install codex` が書き込む。hooks は
-stable で既定 ON なので手で足す必要はない。
 
 MCP サーバー(serena / context7 / chrome-devtools など)は Claude Code 側にのみ登録して
 いる。Codex でも必要になったら `codex mcp add` で登録する。
@@ -101,9 +98,9 @@ MCP サーバー(serena / context7 / chrome-devtools など)は Claude Code 側�
 `pattern` は位置ベースの前方一致のみで、任意位置のフラグ(`git push --force` の
 `--force` 等)は表現できない。そこは AGENTS.md の確認手順で担保している。
 
-`match` / `not_match` は読み込み時に評価されるアサーション。構文エラーがあると
-`Error loading rules:` が出て全ルールが無効になるので、編集したら
-`codex execpolicy check` で判定結果を確認する(`--help` には出ないが動く)。
+`match` / `not_match` は読み込み時に評価されるアサーション。構文エラーがあると起動時に
+`Error loading rules:` が出て全ルールが無効になる。編集したら `codex execpolicy check` で
+読み込みエラーと判定結果を確認する(`--help` には出ないが動く)。
 
 ```bash
 codex execpolicy check --pretty --rules ~/.codex/rules/default.rules -- gh pr merge 123 --squash
