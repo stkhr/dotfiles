@@ -105,6 +105,18 @@ install.sh が marketplace を登録し、以下をインストールする
 - `superpowers` / `frontend-design` / `security-guidance` / `gopls-lsp`（anthropics/claude-plugins-official）
 - `terraform`（hashicorp/agent-skills）
 - `crit`（tomasz-tomczyk/crit）
+- `codex`（openai/codex-plugin-cc）
+
+## codex
+
+Claude Code から Codex を呼ぶ OpenAI 公式プラグイン。`/codex:review` /
+`/codex:adversarial-review` はコード差分、`/codex:rescue <依頼文>` は任意タスク
+（設計ファイルのレビューなど）を Codex に委譲する。CLI は Brewfile の `cask "codex"`、
+認証は `~/.codex/` のログイン状態をそのまま使い、利用量は Codex 側の枠を消費する。
+
+実行はすべてユーザーの指示起点。`Stop` フックも登録されるが、
+`/codex:setup --enable-review-gate` で明示的に有効化しない限り何もしない
+（既定は無効のまま運用する）。
 
 ## crit
 
