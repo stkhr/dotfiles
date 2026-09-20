@@ -85,11 +85,10 @@ config.toml のうち手動で設定した値は次の通り。マシンを移�
 model = "gpt-5.6-sol"
 personality = "pragmatic"
 model_reasoning_effort = "high"
-
-[features]
-hooks = true
-js_repl = false
 ```
+
+`[features] hooks = true` は `herdr integration install codex` が書き込む。hooks は
+stable で既定 ON なので手で足す必要はない。
 
 MCP サーバー(serena / context7 / chrome-devtools など)は Claude Code 側にのみ登録して
 いる。Codex でも必要になったら `codex mcp add` で登録する。
@@ -103,15 +102,22 @@ MCP サーバー(serena / context7 / chrome-devtools など)は Claude Code 側�
 `--force` 等)は表現できない。そこは AGENTS.md の確認手順で担保している。
 
 `match` / `not_match` は読み込み時に評価されるアサーション。構文エラーがあると
-`Error loading rules:` が出て全ルールが無効になるので、編集したら `codex exec` を
-一度流して確認する。
+`Error loading rules:` が出て全ルールが無効になるので、編集したら
+`codex execpolicy check` で判定結果を確認する(`--help` には出ないが動く)。
+
+```bash
+codex execpolicy check --pretty --rules ~/.codex/rules/default.rules -- gh pr merge 123 --squash
+```
 
 ## 動作確認
 
 ```bash
 codex --version
 codex doctor
+codex features list
 ls -la ~/.codex/AGENTS.md ~/.codex/AGENTS.override.md ~/.codex/rules ~/.codex/skills
 ```
+
+`codex features list` で `removed` になったフラグが config.toml に残っていれば消す。
 
 `AGENTS.override.md` が存在すると管理下の `AGENTS.md` は読まれない。
