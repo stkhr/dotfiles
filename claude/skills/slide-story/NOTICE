@@ -1,0 +1,8 @@
+This skill is derived from minorun-marp-skill
+(https://github.com/minorun365/minorun-marp-skill, commit c6b20bb),
+Copyright 2026 Minoru Onda, licensed under the Apache License, Version 2.0.
+See LICENSE in this directory.
+
+Modifications (2026-09-21, stkhr):
+- SKILL.md: frontmatter を dotfiles の形式に変更、作者固有の記述を出典参照に置換、
+  検査スクリプトの参照先を slide-figures に変更

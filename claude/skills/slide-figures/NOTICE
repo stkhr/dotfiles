@@ -1,0 +1,10 @@
+This skill is derived from minorun-marp-skill
+(https://github.com/minorun365/minorun-marp-skill, commit c6b20bb),
+Copyright 2026 Minoru Onda, licensed under the Apache License, Version 2.0.
+See LICENSE in this directory.
+
+Modifications (2026-09-21, stkhr):
+- SKILL.md: frontmatter を dotfiles の形式に変更、作者固有の記述を出典参照に置換、
+  検査スクリプトのパスと実行コマンドを変更
+- scripts/: 原典の tools/ から check-figure-text.py, check-reuse-diff.py,
+  check-svg-box-fit.mjs を無改変で複製

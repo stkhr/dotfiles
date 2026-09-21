@@ -20,10 +20,13 @@
 | `pr-creation` | PRテンプレート探索・Draft PRフロー・CI確認の手順 |
 | `security-hardening` | 境界レビュー・脅威モデリング等の能動的セキュリティ強化 |
 | `session-start` | セッション開始時の作業状態把握ルーティン |
+| `slide-figures` | 登壇スライドの図・構成図・挿絵の作り方と書き出し後の実測検査 |
+| `slide-story` | 登壇スライドのストーリー構成・見出しの文体・尺の見積り |
 | `terraform-style` | Terraform のスタイル規範 |
 
 各スキルの詳細・起動条件は各ディレクトリの `SKILL.md` frontmatter(`description`)を参照。
 セキュリティ関連は `security-guidance` plugin(自動検出)と `security-hardening` skill(能動的強化)でカバーする。
+`slide-story` と `slide-figures` は [minorun-marp-skill](https://github.com/minorun365/minorun-marp-skill)(Apache-2.0)からの移植。出典と改変点は各ディレクトリの `LICENSE` / `NOTICE` を参照。
 
 ---
 

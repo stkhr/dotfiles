@@ -33,6 +33,9 @@ brew "duckdb"
 brew "uv"
 brew "tflint"
 brew "graphviz"
+brew "marp-cli" # Markdown スライド(slide-story / slide-figures)
+brew "poppler" # pdftoppm/pdfinfo(slide-figures の検査)
+brew "mupdf-tools" # mutool(slide-figures の検査)
 brew "azure-cli"
 brew "cloudflare-wrangler"
 brew "playwright-cli"
