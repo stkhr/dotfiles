@@ -18,6 +18,8 @@ trap 'rm -rf "$WORK"' EXIT
 REPO="$WORK/repo"
 git init -q -b main "$REPO"
 git -C "$REPO" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+OTHER="$WORK/other"
+git init -q -b main "$OTHER"
 
 run_case() {
   local expect="$1" cmd="$2"
@@ -69,6 +71,17 @@ run_case block $'echo $((a << b))\ngit worktree add ../x'
 # --- every candidate line is judged, not only the first ---
 run_case block $'git worktree add .claude/worktrees/a\ngit worktree add ../x'
 run_case block $'echo "例: git worktree add .claude/worktrees/a"\ngit worktree add ../x'
+
+# --- git -C and cd move the judgement to the repository git runs in ---
+run_case pass "git -C $OTHER worktree add $OTHER/.claude/worktrees/x"
+run_case pass "git -C $OTHER worktree add .claude/worktrees/x"
+run_case pass "git -C $OTHER fetch origin main; git -C $OTHER worktree add .claude/worktrees/x -b feat/x origin/main"
+run_case pass "cd $OTHER && git worktree add .claude/worktrees/x"
+run_case pass "cd $OTHER"$'\n'"git worktree add $OTHER/.claude/worktrees/x"
+run_case block "git -C $OTHER worktree add ../x"
+run_case block "git -C $OTHER worktree add $REPO/.claude/worktrees/x"
+run_case block "cd $OTHER && git worktree add ../x"
+run_case block "cd $OTHER && git worktree add $REPO/.claude/worktrees/x"
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
