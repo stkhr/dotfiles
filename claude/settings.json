@@ -283,6 +283,11 @@
   },
   "language": "japanese",
   "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "xhigh"
+    }
+  },
   "advisorModel": "fable",
   "showClearContextOnPlanAccept": true,
   "tui": "fullscreen",

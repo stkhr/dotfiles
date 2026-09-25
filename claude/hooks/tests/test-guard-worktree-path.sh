@@ -18,6 +18,8 @@ trap 'rm -rf "$WORK"' EXIT
 REPO="$WORK/repo"
 git init -q -b main "$REPO"
 git -C "$REPO" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+OTHER="$WORK/other"
+git init -q -b main "$OTHER"
 
 run_case() {
   local expect="$1" cmd="$2"
@@ -69,6 +71,33 @@ run_case block $'echo $((a << b))\ngit worktree add ../x'
 # --- every candidate line is judged, not only the first ---
 run_case block $'git worktree add .claude/worktrees/a\ngit worktree add ../x'
 run_case block $'echo "例: git worktree add .claude/worktrees/a"\ngit worktree add ../x'
+
+# --- git -C and cd move the judgement to the repository git runs in ---
+run_case pass "git -C $OTHER worktree add $OTHER/.claude/worktrees/x"
+run_case pass "git -C $OTHER worktree add .claude/worktrees/x"
+run_case pass "git -C $OTHER fetch origin main; git -C $OTHER worktree add .claude/worktrees/x -b feat/x origin/main"
+run_case pass "cd $OTHER && git worktree add .claude/worktrees/x"
+run_case pass "cd $OTHER"$'\n'"git worktree add $OTHER/.claude/worktrees/x"
+run_case block "git -C $OTHER worktree add ../x"
+run_case block "git -C $OTHER worktree add $REPO/.claude/worktrees/x"
+run_case block "cd $OTHER && git worktree add ../x"
+run_case block "cd $OTHER && git worktree add $REPO/.claude/worktrees/x"
+
+# --- an unresolvable cd / -C target falls back to the session cwd ---
+run_case block 'cd "$(git rev-parse --show-toplevel)" && git worktree add ../x'
+run_case block 'git -C "$REPO" worktree add ../x'
+run_case block "cd $OTHER; cd -; git worktree add ../y"
+run_case pass "cd -P $OTHER && git worktree add $OTHER/.claude/worktrees/x"
+
+# --- operators glued to each other still split commands ---
+run_case block '(git worktree add .claude/worktrees/a); git worktree add ../x'
+run_case block 'git worktree add .claude/worktrees/a;;git worktree add ../x'
+run_case block "cd $OTHER &&(git worktree add ../x)"
+
+# --- a shell comment is not the target, and -C belongs to git only ---
+run_case block "git worktree add ../x # it's fine"
+run_case block 'sudo -C 3 git worktree add ../x'
+run_case block "git worktree add ../x; echo 'unterminated"
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

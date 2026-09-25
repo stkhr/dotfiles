@@ -55,47 +55,71 @@ sys.stdout.write("\n".join(out))
 CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
 CWD="${CWD:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"
 
-ROOT=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null || true)
-[ -z "$ROOT" ] && exit 0   # not in a git repo, leave it alone
-
-# Judge every line that carries an invocation: an earlier benign mention must
-# not mask a later one. Other lines of a multi-line command are kept out of the
-# extraction, or they would donate their own first token as the target.
-while IFS= read -r LINE; do
-  # Extract the worktree path: drop everything up to "add", then take the first
-  # positional token (skipping option flags and their values) via shlex.
-  TARGET=$(printf '%s' "$LINE" \
-    | sed -E 's/.*worktree[[:space:]]+add[[:space:]]*//' \
-    | python3 -c '
-import sys, shlex
-try:
-    toks = shlex.split(sys.stdin.read())
-except Exception:
-    sys.exit(0)
+# A preceding `cd <dir>` or `git -C <dir>` moves git away from the session cwd, so judge against that repo.
+INVOCATIONS=$(printf '%s' "$SCAN" | python3 -c '
+import os, shlex, sys
+base = sys.argv[1]
 valopts = {"-b", "-B", "--reason"}   # flags that consume the next token
-i = 0
-while i < len(toks):
-    t = toks[i]
-    if t in valopts:
-        i += 2; continue
-    if t.startswith("-"):
-        i += 1; continue
-    print(t); break
-' 2>/dev/null)
+ops = set(";&|()")
+def resolve(d, frm):
+    d = os.path.expanduser(d)
+    return os.path.normpath(d if os.path.isabs(d) else os.path.join(frm, d))
+def move(d, frm):
+    # $VAR, $(...) and `cd -` cannot be resolved here; staying put keeps the cwd-based judgement.
+    p = resolve(d, frm)
+    return p if os.path.isdir(p) else frm
+for line in sys.stdin.read().split("\n"):
+    lex = shlex.shlex(line, posix=True, punctuation_chars=";&|()")
+    lex.whitespace_split = True
+    try:
+        toks = list(lex)
+    except ValueError:
+        toks = line.split()
+    segs, seg = [], []
+    for t in toks:
+        if t and set(t) <= ops:
+            segs.append(seg); seg = []
+        else:
+            seg.append(t)
+    segs.append(seg)
+    for seg in segs:
+        if seg and seg[0] == "cd":
+            args = [a for a in seg[1:] if not a.startswith("-")]
+            if args:
+                base = move(args[0], base)
+            continue
+        k = next((j for j in range(len(seg) - 1) if seg[j:j + 2] == ["worktree", "add"]), None)
+        if k is None:
+            continue
+        gitdir = base
+        g = max((j for j in range(k) if os.path.basename(seg[j]) == "git"), default=k)
+        j = g + 1
+        while j < k:
+            if seg[j] == "-C" and j + 1 < k:
+                gitdir = move(seg[j + 1], gitdir); j += 2; continue
+            j += 1
+        rest = seg[k + 2:]
+        i = 0
+        while i < len(rest):
+            t = rest[i]
+            if t in valopts:
+                i += 2; continue
+            if t.startswith("-"):
+                i += 1; continue
+            print(gitdir + "\t" + resolve(t, gitdir)); break
+' "$CWD" 2>/dev/null)
 
+while IFS=$'\t' read -r GITDIR TARGET; do
   [ -z "$TARGET" ] && continue
+  ROOT=$(git -C "$GITDIR" rev-parse --show-toplevel 2>/dev/null || true)
+  [ -z "$ROOT" ] && continue   # not in a git repo, leave it alone
 
-  # Resolve TARGET against CWD and test whether it lands inside ROOT.
   # normpath works without the path existing yet.
   INSIDE=$(python3 -c '
 import os, sys
-cwd, target, root = sys.argv[1], sys.argv[2], sys.argv[3]
-target = os.path.expanduser(target)
-p = target if os.path.isabs(target) else os.path.join(cwd, target)
-p = os.path.normpath(p)
-root = os.path.normpath(root)
+p, root = os.path.normpath(sys.argv[1]), os.path.normpath(sys.argv[2])
 print("yes" if (p == root or p.startswith(root + os.sep)) else "no")
-' "$CWD" "$TARGET" "$ROOT" 2>/dev/null)
+' "$TARGET" "$ROOT" 2>/dev/null)
 
   [ "$INSIDE" = "no" ] || continue
 
@@ -106,6 +130,6 @@ BLOCKED: worktree をリポジトリ外に作成しようとしています ($TA
 リポジトリ内に作成してください。例: git worktree add .claude/worktrees/<branch>
 EOF
   exit 2
-done < <(echo "$SCAN" | grep -E 'worktree[[:space:]]+add')
+done <<< "$INVOCATIONS"
 
 exit 0
