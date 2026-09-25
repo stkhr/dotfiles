@@ -60,36 +60,43 @@ INVOCATIONS=$(printf '%s' "$SCAN" | python3 -c '
 import os, shlex, sys
 base = sys.argv[1]
 valopts = {"-b", "-B", "--reason"}   # flags that consume the next token
-seps = {";", "&&", "||", "|", "&", "(", ")"}
+ops = set(";&|()")
 def resolve(d, frm):
     d = os.path.expanduser(d)
     return os.path.normpath(d if os.path.isabs(d) else os.path.join(frm, d))
+def move(d, frm):
+    # $VAR, $(...) and `cd -` cannot be resolved here; staying put keeps the cwd-based judgement.
+    p = resolve(d, frm)
+    return p if os.path.isdir(p) else frm
 for line in sys.stdin.read().split("\n"):
     lex = shlex.shlex(line, posix=True, punctuation_chars=";&|()")
     lex.whitespace_split = True
     try:
         toks = list(lex)
     except ValueError:
-        continue
+        toks = line.split()
     segs, seg = [], []
     for t in toks:
-        if t in seps:
+        if t and set(t) <= ops:
             segs.append(seg); seg = []
         else:
             seg.append(t)
     segs.append(seg)
     for seg in segs:
-        if len(seg) >= 2 and seg[0] == "cd":
-            base = resolve(seg[1], base)
+        if seg and seg[0] == "cd":
+            args = [a for a in seg[1:] if not a.startswith("-")]
+            if args:
+                base = move(args[0], base)
             continue
         k = next((j for j in range(len(seg) - 1) if seg[j:j + 2] == ["worktree", "add"]), None)
         if k is None:
             continue
         gitdir = base
-        j = 0
+        g = max((j for j in range(k) if os.path.basename(seg[j]) == "git"), default=k)
+        j = g + 1
         while j < k:
             if seg[j] == "-C" and j + 1 < k:
-                gitdir = resolve(seg[j + 1], gitdir); j += 2; continue
+                gitdir = move(seg[j + 1], gitdir); j += 2; continue
             j += 1
         rest = seg[k + 2:]
         i = 0

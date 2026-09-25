@@ -83,5 +83,21 @@ run_case block "git -C $OTHER worktree add $REPO/.claude/worktrees/x"
 run_case block "cd $OTHER && git worktree add ../x"
 run_case block "cd $OTHER && git worktree add $REPO/.claude/worktrees/x"
 
+# --- an unresolvable cd / -C target falls back to the session cwd ---
+run_case block 'cd "$(git rev-parse --show-toplevel)" && git worktree add ../x'
+run_case block 'git -C "$REPO" worktree add ../x'
+run_case block "cd $OTHER; cd -; git worktree add ../y"
+run_case pass "cd -P $OTHER && git worktree add $OTHER/.claude/worktrees/x"
+
+# --- operators glued to each other still split commands ---
+run_case block '(git worktree add .claude/worktrees/a); git worktree add ../x'
+run_case block 'git worktree add .claude/worktrees/a;;git worktree add ../x'
+run_case block "cd $OTHER &&(git worktree add ../x)"
+
+# --- a shell comment is not the target, and -C belongs to git only ---
+run_case block "git worktree add ../x # it's fine"
+run_case block 'sudo -C 3 git worktree add ../x'
+run_case block "git worktree add ../x; echo 'unterminated"
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
