@@ -13,12 +13,15 @@ FAIL=0
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
-# 既定は空配列を返して artifact の行だけを見る。PR の行は GH_STUB_JSON で与える
+# 頼み忘れた --json の列は実物の gh と同じく欠ける。既定の空配列は artifact の行だけを見るため
 STUB_BIN="$WORK/bin"
 mkdir -p "$STUB_BIN"
 cat > "$STUB_BIN/gh" <<'STUBEOF'
 #!/bin/bash
-if [ -n "${GH_STUB_JSON:-}" ]; then cat "$GH_STUB_JSON"; else echo '[]'; fi
+[ -n "${GH_STUB_JSON:-}" ] || { echo '[]'; exit 0; }
+fields=""
+while [ $# -gt 0 ]; do [ "$1" = --json ] && fields="$2"; shift; done
+jq --arg f "$fields" '($f | split(",")) as $keep | map(with_entries(select(.key | IN($keep[]))))' "$GH_STUB_JSON"
 STUBEOF
 chmod +x "$STUB_BIN/gh"
 PATH="$STUB_BIN:$PATH"
@@ -68,7 +71,6 @@ check "--emit の表示列に説明文が入る" 1 \
 plain=$("$SCRIPT" 2>/dev/null)
 check "既定出力は表示と URL を並べる" 1 "$(printf '%s' "$plain" | grep -c "  $URL\$")"
 
-# ---- PR の行はタイトルの前に番号を付ける ----------------------------------
 PR_URL=https://github.com/someone/proj/pull/42
 PR_PROJECTS="$WORK/pr-projects"
 mkdir -p "$PR_PROJECTS/-Users-someone-proj"
