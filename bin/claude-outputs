@@ -190,7 +190,7 @@ GH_BG=""
 if command -v gh >/dev/null 2>&1; then
     {
         gh search prs --author=@me --state=open --limit "$PR_LIMIT" \
-            --json url,isDraft,title,repository > "$T/gh.json" 2>"$T/gh.err"
+            --json url,number,isDraft,title,repository > "$T/gh.json" 2>"$T/gh.err"
         printf '%s' "$?" > "$T/gh.rc"
     } &
     GH_BG=$!
@@ -353,7 +353,7 @@ if [ -n "$GH_BG" ]; then
             .[]? | [ .url,
                      (if .isDraft then "Draft" else "Open" end),
                      .repository.nameWithOwner,
-                     .title ] | join($sep)
+                     "#\(.number) \(.title)" ] | join($sep)
           ' "$T/gh.json" > "$T/live_prs" 2>/dev/null
     then
         PR_NOTE="PR の一覧を解釈できませんでした"

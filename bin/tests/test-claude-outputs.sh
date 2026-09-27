@@ -13,12 +13,12 @@ FAIL=0
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
-# gh は open PR を返さない。artifact の行だけを見たいので空配列を返す
+# 既定は空配列を返して artifact の行だけを見る。PR の行は GH_STUB_JSON で与える
 STUB_BIN="$WORK/bin"
 mkdir -p "$STUB_BIN"
 cat > "$STUB_BIN/gh" <<'STUBEOF'
 #!/bin/bash
-echo '[]'
+if [ -n "${GH_STUB_JSON:-}" ]; then cat "$GH_STUB_JSON"; else echo '[]'; fi
 STUBEOF
 chmod +x "$STUB_BIN/gh"
 PATH="$STUB_BIN:$PATH"
@@ -67,6 +67,21 @@ check "--emit の表示列に説明文が入る" 1 \
 # ---- 端末が無い時の既定出力は従来どおり2列 --------------------------------
 plain=$("$SCRIPT" 2>/dev/null)
 check "既定出力は表示と URL を並べる" 1 "$(printf '%s' "$plain" | grep -c "  $URL\$")"
+
+# ---- PR の行はタイトルの前に番号を付ける ----------------------------------
+PR_URL=https://github.com/someone/proj/pull/42
+PR_PROJECTS="$WORK/pr-projects"
+mkdir -p "$PR_PROJECTS/-Users-someone-proj"
+cat > "$PR_PROJECTS/-Users-someone-proj/$SID.jsonl" <<TRANSCRIPT
+{"type":"pr-link","sessionId":"$SID","prUrl":"$PR_URL","timestamp":"2026-09-01T00:00:00Z"}
+TRANSCRIPT
+cat > "$WORK/gh-prs.json" <<JSON
+[{"url":"$PR_URL","number":42,"isDraft":true,"title":"テスト用の PR","repository":{"nameWithOwner":"someone/proj"}}]
+JSON
+pr=$(CLAUDE_PROJECTS_DIR="$PR_PROJECTS" GH_STUB_JSON="$WORK/gh-prs.json" "$SCRIPT" --emit 2>/dev/null)
+check "PR の表示列はタイトルの前に番号を付ける" \
+    "$(printf 'PR   Draft %-28s #42 テスト用の PR' someone/proj)" \
+    "$(printf '%s' "$pr" | awk -F"$SEP" '{ print $1 }')"
 
 # ---- 10 日前に触ったセッションの成果物も既定で出る ------------------------
 AGED="$WORK/aged-projects"
