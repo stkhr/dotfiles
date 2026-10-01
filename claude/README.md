@@ -106,6 +106,21 @@ install.sh が marketplace を登録し、以下をインストールする
 - `terraform`（hashicorp/agent-skills）
 - `crit`（tomasz-tomczyk/crit）
 - `codex`（openai/codex-plugin-cc）
+- `explainer`（mizchi/explainer）
+
+## explainer
+
+読み手のペルソナに合わせた解説文書を書き、引用した出力や図をツールで検証するプラグイン。
+`explainer` / `explainer-book` / `first-reader` の3スキルを同梱する。
+`explainer-book` は隣の `explainer` のスクリプトを呼ぶので、3スキルは常にセットで入れる。
+
+スクリプトの依存は文書を置くリポジトリ側で入れる（Node 24+）:
+
+```bash
+npm i -D @mizchi/vlmkit @mizchi/vlmkit-anim marked playwright
+```
+
+`first-reader` は Python 3 の標準ライブラリだけで動く。
 
 ## codex
 
