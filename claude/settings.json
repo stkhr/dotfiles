@@ -253,7 +253,8 @@
     "security-guidance@claude-plugins-official": true,
     "crit@crit": true,
     "gopls-lsp@claude-plugins-official": true,
-    "codex@openai-codex": true
+    "codex@openai-codex": true,
+    "explainer@explainer": true
   },
   "extraKnownMarketplaces": {
     "hashicorp": {
@@ -278,6 +279,12 @@
       "source": {
         "source": "github",
         "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "explainer": {
+      "source": {
+        "source": "github",
+        "repo": "mizchi/explainer"
       }
     }
   },
