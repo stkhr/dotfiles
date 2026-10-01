@@ -188,6 +188,5 @@ if command -v claude &> /dev/null; then
     # OpenAI Codex plugin
     claude plugin install codex@openai-codex
 
-    # explainer plugin
     claude plugin install explainer@explainer
 fi

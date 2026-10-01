@@ -112,12 +112,15 @@ install.sh が marketplace を登録し、以下をインストールする
 
 読み手のペルソナに合わせた解説文書を書き、引用した出力や図をツールで検証するプラグイン。
 `explainer` / `explainer-book` / `first-reader` の3スキルを同梱する。
-`explainer-book` は隣の `explainer` のスクリプトを呼ぶので、3スキルは常にセットで入れる。
 
-スクリプトの依存は文書を置くリポジトリ側で入れる（Node 24+）:
+起動すると作業中リポジトリのルートに `personas/<id>.md` と `docs/<topic>/` を作る。
+persona には読み手の実在人物像が書かれるので、コミット前に中身を確認する。
+
+スクリプトの依存は文書を置くリポジトリ側で入れる（Node 24+）。スキルが自分で入れることもある:
 
 ```bash
 npm i -D @mizchi/vlmkit @mizchi/vlmkit-anim marked playwright
+npx playwright install chromium   # 初回のみ
 ```
 
 `first-reader` は Python 3 の標準ライブラリだけで動く。
