@@ -1,6 +1,5 @@
 #!/bin/bash
 # Tests for idle-cache-guard.sh: a typed prompt into a large session idle past the cache TTL is held once.
-# Usage: bash claude/hooks/tests/test-idle-cache-guard.sh
 set -uo pipefail
 
 HOOK="$(cd "$(dirname "$0")/.." && pwd)/idle-cache-guard.sh"
@@ -25,6 +24,22 @@ assistant() {
                 else [{type: "tool_use", id: "toolu_1", name: $tool, input: {}}] end),
       usage: {input_tokens: 3, cache_creation_input_tokens: $create,
               cache_read_input_tokens: $read, output_tokens: 120}
+    }
+  }'
+}
+
+api_error() {
+  jq -cn --argjson ago "$1" '{
+    type: "assistant",
+    entrypoint: "cli",
+    timestamp: ((now - $ago) | strftime("%Y-%m-%dT%H:%M:%S.000Z")),
+    message: {
+      id: "msg_synthetic_\($ago)",
+      role: "assistant",
+      model: "<synthetic>",
+      content: [{type: "text", text: "API Error: Your computer went to sleep"}],
+      usage: {input_tokens: 0, cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0, output_tokens: 0}
     }
   }'
 }
@@ -122,6 +137,18 @@ case_setup "$(assistant 7200 500000 0 sdk-py)"
 expect_pass "non-CLI sessions go through" "$(run_hook "$T" "go" s10 "$D")"
 
 expect_pass "a missing transcript goes through" "$(run_hook "$WORK/none.jsonl" "go" s11 "$D")"
+
+case_setup "$(assistant 7300 500000 0)" "$(api_error 7200)"
+expect_block "an API error after the last response does not hide the hold" "$(run_hook "$T" "go" s14 "$D")"
+
+expect_pass "malformed hook input goes through" "$(printf 'not json' | bash "$HOOK")"
+
+case_setup "$(assistant 7200 500000 0)"
+mkdir -p "$WORK/tmp2"
+expect_block "a scratchpad_dir that no longer exists still holds once" \
+  "$(TMPDIR="$WORK/tmp2" run_hook "$T" "go" s15 "$WORK/gone" 2>&1)"
+expect_pass "after a vanished scratchpad_dir the resend goes through" \
+  "$(TMPDIR="$WORK/tmp2" run_hook "$T" "go" s15 "$WORK/gone" 2>&1)"
 
 case_setup "$(assistant 7200 500000 0)"
 mkdir -p "$WORK/tmp"

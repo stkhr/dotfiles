@@ -21,7 +21,9 @@ esac
 
 read -r LAST_TS IDLE CONTEXT <<EOF
 $(tail -n 500 "$TRANSCRIPT" | jq -rnR '
-  [inputs | fromjson? | select((.type == "assistant" and .message.usage != null) or .subtype == "compact_boundary")]
+  [inputs | fromjson?
+   | select((.type == "assistant" and .message.usage != null and .message.model != "<synthetic>")
+       or .subtype == "compact_boundary")]
   | last // empty
   | select(.type == "assistant" and .entrypoint == "cli")
   | .message.usage as $u
@@ -47,13 +49,21 @@ if [ "$SCHEDULED" = "true" ]; then
   exit 0
 fi
 
+# macOS tmp_cleaner can delete the scratchpad of a session left open for days.
+[ -d "$STATE_DIR" ] || STATE_DIR=""
 MARKER="${STATE_DIR:-${TMPDIR:-/tmp}}/idle-cache-guard-${SESSION_ID}"
 if [ "$(cat "$MARKER" 2>/dev/null)" = "$LAST_TS" ]; then
   exit 0
 fi
-printf '%s' "$LAST_TS" > "$MARKER" 2>/dev/null || exit 0
+{ printf '%s' "$LAST_TS" > "$MARKER"; } 2>/dev/null || exit 0
 
-REASON="前回の応答から約 $((IDLE / 3600)) 時間経ち、プロンプトキャッシュが切れています。このまま送るとコンテキスト約 $((CONTEXT / 1000))k tokens をキャッシュに書き直します。
+if [ "$IDLE" -ge 172800 ]; then
+  ELAPSED="$((IDLE / 86400)) 日"
+else
+  ELAPSED="$((IDLE / 3600)) 時間"
+fi
+
+REASON="前回の応答から約 ${ELAPSED}経ち、プロンプトキャッシュが切れています。このまま送るとコンテキスト約 $((CONTEXT / 1000))k tokens をキャッシュに書き直します。
 /clear で新しく始めるか、/compact で要約してから続けてください(/compact も履歴全体を1回読み直します)。
 このまま続ける場合は、同じ内容をもう一度送信してください。"
 
