@@ -155,6 +155,7 @@ fi
 # agent skills (third-party, installed via npx)
 if command -v npx &> /dev/null; then
     (cd "$HOME" && npx -y skills add supabase/agent-skills --yes)
+    (cd "$HOME" && npx -y skills add nanaism/yomiyasu/skills/yomiyasu --yes)
     # Fix CLAUDE.md symlinks (installer points them to a temp dir)
     for skill_dir in "$HOME"/.agents/skills/*/; do
         if [ -L "$skill_dir/CLAUDE.md" ]; then
