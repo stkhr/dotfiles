@@ -31,7 +31,7 @@ claude/
 | `claude/agents/*.md` | `~/.claude/agents/`（個別リンク） |
 | `claude/mcp-setup.sh` | 実行（MCPサーバーを user スコープで登録） |
 | plugins | marketplace 登録 + `claude plugin install`（後述） |
-| supabase skills | `npx skills add supabase/agent-skills`（`~/.agents/skills/` 配下） |
+| third-party skills | `npx skills add`（supabase/agent-skills, nanaism/yomiyasu。`~/.agents/skills/` 配下） |
 
 **注意**: `~/.claude` 自体はシンボリックリンクにしない（実体ディレクトリの中に
 ファイル単位でリンクを置く）。Claude Code はこのディレクトリに履歴・キャッシュ等の
