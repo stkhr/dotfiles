@@ -86,5 +86,15 @@ run_hook "dddddddd-1111" "$TD" "$WORK/proj" 'part one.part two.'
 FILE_D=$(find "$OBSIDIAN_VAULT" -type f -name 'proj--dddddddd.md')
 check "final message split across transcript lines is not duplicated" "1" "$(grep -c 'part two' "$FILE_D")"
 
+TE="$WORK/e.jsonl"
+message user 'question' "$WORK/03_プロジェクト進捗・戦略" > "$TE"
+run_hook "eeeeeeee-1111" "$TE" "$WORK/03_プロジェクト進捗・戦略"
+check "non-ASCII letters in the project name are kept" "1" "$(files_named '03_プロジェクト進捗_戦略--eeeeeeee.md')"
+
+TF="$WORK/f.jsonl"
+message user 'question' "$WORK/Obsidian Vault" > "$TF"
+run_hook "ffffffff-1111" "$TF" "$WORK/Obsidian Vault"
+check "spaces in the project name become underscores" "1" "$(files_named 'Obsidian_Vault--ffffffff.md')"
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
