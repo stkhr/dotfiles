@@ -96,5 +96,16 @@ message user 'question' "$WORK/Obsidian Vault" > "$TF"
 run_hook "ffffffff-1111" "$TF" "$WORK/Obsidian Vault"
 check "spaces in the project name become underscores" "1" "$(files_named 'Obsidian_Vault--ffffffff.md')"
 
+TG="$WORK/g.jsonl"
+message user 'question' "$WORK/a❤️b" > "$TG"
+run_hook "gggggggg-1111" "$TG" "$WORK/a❤️b"
+check "marks left over from a replaced character are dropped" "1" "$(files_named 'a_b--gggggggg.md')"
+
+NFD_PU=$(printf '\xe3\x83\x95\xe3\x82\x9a')
+TH="$WORK/h.jsonl"
+message user 'question' "$WORK/$NFD_PU" > "$TH"
+run_hook "hhhhhhhh-1111" "$TH" "$WORK/$NFD_PU"
+check "decomposed kana keep their combining mark" "1" "$(files_named "$NFD_PU--hhhhhhhh.md")"
+
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
