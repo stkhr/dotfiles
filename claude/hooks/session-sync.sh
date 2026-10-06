@@ -36,7 +36,8 @@ fi
 # Not the hook cwd: it follows cd and worktree moves and would scatter one session across files.
 START_CWD=$(jq -nr 'first(inputs | select(.type == "user" or .type == "assistant") | .cwd // empty)' "$TRANSCRIPT_PATH" 2>/dev/null)
 PROJECT_RAW=$(basename "${START_CWD:-${CWD:-unknown}}")
-PROJECT_NAME=$(printf '%s' "$PROJECT_RAW" | LC_ALL=C tr -c 'A-Za-z0-9._-' '_')
+# Must match per character, not per byte, or each multibyte character becomes several `_`.
+PROJECT_NAME=$(printf '%s' "$PROJECT_RAW" | jq -Rrs 'gsub("[^\\p{L}\\p{M}\\p{N}._-]\\p{M}*"; "_")')
 PROJECT_NAME="${PROJECT_NAME:-unknown}"
 SESSION_SHORT=$(printf '%s' "${SESSION_ID:0:8}" | LC_ALL=C tr -c 'A-Za-z0-9._-' '_')
 
