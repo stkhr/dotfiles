@@ -117,13 +117,29 @@ WEEKLY_FEEDBACK_DIR="$OUT4" bash "$SCRIPT" --since "$D1" >/dev/null 2>&1
 check "死んだプロセスのロックは奪って実行する" "$D3" "$(marker_of "$OUT4")"
 
 VAULT6="$WORK/vault6"
-mkdir -p "$VAULT6/03_Claude/$D1"
-printf '# a-proj (%s)\n\n## 15:00:00\n\nlate session\n' "$D1" > "$VAULT6/03_Claude/$D1/a-proj--11111111.md"
-printf '# z-proj (%s)\n\n## 09:00:00\n\nearly session\n' "$D1" > "$VAULT6/03_Claude/$D1/z-proj--22222222.md"
+DAY6="$VAULT6/03_Claude/$D1"
+mkdir -p "$DAY6"
+printf '# z\n\n## 15:00:00\n\nlate\n' > "$DAY6/z-proj--33333333.md"
+printf '# c\n\nno header\n' > "$DAY6/c-nohdr.md"
+printf '# a\n\n## 12:00:00\n\nnoon\n' > "$DAY6/a-proj--11111111.md"
+printf '# b\n\n## 13:00:00\n\nfirst\n\n## 08:00:00\n\nsecond\n' > "$DAY6/b-old.md"
+printf '# n\n\n## 07:00:00\n\nnul\0byte\n' > "$DAY6/n-bin--44444444.md"
+printf '# m\n\n## 09:00:00\n\nmorning\n' > "$DAY6/m-proj--22222222.md"
 STUB_STDIN="$WORK/stub-stdin-order" OBSIDIAN_VAULT="$VAULT6" WEEKLY_FEEDBACK_DIR="$WORK/out6" \
     bash "$SCRIPT" --since "$D1" >/dev/null 2>&1
-check "セッションは開始時刻の順に入力に載る" "z-proj--22222222.md|a-proj--11111111.md" \
+check "セッションは最初の開始時刻の順に入力に載り、時刻の無いものは最後" \
+    "n-bin--44444444.md|m-proj--22222222.md|a-proj--11111111.md|b-old.md|z-proj--33333333.md|c-nohdr.md" \
     "$(sed -n 's/^===== SESSION: \(.*\) =====$/\1/p' "$WORK/stub-stdin-order" 2>/dev/null | paste -sd '|' -)"
+
+VAULT7="$WORK/vault7"
+mkdir -p "$VAULT7/03_Claude/$D1" "$WORK/projects7/p/memory"
+head -c 2000 /dev/zero | tr '\0' 'x' > "$VAULT7/03_Claude/$D1/big--55555555.md"
+printf 'memory note survives\n' > "$WORK/projects7/p/memory/note.md"
+touch -t "$(date -j -f '%Y-%m-%d' "$D1" '+%Y%m%d')1200" "$WORK/projects7/p/memory/note.md"
+STUB_STDIN="$WORK/stub-stdin-cap" OBSIDIAN_VAULT="$VAULT7" CLAUDE_PROJECTS_DIR="$WORK/projects7" \
+    WEEKLY_FEEDBACK_MAX_BYTES=500 WEEKLY_FEEDBACK_DIR="$WORK/out7" bash "$SCRIPT" --since "$D1" >/dev/null 2>&1
+check "入力上限で切り詰めてもメモリは残る" "1" "$(grep -c '^memory note survives$' "$WORK/stub-stdin-cap" 2>/dev/null || echo 0)"
+check "入力上限で切り詰めるのはセッションの側" "1" "$(grep -c '入力上限のため省略' "$WORK/stub-stdin-cap" 2>/dev/null || echo 0)"
 
 printf '\n%d passed, %d failed\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]
