@@ -24,7 +24,7 @@ jq -nc --arg t "$TEXT" '{type:"assistant", isSidechain:false,
 jq -n --arg tp "$WORK/transcript.jsonl" --arg d "$WORK/proj" \
   '{session_id:"test-session-1", transcript_path:$tp, cwd:$d}' | bash "$HOOK"
 
-OUT=$(find "$OBSIDIAN_VAULT" -name 'proj.md' -exec cat {} +)
+OUT=$(find "$OBSIDIAN_VAULT" -name 'proj--*.md' -exec cat {} +)
 
 check_absent() {
   local label="$1" needle="$2"
