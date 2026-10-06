@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# Claude Code Stop hook: sync session conversation to Obsidian vault.
-# On each invocation, overwrites this session's file with the latest jsonl
-# snapshot. All failure modes exit 0 to avoid blocking other hooks.
+# Claude Code Stop hook: always exits 0 so a sync failure never blocks the other Stop hooks.
 
 set -uo pipefail
 
@@ -35,7 +33,7 @@ if [ ! -f "$TRANSCRIPT_PATH" ]; then
   exit 0
 fi
 
-# Name from the session's starting cwd: the hook cwd follows cd and worktree moves.
+# Not the hook cwd: it follows cd and worktree moves and would scatter one session across files.
 START_CWD=$(jq -nr 'first(inputs | select(.type == "user" or .type == "assistant") | .cwd // empty)' "$TRANSCRIPT_PATH" 2>/dev/null)
 PROJECT_RAW=$(basename "${START_CWD:-${CWD:-unknown}}")
 PROJECT_NAME=$(printf '%s' "$PROJECT_RAW" | LC_ALL=C tr -c 'A-Za-z0-9._-' '_')
@@ -46,8 +44,10 @@ MESSAGES=$(jq -c '
   select(.type == "user" or .type == "assistant")
   | select(.isSidechain != true)
   | select(.isMeta != true)
+  | select(.isCompactSummary != true)
   | {
       type: .type,
+      id: .message.id,
       timestamp: .timestamp,
       text: (if (.message.content | type) == "string" then .message.content
              else ([ .message.content[]? | select(.type == "text") | .text ] | join("\n\n")) end)
@@ -57,8 +57,14 @@ MESSAGES=$(jq -c '
 
 # The transcript is written asynchronously and can lack the turn's final message at Stop.
 if [ -n "$LAST_MESSAGE" ]; then
-  LAST_IN_TRANSCRIPT=$(printf '%s\n' "$MESSAGES" | jq -rs 'map(select(.type == "assistant")) | last | .text // empty')
-  if [ "$LAST_MESSAGE" != "$LAST_IN_TRANSCRIPT" ]; then
+  # One reply can span several transcript lines sharing a message id, and the field joins its blocks without separators.
+  IN_TRANSCRIPT=$(printf '%s\n' "$MESSAGES" | jq -rs --arg m "$LAST_MESSAGE" '
+    (map(.type) | rindex("user")) as $u
+    | .[(($u // -1) + 1):] | map(select(.type == "assistant"))
+    | (if length == 0 then "" else (last | .id) as $id | map(select(.id == $id) | .text) | join("") end)
+    | gsub("\\s"; "") == ($m | gsub("\\s"; ""))
+  ')
+  if [ "$IN_TRANSCRIPT" != "true" ]; then
     MESSAGES=$(printf '%s\n' "$MESSAGES"
       jq -nc --arg t "$LAST_MESSAGE" --arg ts "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
         '{type: "assistant", timestamp: $ts, text: $t}')
@@ -85,6 +91,9 @@ CLEANED=$(printf '%s\n' "$MESSAGES" | jq -c '
     | gsub("(?s)<local-command-stderr>.*?</local-command-stderr>"; "")
     | gsub("(?s)<user-prompt-submit-hook>.*?</user-prompt-submit-hook>"; "")
     | gsub("(?s)<task-notification>.*?</task-notification>"; "")
+    | gsub("(?s)<bash-input>.*?</bash-input>"; "")
+    | gsub("(?s)<bash-stdout>.*?</bash-stdout>"; "")
+    | gsub("(?s)<bash-stderr>.*?</bash-stderr>"; "")
     | gsub("(AKIA|ASIA)[0-9A-Z]{16}"; "[MASKED_AWS_KEY_ID]")
     | gsub("(?<k>(aws_)?secret_?access_?key[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
     | gsub("(?<k>(aws_)?session_?token[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
@@ -119,7 +128,8 @@ OUT_FILE="$OUT_DIR/${PROJECT_NAME}--${SESSION_SHORT}.md"
 
 mkdir -p "$OUT_DIR" || { warn "mkdir failed: $OUT_DIR"; exit 0; }
 
-TMP=$(mktemp "${OUT_FILE}.XXXXXX") || { warn "mktemp failed"; exit 0; }
+TMP=$(mktemp "${OUT_FILE}.XXXXXX" 2>/dev/null) || { warn "mktemp failed"; exit 0; }
+trap 'rm -f "$TMP"' EXIT
 
 {
   printf '# %s (%s)\n\n' "$PROJECT_NAME" "$SESSION_DATE"
@@ -133,9 +143,6 @@ TMP=$(mktemp "${OUT_FILE}.XXXXXX") || { warn "mktemp failed"; exit 0; }
   '
 
   printf '\n---\n'
-} > "$TMP" 2>/dev/null && /bin/mv -f "$TMP" "$OUT_FILE" || {
-  warn "write failed: $OUT_FILE"
-  rm -f "$TMP"
-}
+} > "$TMP" 2>/dev/null && /bin/mv -f "$TMP" "$OUT_FILE" || warn "write failed: $OUT_FILE"
 
 exit 0

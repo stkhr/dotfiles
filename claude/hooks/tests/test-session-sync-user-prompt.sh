@@ -1,5 +1,4 @@
 #!/bin/bash
-# Tests for session-sync.sh: user prompts stored as a plain string are recorded, task notifications are not.
 set -uo pipefail
 
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
@@ -18,6 +17,12 @@ mkdir -p "$OBSIDIAN_VAULT"
     message:{content:"typed prompt as a plain string"}}'
   jq -nc '{type:"user", isSidechain:false, timestamp:"2026-07-30T04:01:00.000Z",
     message:{content:"<task-notification>\n<task-id>b1</task-id>\n<status>completed</status>\n</task-notification>"}}'
+  jq -nc '{type:"user", isSidechain:false, timestamp:"2026-07-30T04:01:10.000Z",
+    message:{content:"<bash-input>cat config.txt</bash-input>"}}'
+  jq -nc '{type:"user", isSidechain:false, timestamp:"2026-07-30T04:01:20.000Z",
+    message:{content:"<bash-stdout>PLACEHOLDER_PASSWORD=not-a-real-value</bash-stdout><bash-stderr>warning: plain</bash-stderr>"}}'
+  jq -nc '{type:"user", isSidechain:false, isCompactSummary:true, timestamp:"2026-07-30T04:01:30.000Z",
+    message:{content:"This session is being continued from a previous conversation."}}'
   jq -nc '{type:"assistant", isSidechain:false, timestamp:"2026-07-30T04:02:00.000Z",
     message:{content:[{type:"text", text:"answer"}]}}'
 } > "$WORK/transcript.jsonl"
@@ -40,6 +45,9 @@ check() {
 check "plain string prompt is recorded under User" "### User|typed prompt as a plain string" \
   "$(printf '%s\n' "$OUT" | grep -v '^$' | grep -A1 '^### User$' | paste -sd '|' -)"
 check "task notification is not recorded" "0" "$(printf '%s\n' "$OUT" | grep -c 'task-id')"
+check "shell command run with ! is not recorded" "0" "$(printf '%s\n' "$OUT" | grep -c 'cat config.txt')"
+check "shell command output is not recorded" "0" "$(printf '%s\n' "$OUT" | grep -c -e 'PLACEHOLDER_PASSWORD' -e 'warning: plain')"
+check "compact summary is not recorded" "0" "$(printf '%s\n' "$OUT" | grep -c 'being continued')"
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
