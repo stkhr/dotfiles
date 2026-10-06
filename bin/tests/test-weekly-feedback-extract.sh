@@ -116,5 +116,14 @@ echo "99999999" > "$OUT4/.lock/pid"
 WEEKLY_FEEDBACK_DIR="$OUT4" bash "$SCRIPT" --since "$D1" >/dev/null 2>&1
 check "死んだプロセスのロックは奪って実行する" "$D3" "$(marker_of "$OUT4")"
 
+VAULT6="$WORK/vault6"
+mkdir -p "$VAULT6/03_Claude/$D1"
+printf '# a-proj (%s)\n\n## 15:00:00\n\nlate session\n' "$D1" > "$VAULT6/03_Claude/$D1/a-proj--11111111.md"
+printf '# z-proj (%s)\n\n## 09:00:00\n\nearly session\n' "$D1" > "$VAULT6/03_Claude/$D1/z-proj--22222222.md"
+STUB_STDIN="$WORK/stub-stdin-order" OBSIDIAN_VAULT="$VAULT6" WEEKLY_FEEDBACK_DIR="$WORK/out6" \
+    bash "$SCRIPT" --since "$D1" >/dev/null 2>&1
+check "セッションは開始時刻の順に入力に載る" "z-proj--22222222.md|a-proj--11111111.md" \
+    "$(sed -n 's/^===== SESSION: \(.*\) =====$/\1/p' "$WORK/stub-stdin-order" 2>/dev/null | paste -sd '|' -)"
+
 printf '\n%d passed, %d failed\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]
