@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# Claude Code Stop hook: sync session conversation to Obsidian vault.
-# On each invocation, replaces the block for the current session_id with the
-# latest jsonl snapshot. All failure modes exit 0 to avoid blocking other hooks.
+# Claude Code Stop hook: always exits 0 so a sync failure never blocks the other Stop hooks.
 
 set -uo pipefail
 
@@ -23,6 +21,7 @@ fi
 SESSION_ID=$(printf '%s' "$INPUT" | jq -r '.session_id // empty')
 TRANSCRIPT_PATH=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty')
 CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // empty')
+LAST_MESSAGE=$(printf '%s' "$INPUT" | jq -r '.last_assistant_message // empty')
 
 if [ -z "$SESSION_ID" ] || [ -z "$TRANSCRIPT_PATH" ]; then
   warn "missing session_id or transcript_path, skipping"
@@ -34,21 +33,43 @@ if [ ! -f "$TRANSCRIPT_PATH" ]; then
   exit 0
 fi
 
-PROJECT_RAW=$(basename "${CWD:-unknown}")
+# Not the hook cwd: it follows cd and worktree moves and would scatter one session across files.
+START_CWD=$(jq -nr 'first(inputs | select(.type == "user" or .type == "assistant") | .cwd // empty)' "$TRANSCRIPT_PATH" 2>/dev/null)
+PROJECT_RAW=$(basename "${START_CWD:-${CWD:-unknown}}")
 PROJECT_NAME=$(printf '%s' "$PROJECT_RAW" | LC_ALL=C tr -c 'A-Za-z0-9._-' '_')
 PROJECT_NAME="${PROJECT_NAME:-unknown}"
+SESSION_SHORT=$(printf '%s' "${SESSION_ID:0:8}" | LC_ALL=C tr -c 'A-Za-z0-9._-' '_')
 
 MESSAGES=$(jq -c '
   select(.type == "user" or .type == "assistant")
   | select(.isSidechain != true)
   | select(.isMeta != true)
+  | select(.isCompactSummary != true)
   | {
       type: .type,
+      id: .message.id,
       timestamp: .timestamp,
-      text: ([ .message.content[]? | select(.type == "text") | .text ] | join("\n\n"))
+      text: (if (.message.content | type) == "string" then .message.content
+             else ([ .message.content[]? | select(.type == "text") | .text ] | join("\n\n")) end)
     }
   | select(.text != null and (.text | length) > 0)
 ' "$TRANSCRIPT_PATH" 2>/dev/null)
+
+# The transcript is written asynchronously and can lack the turn's final message at Stop.
+if [ -n "$LAST_MESSAGE" ]; then
+  # One reply can span several transcript lines sharing a message id, and the field joins its blocks without separators.
+  IN_TRANSCRIPT=$(printf '%s\n' "$MESSAGES" | jq -rs --arg m "$LAST_MESSAGE" '
+    (map(.type) | rindex("user")) as $u
+    | .[(($u // -1) + 1):] | map(select(.type == "assistant"))
+    | (if length == 0 then "" else (last | .id) as $id | map(select(.id == $id) | .text) | join("") end)
+    | gsub("\\s"; "") == ($m | gsub("\\s"; ""))
+  ')
+  if [ "$IN_TRANSCRIPT" != "true" ]; then
+    MESSAGES=$(printf '%s\n' "$MESSAGES"
+      jq -nc --arg t "$LAST_MESSAGE" --arg ts "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
+        '{type: "assistant", timestamp: $ts, text: $t}')
+  fi
+fi
 
 [ -z "$MESSAGES" ] && exit 0
 
@@ -69,6 +90,10 @@ CLEANED=$(printf '%s\n' "$MESSAGES" | jq -c '
     | gsub("(?s)<local-command-stdout>.*?</local-command-stdout>"; "")
     | gsub("(?s)<local-command-stderr>.*?</local-command-stderr>"; "")
     | gsub("(?s)<user-prompt-submit-hook>.*?</user-prompt-submit-hook>"; "")
+    | gsub("(?s)<task-notification>.*?</task-notification>"; "")
+    | gsub("(?s)<bash-input>.*?</bash-input>"; "")
+    | gsub("(?s)<bash-stdout>.*?</bash-stdout>"; "")
+    | gsub("(?s)<bash-stderr>.*?</bash-stderr>"; "")
     | gsub("(AKIA|ASIA)[0-9A-Z]{16}"; "[MASKED_AWS_KEY_ID]")
     | gsub("(?<k>(aws_)?secret_?access_?key[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
     | gsub("(?<k>(aws_)?session_?token[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
@@ -99,49 +124,16 @@ else
 fi
 
 OUT_DIR="$VAULT/$LOG_DIR_NAME/$SESSION_DATE"
-OUT_FILE="$OUT_DIR/${PROJECT_NAME}.md"
+OUT_FILE="$OUT_DIR/${PROJECT_NAME}--${SESSION_SHORT}.md"
 
 mkdir -p "$OUT_DIR" || { warn "mkdir failed: $OUT_DIR"; exit 0; }
 
-# If this session is already in the file, strip its block. Removal range:
-#   from any blank lines immediately preceding the session marker,
-#   through the marker itself,
-#   up to (but not including) the next session marker or EOF.
-# Trailing blanks at EOF are also dropped so the file stays compact across reruns.
-if [ -f "$OUT_FILE" ] && grep -qFx "<!-- session: ${SESSION_ID} -->" "$OUT_FILE"; then
-  TMP=$(mktemp "${OUT_FILE}.XXXXXX") || { warn "mktemp failed"; exit 0; }
-  awk -v sid="$SESSION_ID" '
-    BEGIN { pending = ""; skip = 0 }
-    /^<!-- session: / {
-      if ($0 == "<!-- session: " sid " -->") {
-        pending = ""
-        skip = 1
-        next
-      } else {
-        if (pending != "") { printf "%s", pending; pending = "" }
-        skip = 0
-      }
-    }
-    !skip {
-      if ($0 == "") {
-        pending = pending "\n"
-      } else {
-        if (pending != "") { printf "%s", pending; pending = "" }
-        print
-      }
-    }
-  ' "$OUT_FILE" > "$TMP" && /bin/mv -f "$TMP" "$OUT_FILE" || {
-    warn "block-strip failed for $OUT_FILE"
-    rm -f "$TMP"
-    exit 0
-  }
-fi
+TMP=$(mktemp "${OUT_FILE}.XXXXXX" 2>/dev/null) || { warn "mktemp failed"; exit 0; }
+trap 'rm -f "$TMP"' EXIT
 
 {
-  if [ ! -f "$OUT_FILE" ]; then
-    printf '# %s (%s)\n\n' "$PROJECT_NAME" "$SESSION_DATE"
-  fi
-  printf '\n<!-- session: %s -->\n\n' "$SESSION_ID"
+  printf '# %s (%s)\n\n' "$PROJECT_NAME" "$SESSION_DATE"
+  printf '<!-- session: %s -->\n\n' "$SESSION_ID"
   printf '## %s\n\n' "$SESSION_TIME"
 
   printf '%s\n' "$CLEANED" | jq -r '
@@ -151,6 +143,6 @@ fi
   '
 
   printf '\n---\n'
-} >> "$OUT_FILE" 2>/dev/null || warn "write failed: $OUT_FILE"
+} > "$TMP" 2>/dev/null && /bin/mv -f "$TMP" "$OUT_FILE" || warn "write failed: $OUT_FILE"
 
 exit 0
