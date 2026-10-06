@@ -49,7 +49,8 @@ MESSAGES=$(jq -c '
   | {
       type: .type,
       timestamp: .timestamp,
-      text: ([ .message.content[]? | select(.type == "text") | .text ] | join("\n\n"))
+      text: (if (.message.content | type) == "string" then .message.content
+             else ([ .message.content[]? | select(.type == "text") | .text ] | join("\n\n")) end)
     }
   | select(.text != null and (.text | length) > 0)
 ' "$TRANSCRIPT_PATH" 2>/dev/null)
@@ -83,6 +84,7 @@ CLEANED=$(printf '%s\n' "$MESSAGES" | jq -c '
     | gsub("(?s)<local-command-stdout>.*?</local-command-stdout>"; "")
     | gsub("(?s)<local-command-stderr>.*?</local-command-stderr>"; "")
     | gsub("(?s)<user-prompt-submit-hook>.*?</user-prompt-submit-hook>"; "")
+    | gsub("(?s)<task-notification>.*?</task-notification>"; "")
     | gsub("(AKIA|ASIA)[0-9A-Z]{16}"; "[MASKED_AWS_KEY_ID]")
     | gsub("(?<k>(aws_)?secret_?access_?key[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
     | gsub("(?<k>(aws_)?session_?token[\"\\x27]?\\s*[=:]\\s*[\"\\x27]?)[A-Za-z0-9/+=]{16,}"; "\(.k)[MASKED]"; "i")
