@@ -3,11 +3,11 @@
 外部に公開しているアプリ・利用している外部サービス・保有データを、稼働中の状態として点検するための質問集。
 コードの境界レビュー([boundary-review.md](boundary-review.md))では見えない「今どう動いているか」を確認する。
 
-出典: IPA・JPCERT/CC の注意喚起(2026-10)と [ipa-public-app-security-check](https://github.com/fado-dev/ipa-public-app-security-check)(MIT)を要約・再構成。
+出典: IPA・JPCERT/CC の注意喚起(2026-10)と [ipa-public-app-security-check](https://github.com/fado-dev/ipa-public-app-security-check)(Copyright (c) 2026 fado-dev, MIT License)を要約・再構成。
 
 ## 点検の前提
 
-- 照合する IOC(不審な IP・User-Agent)は JPCERT/CC・IPA の最新の注意喚起から取り、このファイルに固定しない
+- 照合する IOC(不審な IP・User-Agent)は最新の注意喚起([JPCERT/CC](https://www.jpcert.or.jp/at/)・[IPA](https://www.ipa.go.jp/security/security-alert/))から取り、このファイルに固定しない
 - IOC との一致は調査の起点であり、単独で侵害と結論づけない。アクセス先・時間帯・その後の挙動と合わせて評価する
 - 本番のログ・設定の確認は読み取りに留める。侵害の兆候が見つかったら [incident-response.md](incident-response.md) に移る
 - 対応体制(連絡網・封じ込め権限・バックアップ等)は [incident-response.md](incident-response.md) の「平時の準備」で確認する
@@ -19,9 +19,12 @@
 | 外部から到達できるアプリ・エンドポイントをすべて列挙したか | IaC(Terraform・k8s manifest・serverless 定義)、DNS、LB・CDN・リバースプロキシの設定、ルーティング定義 |
 | 管理画面・社内ツール・BI・バッチ用エンドポイント・Webhook 受信口・ヘルスチェック・デバッグ機能など、公開しているつもりのないものが含まれていないか | ルーティング定義、`admin` `internal` `debug` `actuator` `swagger` `graphql` 等のパス |
 | モバイルアプリが呼ぶ API に、画面から呼ばれない内部 API・管理 API が含まれていないか | API 仕様、アプリのネットワーク定義 |
+| 公開している構成要素(フレームワーク・AP サーバ・BI・VPN 機器・WAF)に未適用パッチや EOL のものがないか | lockfile、Dockerfile、IaC、ベンダーの公開情報(SKILL.md の Step 9、[reference.md](reference.md) の A02 パッチ管理) |
 | アプリごとにログの所在・保持期間・確認できる人を即答できるか | ヒアリング |
 
-棚卸しの結果は「名称 / 公開 URL・ポート / 用途 / 想定利用者 / 認証方式 / ログの所在と保持期間 / 担当」の表にまとめる。
+棚卸しの結果は「名称 / 公開 URL・ポート / 用途 / 想定利用者 / 認証方式 / 構成要素とバージョン / ログの所在と保持期間 / 担当」の表にまとめる。
+
+稼働環境の設定は、認証なしで到達できるエンドポイントが意図したものだけか、公開パスに設定ファイル・バックアップが置かれていないか、ディレクトリリスティングが無効かを確認する。それ以外の設定項目は [reference.md](reference.md) の A02 に沿う。
 
 ## 2. ログに残る侵害の兆候
 
@@ -33,7 +36,7 @@
 | 4xx が続いた直後に 200 が返っているパス | 探索の成功 |
 | 認証ヘッダー欠落・不正形式トークンでの 401/403/400 の連続 | 認証処理の応答差の探索 |
 | クエリ・ボディに `$ne` `$gt` `$regex` `$where` や `UNION` `information_schema` | NoSQL / SQL インジェクション |
-| 見覚えのない `.jsp` 等へのリクエスト、`cmd=` `exec=` `command=` パラメータ、AP サーバ上の新しい `.war` `.jsp` | Web シェルの設置 |
+| 見覚えのない `.jsp` `.php` 等へのリクエスト、`cmd=` `exec=` `command=` パラメータ、サーバ上で新しく作られた `.war` `.jsp` `.php` 等の実行可能ファイル | Web シェルの設置 |
 | 画面操作では呼ばれないエンドポイントへの直接アクセス、同一送信元からの短時間の大量リクエスト | API の直接悪用 |
 | ログイン・パスワードリセット・SMS 送信・検索の回数の急増 | 総当たり、リスト型攻撃、データ収集 |
 | 権限変更・アカウント作成の操作 | 不正アカウントの作成、権限昇格 |
