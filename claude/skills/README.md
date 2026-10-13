@@ -18,7 +18,7 @@
 | `pm-assist` | プロジェクトマネジメント(タスク・リスク洗い出し)の補佐 |
 | `pr-and-cleanup` | worktree 環境での PR 作成とクリーンアップの一括実行 |
 | `pr-creation` | PRテンプレート探索・Draft PRフロー・CI確認の手順 |
-| `security-hardening` | 境界レビュー・脅威モデリング等の能動的セキュリティ強化 |
+| `security-hardening` | 境界レビュー・脅威モデリング等の能動的セキュリティ強化、運用点検・インシデント初動 |
 | `session-start` | セッション開始時の作業状態把握ルーティン |
 | `terraform-style` | Terraform のスタイル規範 |
 

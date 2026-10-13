@@ -4,10 +4,12 @@ description: |
   信頼境界と認可モデルに基づくセキュリティチェックと、OWASP Top 10:2025 に準拠した
   能動的なセキュリティ強化を支援。設計段階の脅威モデリング・境界レビュー、
   認可(IDOR/BOLA/BFLA)の体系的確認、依存関係の脆弱性スキャン、
+  公開アプリ・外部サービス・保有データの運用点検、侵害が疑われる時の初動確認、
   構造化されたセキュリティレポートと不変条件(認可マトリクス・入出力契約)の生成を実施。
   「セキュリティチェックして」「セキュリティ強化して」「境界レビュー」
   「OWASP準拠を確認」「認可をレビュー」「依存関係の脆弱性をチェック」
-  「脅威モデリング」などの指示で起動。
+  「脅威モデリング」「公開アプリを点検して」「注意喚起に沿って点検して」
+  「不審なアクセスが見つかった」「インシデント対応の初動」などの指示で起動。
 
   注: `security-guidance` plugin がある環境では、コード編集時の自動検出はそちらが担当する。
   本スキルは「能動的ハードニング」「境界レビュー」「依存スキャン」「総点検レポート」など、
@@ -41,6 +43,8 @@ description: |
 - 依存関係・サプライチェーンの脆弱性スキャン(`npm audit`, `pip-audit` 等の実行)
 - OWASP Top 10:2025 コンプライアンス状況の明示的な確認
 - セキュリティ要件の不変条件化(認可マトリクス・入出力契約の文書化)
+- 稼働中の公開アプリ・外部サービス・保有データの運用点検
+- 侵害が疑われる時の初動(証拠保全・封じ込め・報告)
 
 ## When to Use
 
@@ -49,7 +53,8 @@ description: |
 - 認可まわりのレビュー(マルチテナント、ロール追加、管理者機能の変更時)
 - OWASP Top 10:2025 準拠の確認(コンプライアンス報告含む)
 - 依存関係の脆弱性スキャン(`npm audit`, `pip-audit` 等)の実施
-- セキュリティインシデント後の再発防止策の検討
+- 公開アプリ・外部サービス・保有データの運用点検(注意喚起を受けた緊急点検を含む)
+- 侵害が疑われる時の初動と、セキュリティインシデント後の再発防止策の検討
 - PR前の総点検と構造化されたセキュリティレポートの作成
 
 ## When NOT to Use(自動レビューに任せる場面)
@@ -105,6 +110,12 @@ gh pr diff
 - 外部入力の有無(ユーザー入力、API、Webhook、ファイル等)
 - 認証・認可の実装状況(テナント・ロール・所有者の構造)
 - 現在のセキュリティ対策レベル
+- **状況**: 平時の点検か、侵害の疑いがあるか。疑いがあれば [incident-response.md](incident-response.md) を先に読み、
+  証拠を壊す操作(ログ削除・ローテーション・再起動・再構築・ファイルの削除や上書き)をしない
+- **対象**: コード・設計のレビューか、稼働中の公開アプリ・外部サービス・保有データの運用点検か。
+  運用点検では [operations-audit.md](operations-audit.md) と Step 9 を行い、コードを変える Step 6・7 は行わない
+
+リポジトリや設定から確認できない項目は、要ヒアリングとして担当者への質問リストに回す。
 
 ### 2. Map the Trust Boundaries(信頼境界の特定)
 
@@ -224,10 +235,22 @@ cargo audit        # Rust
 
 ### 10. Provide Security Report & Invariants
 
-チェック結果はレポートに加え、**再利用できる不変条件**として残す:
+チェック結果はレポートに加え、**再利用できる不変条件**として残す。記載のルール:
+
+- 状態は ✅(問題なし)/ ⚠️(要改善)/ ❌(重大な不備・異常)/ ❓(未確認・要ヒアリング)で書く
+- 断定できない項目は推測で ✅ にせず ❓ にする
+- ログの兆候や IOC との一致は調査の起点として書き、それだけで侵害と結論づけない
+- トークン・パスワード・個人情報の実値を転記しない
+- 利用者の IP・アカウント名はマスクする(例: `203.0.113.xx`, `user_***`)
+- 攻撃元の IOC は共有・遮断に使うので、マスクせず利用者の情報と分けて記録する
+- 実施しなかった観点の節は省く(運用点検だけなら OWASP の準拠状況は書かない)
+- 侵害の疑いがある時は、このレポートとは別にタイムラインとフェーズ別の対応状況を [incident-response.md](incident-response.md) に沿って更新し続ける
 
 ```markdown
 ## セキュリティチェックレポート
+
+- 対象範囲: [リポジトリ / 環境 / サービス]
+- 点検できなかった範囲: [アクセスできなかった環境・ログなど]
 
 ### 🔴 Critical Vulnerabilities (即座に修正が必要)
 - [OWASP分類] [問題の説明]
@@ -244,6 +267,14 @@ cargo audit        # Rust
 ### 🟢 Security Best Practices Implemented
 - [実装されている良いセキュリティ対策]
 
+### 🔍 運用点検の結果(運用点検を行った場合)
+- 公開資産の一覧: [名称 / 公開 URL・ポート / 用途 / 想定利用者 / 認証方式 / 構成要素とバージョン / ログの所在と保持期間 / 担当]
+- 所見: [領域(公開資産・ログ・アカウント・外部サービス・保有データ・対応体制) / 確認事項 / 状態 / 根拠(ログ名と期間など)]
+- 強化策: [優先度 / 対象 / 内容](異常がなくても書く)
+
+### ❓ 未確認・要ヒアリング
+- [項目] / [確認したいこと] / [確認先]
+
 ### 📐 不変条件(今回のチェックで確認・確立したもの)
 - 認可マトリクス: [ロール・所有者・テナント × 操作の許可一覧]
 - 入力契約: [スキーマ、型・範囲、未定義フィールドの扱い]
@@ -251,16 +282,16 @@ cargo audit        # Rust
 - 監査・リリース条件: [記録するイベント、スキャン通過条件、例外承認]
 
 ### 📊 OWASP Top 10:2025 Compliance Status
-- A01 Broken Access Control: ✅/⚠️/❌
-- A02 Security Misconfiguration: ✅/⚠️/❌
-- A03 Software Supply Chain Failures: ✅/⚠️/❌
-- A04 Cryptographic Failures: ✅/⚠️/❌
-- A05 Injection: ✅/⚠️/❌
-- A06 Insecure Design: ✅/⚠️/❌
-- A07 Authentication Failures: ✅/⚠️/❌
-- A08 Software or Data Integrity Failures: ✅/⚠️/❌
-- A09 Logging & Alerting Failures: ✅/⚠️/❌
-- A10 Mishandling of Exceptional Conditions: ✅/⚠️/❌
+- A01 Broken Access Control: ✅/⚠️/❌/❓
+- A02 Security Misconfiguration: ✅/⚠️/❌/❓
+- A03 Software Supply Chain Failures: ✅/⚠️/❌/❓
+- A04 Cryptographic Failures: ✅/⚠️/❌/❓
+- A05 Injection: ✅/⚠️/❌/❓
+- A06 Insecure Design: ✅/⚠️/❌/❓
+- A07 Authentication Failures: ✅/⚠️/❌/❓
+- A08 Software or Data Integrity Failures: ✅/⚠️/❌/❓
+- A09 Logging & Alerting Failures: ✅/⚠️/❌/❓
+- A10 Mishandling of Exceptional Conditions: ✅/⚠️/❌/❓
 
 ### 🔧 Remediation Priority
 1. [最優先で修正すべき項目 — 影響が大きく自動検出しづらい認可・入力契約を優先]
@@ -314,6 +345,8 @@ PRテンプレート、CLAUDE.md、CI設定)への反映を提案する。コー
 
 - [境界レビュー チェックリスト(設計・実装・テスト・運用)](boundary-review.md)
 - [OWASP Top 10:2025 詳細チェックリスト](reference.md)
+- [運用点検 チェックリスト(公開資産・外部サービス・保有データ)](operations-audit.md)
+- [インシデント対応 チェックリスト(初動・報告先・平時の準備)](incident-response.md)
 
 ## Dependencies
 
@@ -340,6 +373,7 @@ PRテンプレート、CLAUDE.md、CI設定)への反映を提案する。コー
 - **code-review**: コードレビュー時にセキュリティ観点を追加(境界レビューの質問を差分に適用)
 - **adr**: 認可モデル・不変条件などの設計判断をADRとして記録する
 - **tdd-***: テスト駆動開発で権限昇格・境界値のセキュリティテストを含める
+- **aws-investigation**: 運用点検・インシデント対応で AWS 上のログや設定を調べる
 
 ## Notes
 
@@ -356,3 +390,6 @@ PRテンプレート、CLAUDE.md、CI設定)への反映を提案する。コー
 - [OWASP API Security Top 10](https://owasp.org/API-Security/)
 - [NIST Secure Software Development Framework (SSDF)](https://csrc.nist.gov/projects/ssdf)
 - [OpenSSF Guide for AI Code Assistant Instructions](https://best.openssf.org/Security-Focused-Guide-for-AI-Code-Assistant-Instructions.html)
+- [IPA 不正アクセスによる漏えい等の事案を踏まえ、速やかに実施すべき対策等について(2026-10-09)](https://www.ipa.go.jp/security/security-alert/2026/alert20261009.html)
+- [JPCERT/CC JPCERT-AT-2026-0030](https://www.jpcert.or.jp/at/2026/at260030.html)
+- [ipa-public-app-security-check](https://github.com/fado-dev/ipa-public-app-security-check)(運用点検・インシデント対応チェックリストの参考元、MIT)
