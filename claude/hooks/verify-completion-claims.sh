@@ -94,15 +94,13 @@ if echo "$CLAIM" | grep -q 'push'; then
 fi
 
 # --- Verify PR claim: the claimed PR exists ---
-# Prefer a PR number from a URL in the message: it stays correct even when the
-# claim is about another branch (e.g. worktree cleanup switched back to main).
-# Fall back to the current branch's PR only when no number is present.
+# A full URL lets gh resolve the PR in its own repo, whichever repo/branch CWD is on.
 if echo "$CLAIM" | grep -q 'PR作成'; then
   if command -v gh >/dev/null 2>&1 && (cd "$CWD" && ${TO:+$TO 10} gh auth status >/dev/null 2>&1); then
-    PR_NUM=$(echo "$LAST_MSG" | grep -oE '/pull/[0-9]+' | tail -n 1 | grep -oE '[0-9]+')
-    if [ -n "$PR_NUM" ]; then
-      if ! (cd "$CWD" && ${TO:+$TO 15} gh pr view "$PR_NUM" --json url >/dev/null 2>&1); then
-        PROBLEMS="${PROBLEMS}- PR #${PR_NUM} を作成したと報告したが、gh で見つからない\n"
+    PR_URL=$(echo "$LAST_MSG" | grep -oE 'https://github\.com/[^/[:space:]]+/[^/[:space:]]+/pull/[0-9]+' | tail -n 1)
+    if [ -n "$PR_URL" ]; then
+      if ! (cd "$CWD" && ${TO:+$TO 15} gh pr view "$PR_URL" --json url >/dev/null 2>&1); then
+        PROBLEMS="${PROBLEMS}- ${PR_URL} を作成したと報告したが、gh で見つからない\n"
       fi
     elif ! (cd "$CWD" && ${TO:+$TO 15} gh pr view --json url >/dev/null 2>&1); then
       PROBLEMS="${PROBLEMS}- PRを作成したと報告したが、現ブランチ($BRANCH)に対応するPRが gh で見つからない\n"
