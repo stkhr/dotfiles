@@ -95,7 +95,6 @@ fi
 
 # --- Verify PR claim: the claimed PR exists ---
 # A full URL lets gh resolve the PR in its own repo, whichever repo/branch CWD is on.
-# Fall back to the current branch's PR only when no URL is present.
 if echo "$CLAIM" | grep -q 'PR作成'; then
   if command -v gh >/dev/null 2>&1 && (cd "$CWD" && ${TO:+$TO 10} gh auth status >/dev/null 2>&1); then
     PR_URL=$(echo "$LAST_MSG" | grep -oE 'https://github\.com/[^/[:space:]]+/[^/[:space:]]+/pull/[0-9]+' | tail -n 1)
