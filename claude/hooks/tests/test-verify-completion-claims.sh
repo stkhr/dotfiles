@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tests for verify-completion-claims.sh push verification (upstream-aware).
+# Tests for verify-completion-claims.sh push (upstream-aware) and PR verification.
 # Usage: bash claude/hooks/tests/test-verify-completion-claims.sh
 set -uo pipefail
 
@@ -69,6 +69,19 @@ run_case block "never pushed" 'pushしました'
 $GIT checkout -q -b local-track
 $GIT branch -q --set-upstream-to=main local-track
 run_case block "local-branch upstream falls back to same-name" 'pushしました'
+
+# --- PR claims: gh stub knows only https://github.com/other/repo/pull/7 ---
+mkdir -p "$WORK/bin"
+cat > "$WORK/bin/gh" <<'EOF'
+#!/bin/bash
+[ "$1 $2" = "auth status" ] && exit 0
+[ "$1 $2 $3" = "pr view https://github.com/other/repo/pull/7" ] && exit 0
+exit 1
+EOF
+chmod +x "$WORK/bin/gh"
+export PATH="$WORK/bin:$PATH"
+run_case pass "PR in another repo is found by its URL" 'Draft PR を作成しました: https://github.com/other/repo/pull/7'
+run_case block "PR URL that gh cannot find" 'Draft PR を作成しました: https://github.com/other/repo/pull/8'
 
 echo "PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
