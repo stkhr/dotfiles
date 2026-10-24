@@ -25,7 +25,7 @@ install.sh は再実行可能（リンクは `ln -snf` で張り直されるた�
 | `config/starship.toml` | `~/.config/` | プロンプト（starship） |
 | `config/sheldon/plugins.toml` | `~/.config/sheldon/` | zsh プラグイン管理（sheldon） |
 | `config/herdr/config.toml` | `~/.config/herdr/` | エージェントマルチプレクサ（herdr） |
-| `config/glow/report-style.json` | `~/.config/glow/` | `report-pane` の表示スタイル（glow） |
+| （install.sh が生成） | `~/.config/glow/report-style.json` | `report-pane` の表示スタイル（glamour の dark から余白を 0 にしたもの） |
 | `claude/` | `~/.claude/` | Claude Code 設定一式（詳細は [claude/README.md](claude/README.md)） |
 | `codex/` | `~/.codex/` | Codex 設定一式（詳細は [codex/README.md](codex/README.md)） |
 | `vscode/` | （手動） | VSCode 設定・拡張リスト |

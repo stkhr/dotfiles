@@ -13,6 +13,15 @@ prefix_rule(
 )
 
 prefix_rule(
+    pattern = ["report-pane"],
+    decision = "allow",
+    justification = "調査レポートを herdr の右ペインに開くだけで、ファイルは変更しない",
+    match = [
+        "report-pane /tmp/report.md",
+    ],
+)
+
+prefix_rule(
     pattern = ["gh", "pr", ["merge", "close", "ready", "review", "comment"]],
     decision = "prompt",
     justification = "PR の状態変更・外部への発信は文面の承認を得てから",

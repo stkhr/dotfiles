@@ -175,8 +175,5 @@ HERDR_PANE_ID='' "$SCRIPT" "$REPORT" >/dev/null 2>&1
 check "呼び出し元のペイン ID が無ければ 1 で返る" 1 "$?"
 check "呼び出し元のペイン ID が無ければ herdr を呼ばない" 0 "$(grep -c . "$STUB_HERDR_LOG")"
 
-margins=$(jq -c '[.document.margin, .code_block.margin]' "$(dirname "$SCRIPT")/../config/glow/report-style.json")
-check "同梱のスタイルは文書とコードブロックの余白が 0" "[0,0]" "$margins"
-
 printf '\n%d passed, %d failed\n' "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]

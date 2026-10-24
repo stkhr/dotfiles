@@ -55,9 +55,16 @@ ln -snfv "$DIR"/config/sheldon/plugins.toml "$HOME"/.config/sheldon/plugins.toml
 mkdir -p "$HOME"/.config/herdr
 ln -snfv "$DIR"/config/herdr/config.toml "$HOME"/.config/herdr/config.toml
 
-# glow(report-pane のスタイル)
+# glow(report-pane のスタイル)。glow 3.0.0 が使う glamour の dark から余白だけ 0 にして生成する
 mkdir -p "$HOME"/.config/glow
-ln -snfv "$DIR"/config/glow/report-style.json "$HOME"/.config/glow/report-style.json
+glow_style="$HOME"/.config/glow/report-style.json
+if curl -fsSL https://raw.githubusercontent.com/charmbracelet/glamour/v2.0.1/styles/dark.json \
+    | jq -e '.document.margin = 0 | .code_block.margin = 0' > "$glow_style".tmp; then
+    mv "$glow_style".tmp "$glow_style"
+else
+    rm -f "$glow_style".tmp
+    echo "report-pane のスタイルを生成できませんでした。glow の既定スタイルで表示されます" >&2
+fi
 
 # git global ignore (core.excludesFile のデフォルト位置)
 mkdir -p "$HOME"/.config/git
