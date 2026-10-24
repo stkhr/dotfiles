@@ -12,6 +12,7 @@ brew "gnupg"
 brew "golang-migrate"
 brew "grep"
 brew "fzf"
+brew "glow" # 調査レポートの表示(report-pane)
 brew "jq"
 brew "just"
 brew "libpq"

@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+usage() {
+    cat <<'USAGE'
+report-pane — 調査レポートを呼び出し元ペインの右に開く
+
+  herdr のペイン内で実行する。同じタブに report ペインがあれば閉じてから開き直す。
+  フォーカスは呼び出し元に残り、glow を q で抜けるとペインも閉じる。
+
+使い方:
+  report-pane <file.md>
+
+オプション:
+  -h, --help  このヘルプ
+
+依存:
+  glow  Markdown の表示
+  jq    herdr の応答の解釈
+USAGE
+}
+
+case "${1:-}" in
+    -h|--help)
+        usage
+        exit 0
+        ;;
+    -*|"")
+        usage >&2
+        exit 1
+        ;;
+esac
+
+if [ "${HERDR_ENV:-}" != 1 ] || [ -z "${HERDR_PANE_ID:-}" ]; then
+    echo "herdr のペイン内で実行してください" >&2
+    exit 1
+fi
+
+if [ ! -f "$1" ]; then
+    echo "レポートがありません: $1" >&2
+    exit 1
+fi
+# 新しいペインの cwd は呼び出し元と一致する保証が無い
+report="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+
+current=$(herdr pane current --current) || exit 1
+tab_id=$(printf '%s' "$current" | jq -er '.result.pane.tab_id') || exit 1
+workspace_id=$(printf '%s' "$current" | jq -er '.result.pane.workspace_id') || exit 1
+
+panes=$(herdr pane list --workspace "$workspace_id") || exit 1
+stale=$(printf '%s' "$panes" | jq -r --arg tab "$tab_id" \
+    '.result.panes[] | select(.tab_id == $tab and .label == "report") | .pane_id') || exit 1
+while IFS= read -r pane_id; do
+    [ -n "$pane_id" ] || continue
+    herdr pane close "$pane_id" >/dev/null || exit 1
+done <<EOF
+$stale
+EOF
+
+split=$(herdr pane split --current --direction right --no-focus) || exit 1
+pane_id=$(printf '%s' "$split" | jq -er '.result.pane.pane_id // empty') || exit 1
+
+herdr pane rename "$pane_id" report >/dev/null || exit 1
+herdr pane run "$pane_id" "glow -p $(printf '%q' "$report"); exit" >/dev/null || exit 1
+echo "$pane_id: $report"
