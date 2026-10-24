@@ -21,6 +21,12 @@ report-pane — 調査レポートを呼び出し元ペインの右に開く
 USAGE
 }
 
+# bash 3.2 の printf %q は UTF-8 の文字をバイト単位で壊す
+shell_quote() {
+    local q="'" esc="'\\''"
+    printf "'%s'" "${1//$q/$esc}"
+}
+
 case "${1:-}" in
     -h|--help)
         usage
@@ -31,9 +37,18 @@ case "${1:-}" in
         exit 1
         ;;
 esac
+if [ $# -ne 1 ]; then
+    usage >&2
+    exit 1
+fi
 
 if [ "${HERDR_ENV:-}" != 1 ] || [ -z "${HERDR_PANE_ID:-}" ]; then
     echo "herdr のペイン内で実行してください" >&2
+    exit 1
+fi
+
+if ! command -v glow >/dev/null; then
+    echo "glow がありません(brew install glow)" >&2
     exit 1
 fi
 
@@ -64,6 +79,10 @@ pane_id=$(printf '%s' "$split" | jq -er '.result.pane.pane_id // empty') || exit
 style="$HOME/.config/glow/report-style.json"
 [ -f "$style" ] || style=auto
 
-herdr pane rename "$pane_id" report >/dev/null || exit 1
-herdr pane run "$pane_id" "glow -s $(printf '%q' "$style") -p $(printf '%q' "$report"); exit" >/dev/null || exit 1
+# 名前が無いと次回の掃除で見つけられず残り続ける
+if ! herdr pane rename "$pane_id" report >/dev/null; then
+    herdr pane close "$pane_id" >/dev/null
+    exit 1
+fi
+herdr pane run "$pane_id" "glow -s $(shell_quote "$style") -p $(shell_quote "$report"); exit" >/dev/null || exit 1
 echo "$pane_id: $report"

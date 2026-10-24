@@ -21,10 +21,11 @@ install.sh は再実行可能（リンクは `ln -snf` で張り直されるた�
 | パス | 配置先 | 内容 |
 |---|---|---|
 | `.zshrc` / `.tmux.conf` / `.tmux.session.conf` / `.vimrc` | `~/` | シェル・tmux・vim |
-| `bin/` | `~/.local/bin/` | 自作コマンド（`claude-outputs`: 並行セッションの成果物一覧、`herdr-space`: org ごとの herdr space 作成） |
+| `bin/` | `~/.local/bin/` | 自作コマンド（`claude-outputs`: 並行セッションの成果物一覧、`herdr-space`: org ごとの herdr space 作成、`report-pane`: 調査レポートを herdr の右ペインに開く） |
 | `config/starship.toml` | `~/.config/` | プロンプト（starship） |
 | `config/sheldon/plugins.toml` | `~/.config/sheldon/` | zsh プラグイン管理（sheldon） |
 | `config/herdr/config.toml` | `~/.config/herdr/` | エージェントマルチプレクサ（herdr） |
+| `config/glow/report-style.json` | `~/.config/glow/` | `report-pane` の表示スタイル（glow） |
 | `claude/` | `~/.claude/` | Claude Code 設定一式（詳細は [claude/README.md](claude/README.md)） |
 | `codex/` | `~/.codex/` | Codex 設定一式（詳細は [codex/README.md](codex/README.md)） |
 | `vscode/` | （手動） | VSCode 設定・拡張リスト |
