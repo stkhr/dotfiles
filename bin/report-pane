@@ -7,6 +7,7 @@ report-pane — 調査レポートを呼び出し元ペインの右に開く
 
   herdr のペイン内で実行する。同じタブに report ペインがあれば閉じてから開き直す。
   フォーカスは呼び出し元に残り、glow を q で抜けるとペインも閉じる。
+  ~/.config/glow/report-style.json があればそのスタイルで表示する。
 
 使い方:
   report-pane <file.md>
@@ -60,6 +61,9 @@ EOF
 split=$(herdr pane split --current --direction right --no-focus) || exit 1
 pane_id=$(printf '%s' "$split" | jq -er '.result.pane.pane_id // empty') || exit 1
 
+style="$HOME/.config/glow/report-style.json"
+[ -f "$style" ] || style=auto
+
 herdr pane rename "$pane_id" report >/dev/null || exit 1
-herdr pane run "$pane_id" "glow -p $(printf '%q' "$report"); exit" >/dev/null || exit 1
+herdr pane run "$pane_id" "glow -s $(printf '%q' "$style") -p $(printf '%q' "$report"); exit" >/dev/null || exit 1
 echo "$pane_id: $report"

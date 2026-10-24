@@ -55,6 +55,10 @@ ln -snfv "$DIR"/config/sheldon/plugins.toml "$HOME"/.config/sheldon/plugins.toml
 mkdir -p "$HOME"/.config/herdr
 ln -snfv "$DIR"/config/herdr/config.toml "$HOME"/.config/herdr/config.toml
 
+# glow(report-pane のスタイル)
+mkdir -p "$HOME"/.config/glow
+ln -snfv "$DIR"/config/glow/report-style.json "$HOME"/.config/glow/report-style.json
+
 # git global ignore (core.excludesFile のデフォルト位置)
 mkdir -p "$HOME"/.config/git
 ln -snfv "$DIR"/config/git/ignore "$HOME"/.config/git/ignore

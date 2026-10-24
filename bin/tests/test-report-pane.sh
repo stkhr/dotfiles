@@ -37,6 +37,8 @@ export HERDR_ENV=1
 export HERDR_PANE_ID=w1:p1
 export STUB_HERDR_LOG="$WORK/herdr.log"
 export STUB_HERDR_PANES=""
+export HOME="$WORK/home"
+STYLE="$HOME/.config/glow/report-style.json"
 
 REPORT_DIR="$WORK/scratchpad"
 mkdir -p "$REPORT_DIR"
@@ -65,14 +67,22 @@ check "開いたペインとレポートを報告する" "w1:p9: $REPORT" "$out"
 check "呼び出し元の右にフォーカスを移さず開く" 1 \
     "$(grep -c '^pane split --current --direction right --no-focus$' "$STUB_HERDR_LOG")"
 check "開いたペインに report と名前を付ける" 1 "$(grep -c '^pane rename w1:p9 report$' "$STUB_HERDR_LOG")"
-check "glow を抜けたらペインごと閉じる" 1 \
-    "$(grep -c "^pane run w1:p9 glow -p $REPORT; exit\$" "$STUB_HERDR_LOG")"
+check "スタイルが無ければ glow の既定で開き、抜けたらペインごと閉じる" 1 \
+    "$(grep -c "^pane run w1:p9 glow -s auto -p $REPORT; exit\$" "$STUB_HERDR_LOG")"
 check "report ペインが無ければ何も閉じない" 0 "$(grep -c '^pane close' "$STUB_HERDR_LOG")"
 
 reset
 (cd "$REPORT_DIR" && "$SCRIPT" inventory.md >/dev/null 2>&1)
 check "相対パスは絶対パスにして glow に渡す" 1 \
-    "$(grep -c "^pane run w1:p9 glow -p $REPORT; exit\$" "$STUB_HERDR_LOG")"
+    "$(grep -c "^pane run w1:p9 glow -s auto -p $REPORT; exit\$" "$STUB_HERDR_LOG")"
+
+reset
+mkdir -p "$(dirname "$STYLE")"
+echo '{}' > "$STYLE"
+"$SCRIPT" "$REPORT" >/dev/null 2>&1
+check "report 用スタイルがあればそれで開く" 1 \
+    "$(grep -c "^pane run w1:p9 glow -s $STYLE -p $REPORT; exit\$" "$STUB_HERDR_LOG")"
+rm -f "$STYLE"
 
 reset
 STUB_HERDR_PANES='{"pane_id":"w1:p5","tab_id":"w1:t1","label":"report"},{"pane_id":"w1:p6","tab_id":"w1:t2","label":"report"},{"pane_id":"w1:p7","tab_id":"w1:t1"}' \
