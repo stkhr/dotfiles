@@ -50,6 +50,7 @@
       "Bash(tflint:*)",
       "Bash(uv run ruff check *)",
       "Bash(uv run pyright *)",
+      "Bash(report-pane:*)",
       "mcp__chrome-devtools__*",
       "mcp__serena__*",
       "mcp__context7__*",
