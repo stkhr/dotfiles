@@ -226,6 +226,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "~/.claude/hooks/verify-reply-format.sh",
+            "timeout": 10,
+            "statusMessage": "Checking reply format..."
+          },
+          {
+            "type": "command",
             "command": "~/.claude/hooks/verify-completion-claims.sh",
             "timeout": 30,
             "statusMessage": "Verifying completion claims..."
