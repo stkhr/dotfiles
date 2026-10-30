@@ -75,6 +75,7 @@ GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP
 | `notify-pr-created.sh` | PostToolUse (Bash) | `gh pr create` 実行時に PR URL を通知 |
 | `format-lint-after-bash.sh` | PostToolUse (Bash) | Bash で変更されたファイルを format-on-edit / lint-feedback に渡す(auto mode の sed / heredoc 編集を拾う) |
 | `precompact-context.sh` | PreCompact | git の作業状態を compaction サマリに注入 |
+| `verify-reply-format.sh` | Stop | 最終応答が日本語でない、または URL の直後に空白以外が続く時に停止をブロックし、書き直しを求める |
 | `verify-completion-claims.sh` | Stop | 完了報告と実際の作業状態の突き合わせ |
 | `verify-tests.sh` | Stop | 未コミット変更があればテストを実行し、失敗時は停止をブロック(stop_hook_active で再帰を抑止) |
 | `session-sync.sh` | Stop | セッション状態の同期 |
