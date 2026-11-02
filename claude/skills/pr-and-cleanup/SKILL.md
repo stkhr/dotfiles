@@ -154,6 +154,7 @@ git worktree remove "$WORKTREE_PATH"
 **現在のブランチ:** main
 
 **レビュー所見:** Step 4 の結果を全件列挙（Critical=修正済み / Important・Minor=未対応・要判断）
+**変更量:** <実測> 行 / <ファイル数> ファイル（500 行超なら分割の要判断を添える）
 
 **次のステップ:**
 1. PRのレビューを依頼

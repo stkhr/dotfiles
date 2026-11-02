@@ -33,6 +33,7 @@ make_repo() {
 }
 
 REPO_BIG="$WORK/repo-big"
+REPO_EDGE="$WORK/repo-edge"
 REPO_SMALL="$WORK/repo-small"
 REPO_LOCK="$WORK/repo-lock"
 REPO_SNAP="$WORK/repo-snap"
@@ -40,6 +41,7 @@ REPO_DEVELOP="$WORK/repo-develop"
 PLAIN="$WORK/plain"
 
 make_repo "$REPO_BIG" main src/big.txt 600
+make_repo "$REPO_EDGE" main src/edge.txt 500
 make_repo "$REPO_SMALL" main src/small.txt 10
 make_repo "$REPO_LOCK" main package-lock.json 600
 make_repo "$REPO_SNAP" main "src/__snapshots__/view.snap" 600
@@ -95,8 +97,10 @@ run_case() {
   else
     decision=$(echo "$out" | jq -r '
       if (.hookSpecificOutput.permissionDecision // "") != "" then "decision:" + .hookSpecificOutput.permissionDecision
-      elif (.systemMessage // "") != "" and (.hookSpecificOutput.additionalContext // "") != "" then "notice"
+      elif (.systemMessage // "") != "" and (.hookSpecificOutput.additionalContext // "") != ""
+        and .hookSpecificOutput.hookEventName == "PreToolUse" then "notice"
       else "malformed" end' 2>/dev/null)
+    decision="${decision:-unparsable}"
   fi
   if [ "$decision" = "$expect" ]; then
     PASS=$((PASS + 1))
@@ -108,8 +112,9 @@ run_case() {
 
 CREATE='gh pr create --draft --title "x" --body "y"'
 
-# --- threshold against origin/HEAD (default 500 lines) ---
+# --- threshold against origin/HEAD (default 500 lines, exactly 500 is not over) ---
 run_case notice default '' "$REPO_BIG"   "$CREATE"
+run_case pass   default '' "$REPO_EDGE"  "$CREATE"
 run_case pass   default '' "$REPO_SMALL" "$CREATE"
 run_case notice default '' "$REPO_BIG"   'gh pr create -d -t "x" -b "y"'
 
@@ -168,6 +173,15 @@ run_case notice default '' "$REPO_BIG" 'gh pr create|cat'
 run_case pass   default 1000 "$REPO_BIG"   "$CREATE"
 run_case notice default 5    "$REPO_SMALL" "$CREATE"
 run_case notice default abc  "$REPO_BIG"   "$CREATE"
+out=$(jq -n --arg d "$REPO_BIG" \
+  '{tool_input: {command: "gh pr create --draft --title \"x\""}, cwd: $d, permission_mode: "default"}' \
+  | PR_SIZE_LIMIT_LINES=abc bash "$HOOK" 2>/dev/null)
+if echo "$out" | jq -r '.systemMessage' | grep -q '閾値 500 行'; then
+  PASS=$((PASS + 1))
+else
+  FAIL=$((FAIL + 1))
+  echo "FAIL [non-numeric PR_SIZE_LIMIT_LINES should fall back to 500]: $out"
+fi
 
 # --- the notice does not depend on permission_mode (unattended runs see it too) ---
 run_case notice bypassPermissions '' "$REPO_BIG" "$CREATE"

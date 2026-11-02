@@ -99,7 +99,7 @@ FILES=${COUNTS#* }
 SUMMARY="PR の変更量 ${LINES} 行 / ${FILES} ファイルが閾値 ${LIMIT} 行を超えています(base ${BASE_REF})。"
 jq -n \
   --arg msg "${SUMMARY}分割するかは Draft PR の diff を見て決めてください。" \
-  --arg ctx "${SUMMARY}作成後、PR URL と合わせて実測と分割案(そのまま 1 本 / gh-stack で分割)を要判断に出してください。headless 自走時は gh pr edit <番号> --body-file で本文末尾に書きます。" '{
+  --arg ctx "${SUMMARY}作成できた時は、PR URL と合わせて実測と分割案(そのまま 1 本 / gh-stack で分割)を要判断に出してください。headless 自走時は gh pr edit <番号> --body-file で本文末尾に書きます。" '{
   systemMessage: $msg,
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
