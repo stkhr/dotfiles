@@ -34,7 +34,7 @@ Claude Code 側の `claude/CLAUDE.md` から、Codex に存在する道具立て
 
 ## 破壊的・外部影響操作の確認
 
-- git/gh の破壊的操作(force push / `--no-verify` / ブランチ削除 / PRの close・comment・merge・ready・review / 非Draft PR作成 / `gh stack merge`・`gh stack submit --open`)は「文面提示 → ユーザー承認 → 実行」を経る。一部は `~/.codex/rules/default.rules` が承認プロンプトを出すが、網羅していないので自分でも確認を挟む
+- git/gh の破壊的操作(force push / `--no-verify` / ブランチ削除 / PRの close・comment・merge・ready・review / 非Draft PR作成 / `gh stack merge`・`gh stack submit/link --open`)は「文面提示 → ユーザー承認 → 実行」を経る。一部は `~/.codex/rules/default.rules` が承認プロンプトを出すが、網羅していないので自分でも確認を挟む
 - 外部チャネルへの投稿・状態変更、既存ファイルの大量削除・一括リネームも同じ扱い
 - 「ロールバックの急ぎ」「CIを通すための一時回避」を理由に独断実行しない。回避策が必要ならまずユーザーに確認する
 

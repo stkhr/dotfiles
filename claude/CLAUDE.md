@@ -30,7 +30,7 @@
 
 ## 破壊的・外部影響操作の確認
 
-- git/gh の破壊的操作(force push / `--no-verify` / ブランチ削除 / PRの close・comment・merge・ready・review / 非Draft PR作成 / `gh stack merge`・`gh stack submit --open`)は hook が確認プロンプトを強制する
+- git/gh の破壊的操作(force push / `--no-verify` / ブランチ削除 / PRの close・comment・merge・ready・review / 非Draft PR作成 / `gh stack merge`・`gh stack submit/link --open`)は hook が確認プロンプトを強制する
 - hook が検知できない操作(外部チャネルへの投稿・状態変更、既存ファイルの大量削除・一括リネーム)も「文面提示 → ユーザー承認 → 実行」を経る
 - 「ロールバックの急ぎ」「CIを通すための一時回避」を理由に独断実行しない。回避策が必要ならまずユーザーに確認する
 

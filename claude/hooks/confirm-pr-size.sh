@@ -16,9 +16,12 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
 [ -z "$COMMAND" ] && exit 0
 
 FLAT="$(printf '%s' "$COMMAND" | tr '\n' ' ') "
+# FLAT keeps quotes so a quoted cd path survives; everything else matches on STRIPPED.
 STRIPPED=$(echo "$FLAT" | sed -E "s/\"[^\"]*\"//g; s/'[^']*'//g")
-CREATE_RE='(^|[[:space:]]|&&|\||;)gh[[:space:]]+pr[[:space:]]+create([[:space:]]|$)'
-echo "$STRIPPED" | grep -qE "$CREATE_RE" || exit 0
+CREATE_RE='(^|[[:space:]]|&&|\||;)gh[[:space:]]+pr[[:space:]]+create([[:space:];&|]|$)'
+CREATE_SEG=$(printf '%s\n' "$STRIPPED" | tr ';&|' '\n' \
+  | grep -E '(^|[[:space:]])gh[[:space:]]+pr[[:space:]]+create([[:space:]]|$)' | head -n 1)
+[ -n "$CREATE_SEG" ] || exit 0
 
 MODE=$(echo "$INPUT" | jq -r '.permission_mode // empty' 2>/dev/null)
 case "$MODE" in
@@ -62,19 +65,24 @@ resolve_base_ref() {
   fi
 }
 
-BASE=$(echo "$FLAT" | grep -oE '(^|[[:space:]])(--base|-B)([[:space:]]+|=)[^[:space:]]+' | head -n 1 \
+# A --base inside a PR body or an earlier command must not pick the comparison branch.
+BASE=$(echo "$CREATE_SEG" | grep -oE '(^|[[:space:]])(--base|-B)([[:space:]]+|=)[^[:space:]]+' | head -n 1 \
   | sed -E 's/^[[:space:]]*(--base|-B)([[:space:]]+|=)//')
+case "$BASE" in
+  -*) BASE="" ;;
+esac
 BASE_REF=""
 if [ -n "$BASE" ]; then
-  BASE_REF=$(resolve_base_ref "$(strip_quotes "$BASE")")
-else
+  BASE_REF=$(resolve_base_ref "$BASE")
+fi
+if [ -z "$BASE_REF" ]; then
   BASE_REF=$(git -C "$DIR" symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null || true)
-  if [ -z "$BASE_REF" ]; then
-    for name in main master; do
-      BASE_REF=$(resolve_base_ref "$name")
-      [ -n "$BASE_REF" ] && break
-    done
-  fi
+fi
+if [ -z "$BASE_REF" ]; then
+  for name in main master; do
+    BASE_REF=$(resolve_base_ref "$name")
+    [ -n "$BASE_REF" ] && break
+  done
 fi
 [ -n "$BASE_REF" ] || exit 0
 

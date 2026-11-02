@@ -153,9 +153,12 @@ done
 # gh-stack: stacked PR の gh 拡張と公式 agent skill(~/.claude/skills/gh-stack/ に実体で置かれ、上の symlink ループと衝突しない)
 if command -v gh &> /dev/null; then
     gh extension list 2>/dev/null | grep -q 'github/gh-stack' || gh extension install github/gh-stack
-    gh skill install github/gh-stack gh-stack --agent claude-code --scope user --force
+    gh_skills=$(gh skill list 2>/dev/null)
+    echo "$gh_skills" | grep -qE '^gh-stack[[:space:]]+claude-code' \
+        || gh skill install github/gh-stack gh-stack --agent claude-code --scope user
     if command -v codex &> /dev/null; then
-        gh skill install github/gh-stack gh-stack --agent codex --scope user --force
+        echo "$gh_skills" | grep -qE '^gh-stack[[:space:]].*codex' \
+            || gh skill install github/gh-stack gh-stack --agent codex --scope user
     fi
 fi
 

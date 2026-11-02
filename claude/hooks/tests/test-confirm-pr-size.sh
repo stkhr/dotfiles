@@ -58,6 +58,27 @@ seq 1 10 > "$REPO_DEVELOP/small.txt"
 $GDEV add -A
 $GDEV commit -q -m "feature"
 
+# NUL bytes make git count the file as binary ("-" in numstat).
+REPO_BIN="$WORK/repo-bin"
+git clone -q "$WORK/origin.git" "$REPO_BIN"
+GBIN="git -C $REPO_BIN -c user.email=t@t -c user.name=t"
+$GBIN checkout -q -b feature
+seq 1 500 | tr '\n' '\0' > "$REPO_BIN/blob.bin"
+$GBIN add -A
+$GBIN commit -q -m "add blob"
+
+# Cloned last: pushing to origin main must not move the other fixtures' origin/main.
+REPO_RENAME="$WORK/repo-rename"
+git clone -q "$WORK/origin.git" "$REPO_RENAME"
+GREN="git -C $REPO_RENAME -c user.email=t@t -c user.name=t"
+seq 1 500 > "$REPO_RENAME/old.txt"
+$GREN add -A
+$GREN commit -q -m "add old.txt"
+$GREN push -q origin main
+$GREN checkout -q -b feature
+$GREN mv old.txt new.txt
+$GREN commit -q -m "rename"
+
 run_case() {
   local expect="$1" mode="$2" limit="$3" cwd="$4" cmd="$5"
   local input out decision
@@ -88,15 +109,44 @@ run_case ask  default '' "$REPO_BIG"   "$CREATE"
 run_case pass default '' "$REPO_SMALL" "$CREATE"
 run_case ask  default '' "$REPO_BIG"   'gh pr create -d -t "x" -b "y"'
 
-# --- lockfiles and snapshots are not counted ---
-run_case pass default '' "$REPO_LOCK" "$CREATE"
-run_case pass default '' "$REPO_SNAP" "$CREATE"
+# --- lockfiles, snapshots, binaries and pure renames are not counted ---
+run_case pass default '' "$REPO_LOCK"   "$CREATE"
+run_case pass default '' "$REPO_SNAP"   "$CREATE"
+run_case pass default '' "$REPO_BIN"    "$CREATE"
+run_case pass default '' "$REPO_RENAME" "$CREATE"
 
 # --- --base selects the comparison branch ---
 run_case ask  default '' "$REPO_DEVELOP" "$CREATE"
 run_case pass default '' "$REPO_DEVELOP" 'gh pr create --draft --base develop --title "x"'
 run_case pass default '' "$REPO_DEVELOP" 'gh pr create --draft -B develop --title "x"'
 run_case pass default '' "$REPO_DEVELOP" 'gh pr create --draft --base=develop --title "x"'
+
+# --- --base is read from the gh pr create segment only ---
+run_case ask default '' "$REPO_BIG" 'gh pr create --draft --title "x" --body "measured with --base main2"'
+run_case ask default '' "$REPO_BIG" 'gh pr create --draft --title "x" --body "fix -B handling"'
+run_case ask default '' "$REPO_BIG" "git checkout -B tmp && $CREATE"
+HEREDOC_CMD='gh pr create --draft --title "x" --body "$(cat <<EOF
+--base develop
+EOF
+)"'
+run_case ask default '' "$REPO_DEVELOP" "$HEREDOC_CMD"
+
+# --- an unresolvable or quoted --base falls back to the default base ---
+run_case ask default '' "$REPO_BIG"     'gh pr create --draft --base nope --title "x"'
+run_case ask default '' "$REPO_DEVELOP" 'gh pr create --draft --base "develop" --title "x"'
+out=$(jq -n --arg d "$REPO_BIG" \
+  '{tool_input: {command: "gh pr create --draft --base nope --title \"x\""}, cwd: $d, permission_mode: "default"}' \
+  | bash "$HOOK" 2>/dev/null)
+if echo "$out" | jq -r '.hookSpecificOutput.permissionDecisionReason // ""' | grep -q 'base origin/main'; then
+  PASS=$((PASS + 1))
+else
+  FAIL=$((FAIL + 1))
+  echo "FAIL [unresolvable --base should report base origin/main]: $out"
+fi
+
+# --- gh pr create followed by a separator is still detected ---
+run_case ask default '' "$REPO_BIG" 'gh pr create;echo done'
+run_case ask default '' "$REPO_BIG" 'gh pr create|cat'
 
 # --- PR_SIZE_LIMIT_LINES overrides the threshold ---
 run_case pass default 1000 "$REPO_BIG"   "$CREATE"

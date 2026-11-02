@@ -89,5 +89,5 @@ Important・Minor=未対応・要判断)。PR 上に残す必要があるかは�
 ## 注意
 
 - Draft → Ready 変換、PR の close / comment / merge / review、非Draft PR の作成、
-  `gh stack merge`、`gh stack submit --open` はハードゲート対象。Claude Code では hook が、
+  `gh stack merge`、`gh stack submit --open`、`gh stack link --open` はハードゲート対象。Claude Code では hook が、
   Codex では `~/.codex/rules/` が確認プロンプトを出す。ゲートが無い操作は自分で「文面提示 → 承認 → 実行」を経る
