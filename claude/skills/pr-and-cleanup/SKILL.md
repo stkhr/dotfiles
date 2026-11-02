@@ -98,6 +98,8 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 **本文の構成**: `## Summary` のみ（なぜ中心の変更要旨）。Step 4 のレビュー結果は本文に書かず、Step 7 の報告で共有する。項目数・書かないもの・置き場所は `pr-creation` スキルに従う。
 
+**変更量チェック**: 作成前に base との変更量を測り、400 行を超えたら分割の要判断を出す。手順は `pr-creation` スキルに従う。
+
 ```bash
 # Draft PR を作成（既定）
 gh pr create --draft \

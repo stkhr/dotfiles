@@ -23,13 +23,14 @@
 - ファイル編集を伴うタスクは着手前に EnterWorktree で worktree に入る。例外は既に worktree 内にいる場合と、ユーザーが「worktree 不要」と明示した場合のみ。worktree はリポジトリ配下の `.claude/worktrees/` に置く
 - コミットを伴う依頼は常にフィーチャーブランチを切ってPR化する(1行修正でも)。例外はユーザーが「直接コミットしてよい」「PR不要」と明示した場合のみ
 - 委譲を伴う実装タスクの既定の終点は Draft PR(作成の事前承認は不要)。テンプレート探索・本文フォーマット・レビュー→作成→共有→CI確認の手順は `pr-creation` スキルに従う
+- Draft PR 作成前に base との変更量を測り、400 行超えは分割案(そのまま 1 本 / 分割)を要判断に出す。手順は `pr-creation` スキル。閾値超えの `gh pr create` は hook が確認プロンプトを出す。headless 自走時は要判断を出さず、Draft PR 本文末尾に実測と分割案を書く
 - PR の merge は人間のレビュー承認を経てから行う。Ready 化・レビュー依頼・merge はユーザーが行う。CI 通過後は Draft のまま状態を報告し、Ready 化や merge を要判断に出さない。例外はユーザーが明示的に指示した場合のみ
 - PR 本文はテンプレートとユーザーの明示要求が無ければ `## Summary` のみ。調査経過・レビュー所見・CI や bot が自動投稿する内容・スコープ外の発見は本文に書かず、チャットか別チケットに置く
 - PR に言及する時はクリッカブルな URL を示す。複数PRが並行する時は各PRの状態(Draft / Open / CI / レビュー)を能動的に確認して伝える
 
 ## 破壊的・外部影響操作の確認
 
-- git/gh の破壊的操作(force push / `--no-verify` / ブランチ削除 / PRの close・comment・merge・ready・review / 非Draft PR作成)は hook が確認プロンプトを強制する
+- git/gh の破壊的操作(force push / `--no-verify` / ブランチ削除 / PRの close・comment・merge・ready・review / 非Draft PR作成 / `gh stack merge`・`gh stack submit --open`)は hook が確認プロンプトを強制する
 - hook が検知できない操作(外部チャネルへの投稿・状態変更、既存ファイルの大量削除・一括リネーム)も「文面提示 → ユーザー承認 → 実行」を経る
 - 「ロールバックの急ぎ」「CIを通すための一時回避」を理由に独断実行しない。回避策が必要ならまずユーザーに確認する
 
@@ -46,6 +47,7 @@
 ## レビューゲート
 
 - 対話セッションで設計/プランファイルを生成・更新したら、実装前に crit レビューを通す(順序: 設計の crit → 実装 → `superpowers:requesting-code-review` → Draft PR)。headless 自走時は Draft PR を人間レビューのゲートとする
+- 設計/プランファイルには「PR 構成」節を入れる。PR の本数、各 PR の範囲と見込み変更行数、分割時は各 PR が単独で CI を通り単独で読める切り方を書き、分割の可否は crit でユーザーが決める
 - 実装計画ファイルはセッション用 scratchpad に置き、コミットしない
 - 設計判断を ADR として残すかはリポジトリ次第で、`docs/adr/` が既にあるリポジトリでのみ `adr` スキルで追記する
 - Draft PR の作成は `superpowers:requesting-code-review` の指摘反映後。レビュー結果が届く前に作成しない

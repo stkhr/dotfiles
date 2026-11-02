@@ -46,3 +46,15 @@ prefix_rule(
         "git branch --show-current",
     ],
 )
+
+prefix_rule(
+    pattern = ["gh", "stack", "merge"],
+    decision = "prompt",
+    justification = "スタック PR のマージは人間のレビュー承認を経てから",
+    match = [
+        "gh stack merge 42 --yes",
+    ],
+    not_match = [
+        "gh stack view --json",
+    ],
+)
