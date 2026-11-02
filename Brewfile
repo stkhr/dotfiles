@@ -34,6 +34,7 @@ brew "duckdb"
 brew "uv"
 brew "tflint"
 brew "graphviz"
+brew "ffmpeg" # bookcast の音声変換
 brew "azure-cli"
 brew "cloudflare-wrangler"
 brew "playwright-cli"
