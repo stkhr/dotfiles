@@ -34,6 +34,7 @@ brew "duckdb"
 brew "uv"
 brew "tflint"
 brew "graphviz"
+brew "ffmpeg" # 音声変換
 brew "azure-cli"
 brew "cloudflare-wrangler"
 brew "playwright-cli"
