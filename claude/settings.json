@@ -129,6 +129,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/confirm-hard-gate.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/confirm-pr-size.sh"
           }
         ]
       }

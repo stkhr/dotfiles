@@ -150,6 +150,18 @@ for skill_name in "${codex_skills[@]}"; do
     fi
 done
 
+# gh-stack: stacked PR の gh 拡張と公式 agent skill(~/.claude/skills/gh-stack/ に実体で置かれ、上の symlink ループと衝突しない)
+if command -v gh &> /dev/null; then
+    gh extension list 2>/dev/null | grep -q 'github/gh-stack' || gh extension install github/gh-stack
+    gh_skills=$(gh skill list 2>/dev/null)
+    echo "$gh_skills" | grep -qE '^gh-stack[[:space:]]+claude-code' \
+        || gh skill install github/gh-stack gh-stack --agent claude-code --scope user
+    if command -v codex &> /dev/null; then
+        echo "$gh_skills" | grep -qE '^gh-stack[[:space:]].*codex' \
+            || gh skill install github/gh-stack gh-stack --agent codex --scope user
+    fi
+fi
+
 # herdr agent integrations(エージェント状態検知・セッション復元)
 # hook 本体はマシンローカル配置。integration install は settings.json 等を
 # 再整形して書き込むため、未導入・要更新のときだけ実行して作業ツリーを汚さない

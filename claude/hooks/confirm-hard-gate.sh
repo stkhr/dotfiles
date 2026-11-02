@@ -2,8 +2,9 @@
 # PreToolUse (Bash): force a permission prompt ("ask") for hard-gated
 # destructive / externally-visible operations (force push, --no-verify,
 # branch deletion, gh pr close/merge/ready/comment/review, non-draft
-# gh pr create, and the same PR comment/review/merge actions issued via
-# raw `gh api` instead of the wrapped `gh pr` subcommands). On detection:
+# gh pr create, gh stack merge / submit --open / link --open, and the same
+# PR comment/review/merge actions issued via raw `gh api` instead of the
+# wrapped `gh pr` subcommands). On detection:
 # exit 0 + permissionDecision "ask" (confirmation, not a hard block).
 # Non-matching or unparsable input passes through silently so a gate bug
 # never stalls normal work.
@@ -67,6 +68,15 @@ check_segment() {
   # --draft=false must still ask; only --draft / --draft=true / -d are draft.
   if echo "$seg" | grep -qE '(^|[[:space:]])gh[[:space:]]+pr[[:space:]]+create([[:space:]]|$)' \
     && ! echo "$seg" | grep -qE '(^|[[:space:]])(--draft(=true)?|-d)([[:space:]]|$)'; then
+    add_reason "非Draft PR の作成"
+  fi
+
+  if echo "$seg" | grep -qE '(^|[[:space:]])gh[[:space:]]+stack[[:space:]]+merge([[:space:]]|$)'; then
+    add_reason "スタック PR のマージ"
+  fi
+
+  if echo "$seg" | grep -qE '(^|[[:space:]])gh[[:space:]]+stack[[:space:]]+(submit|link)([[:space:]]|$)' \
+    && echo "$seg" | grep -qE '(^|[[:space:]])--open([[:space:]]|$)'; then
     add_reason "非Draft PR の作成"
   fi
 

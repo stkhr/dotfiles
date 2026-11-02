@@ -70,6 +70,7 @@ GitHub 操作は MCP ではなく `gh` CLI を使う方針のため、GitHub MCP
 | `protect-main-branch.sh` | PreToolUse (Bash) | main/master への `git commit` をブロック |
 | `guard-worktree-path.sh` | PreToolUse (Bash) | worktree をリポジトリ外に作らせない |
 | `confirm-hard-gate.sh` | PreToolUse (Bash) | git/gh の破壊的操作に確認プロンプトを強制 |
+| `confirm-pr-size.sh` | PreToolUse (Bash) | base との変更量が閾値(500 行)を超える `gh pr create` に警告を出し、作成後に分割案を要判断に出すよう促す |
 | `lint-feedback.sh` | PostToolUse (Edit\|Write) | 編集ファイルを lint し、エラーをモデルにフィードバック |
 | `format-on-edit.sh` | PostToolUse (Edit\|Write) | prettier / black / gofmt / terraform fmt による自動整形 |
 | `notify-pr-created.sh` | PostToolUse (Bash) | `gh pr create` 実行時に PR URL を通知 |
