@@ -1,11 +1,10 @@
 #!/bin/bash
-# PreToolUse (Bash): force a permission prompt ("ask") on `gh pr create`
-# when the branch changes more than PR_SIZE_LIMIT_LINES (default 400)
-# lines against its base, so an oversized PR is split or knowingly
-# accepted instead of slipping past review. Binaries, lockfiles and
-# snapshots are not counted. Unattended permission modes
-# (bypassPermissions / dontAsk) pass through: nobody can answer the
-# prompt, and a `-p` run would see the ask as a denial.
+# PreToolUse (Bash): warn when `gh pr create` would open a PR that changes
+# more than PR_SIZE_LIMIT_LINES (default 500) lines against its base.
+# The command is not blocked: a systemMessage shows the numbers to the
+# user and additionalContext tells Claude to offer a split once the PR
+# URL exists, so the user decides with the diff in front of them.
+# Binaries, lockfiles and snapshots are not counted.
 # Non-matching or unparsable input passes through silently so a gate bug
 # never stalls normal work.
 
@@ -23,14 +22,9 @@ CREATE_SEG=$(printf '%s\n' "$STRIPPED" | tr ';&|' '\n' \
   | grep -E '(^|[[:space:]])gh[[:space:]]+pr[[:space:]]+create([[:space:]]|$)' | head -n 1)
 [ -n "$CREATE_SEG" ] || exit 0
 
-MODE=$(echo "$INPUT" | jq -r '.permission_mode // empty' 2>/dev/null)
-case "$MODE" in
-  bypassPermissions|dontAsk) exit 0 ;;
-esac
-
-LIMIT="${PR_SIZE_LIMIT_LINES:-400}"
+LIMIT="${PR_SIZE_LIMIT_LINES:-500}"
 case "$LIMIT" in
-  ''|*[!0-9]*) LIMIT=400 ;;
+  ''|*[!0-9]*) LIMIT=500 ;;
 esac
 
 CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
@@ -102,11 +96,14 @@ FILES=${COUNTS#* }
 
 [ "$LINES" -gt "$LIMIT" ] 2>/dev/null || exit 0
 
-jq -n --arg reason "PR の変更量が閾値を超えています: ${LINES} 行 / ${FILES} ファイル(閾値 ${LIMIT} 行、base ${BASE_REF})。分割案(そのまま 1 本 / 分割)を要判断に出し、ユーザーが選んでから作成してください。無人実行は bypassPermissions / dontAsk で起動します。" '{
+SUMMARY="PR の変更量 ${LINES} 行 / ${FILES} ファイルが閾値 ${LIMIT} 行を超えています(base ${BASE_REF})。"
+jq -n \
+  --arg msg "${SUMMARY}分割するかは Draft PR の diff を見て決めてください。" \
+  --arg ctx "${SUMMARY}作成後、PR URL と合わせて実測と分割案(そのまま 1 本 / gh-stack で分割)を要判断に出してください。headless 自走時は gh pr edit <番号> --body-file で本文末尾に書きます。" '{
+  systemMessage: $msg,
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
-    permissionDecision: "ask",
-    permissionDecisionReason: $reason
+    additionalContext: $ctx
   }
 }'
 exit 0

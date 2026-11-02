@@ -1,7 +1,7 @@
 ---
 name: pr-creation
 description: コミット・PR作成を伴う作業の終盤に使用。PRテンプレート探索、本文フォーマット、
-  Draft PRフロー(変更量チェック→レビュー→作成→共有)、gh-stack による PR 分割、
+  Draft PRフロー(レビュー→作成→変更量チェック→共有)、gh-stack による PR 分割、
   CI確認までの手順を規定。「PRを作成して」「コミットしてPR化して」「PRを分割して」
   などの指示、および委譲タスクの終点処理で起動。
 ---
@@ -40,13 +40,13 @@ description: コミット・PR作成を伴う作業の終盤に使用。PRテン
 ## 3. Draft PR フロー(委譲タスクの既定の終点)
 
 1. ローカルでテスト・ビルド・lint/format を実行し、通ることを確認する
-2. 変更量を測る(「4. 変更量チェック」)。閾値超えは分割の要判断を出し、ユーザーが選ぶまで進まない
-3. 差分のコードレビューを通し、Critical な指摘を修正して再レビュー
+2. 差分のコードレビューを通し、Critical な指摘を修正して再レビュー
    (Claude Code では `superpowers:requesting-code-review`、それ以外では `code-review` スキル)
-4. `gh pr create --draft` で Draft PR を作成(事前のユーザー承認は不要)。分割した時は `gh stack submit --auto`
-5. 作成後に PR URL・本文要旨・残レビュー所見を共有する
+3. `gh pr create --draft` で Draft PR を作成(事前のユーザー承認は不要)。作成時に変更量を測る
+   (「4. 変更量チェック」)。プランの crit で分割を選んでいた時は `gh stack submit --auto`
+4. 作成後に PR URL・本文要旨・残レビュー所見を共有する。閾値超えなら実測と分割案の要判断を添える
 
-レビュー所見は PR 本文に書かず、手順5のチャット応答で全件共有する(Critical=修正済み /
+レビュー所見は PR 本文に書かず、手順4のチャット応答で全件共有する(Critical=修正済み /
 Important・Minor=未対応・要判断)。PR 上に残す必要があるかはユーザーが判断する。
 例外は headless 自走時。チャットの読み手がいないため、所見を Draft PR 本文の末尾に残す。
 
@@ -54,17 +54,19 @@ Important・Minor=未対応・要判断)。PR 上に残す必要があるかは�
 
 ## 4. 変更量チェック
 
-コードレビューより先に base との実変更量を測る。分割すると層ごとにレビューするので、
-全体を先にレビューすると 1 回分が無駄になる。閾値は 400 行(追加 + 削除)。
+Draft PR を作る時に base との実変更量を測る。閾値は 500 行(追加 + 削除)。計測で作成を止めない。
+分割するかはユーザーが PR の diff を見て決める。
 
 - 計測は `git diff --numstat <base>...HEAD`。バイナリ、lockfile(package-lock.json / yarn.lock /
   pnpm-lock.yaml / go.sum / Cargo.lock / poetry.lock / Gemfile.lock / composer.lock / *.lock)、
   スナップショット(`__snapshots__/` / *.snap)は数えない
-- 閾値超えは要判断を出す。A: そのまま 1 本 / B: 分割。B には各 PR の名前・範囲・見込み行数・順序を添える
-- ユーザーが選ぶまで Draft PR を作らない
-- headless 自走時は要判断を出さず、プランの PR 構成に従う。閾値を超えていても Draft PR を作り、
-  実測行数と分割案を本文末尾に書く
-- Claude Code では hook(`confirm-pr-size.sh`)が閾値超えの `gh pr create` に確認プロンプトを出す。
+- 閾値超えは作成後の共有で要判断を出す。A: そのまま 1 本 / B: 分割。B には各 PR の名前・範囲・
+  見込み行数・順序を添え、PR URL と一緒に出す
+- 分割が選ばれたら「5. PR 分割」の実装後の手順で層に分け、元の Draft PR を `gh pr close` で閉じる
+  (ハードゲート対象。ユーザーの承認を得てから実行する)
+- headless 自走時は要判断を出さず、閾値を超えていても Draft PR を作る。実測行数と分割案は
+  `gh pr edit <番号> --body-file` で本文末尾に書く
+- Claude Code では hook(`confirm-pr-size.sh`)が閾値超えの `gh pr create` に警告と追加コンテキストを出す。
   hook が見るのは `gh pr create` だけで、`gh stack submit` は見ない
 
 ## 5. PR 分割(gh-stack)
@@ -73,10 +75,10 @@ Important・Minor=未対応・要判断)。PR 上に残す必要があるかは�
 
 - 切り方: 各 PR が単独で CI を通り単独で読める / 準備のリファクタと振る舞いの変更を分ける /
   テストは対象コードと同じ PR に入れる
-- プランで複数 PR と決めた時は最初から層で作る。`gh stack init <現在のブランチ>` で作業ブランチを
-  最下層に採用し、実装・commit → `gh stack add <次の層>` → 実装・commit を繰り返す
+- プランの crit でユーザーが分割を選んだ時は最初から層で作る。`gh stack init <現在のブランチ>` で
+  作業ブランチを最下層に採用し、実装・commit → `gh stack add <次の層>` → 実装・commit を繰り返す
 - 実装後に分割する時は base から層ブランチを切り、`git checkout <元ブランチ> -- <paths>` か
-  cherry-pick で層ごとに commit し、`gh stack init <層1> <層2> ...` で採用する
+  cherry-pick で層ごとに commit し、`gh stack init <層1> <層2> ...` で採用する。元の Draft PR は閉じる
 - PR 作成は `gh stack submit --auto`(Draft が既定)。`--open` はハードゲート対象
 - 層ごとの変更量は 1 つ下の層との diff で測る
 - 下の層を直したら `gh stack rebase --upstack` → `gh stack push`
