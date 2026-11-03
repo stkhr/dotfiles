@@ -12,6 +12,7 @@
 | `debugging` | 障害調査・バグ調査の進め方(原因特定先行・レイヤ切り替え・再現テスト) |
 | `external-api-precheck` | クラウドAPI・外部SaaS実装前の一次情報確認 |
 | `legal-review` | プロダクト法務の逆引きレビュー(法務案件アラートの検知) |
+| `lt-slides` | セッションの学びを Marp の LT スライドにする(`/lt-slides` で明示起動) |
 | `monthly-dev-report` | GitHubコミット履歴からの月次開発レポート生成 |
 | `org-survey` | GitHub org 横断の多リポジトリ調査手順 |
 | `pdm-assist` | プロダクトマネジメント(何を・誰に・いくらで)の意思決定補佐 |
